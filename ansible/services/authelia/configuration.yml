@@ -1,0 +1,151 @@
+---
+###############################################################################
+##                    Authelia Configuration — pez.sh                       ##
+###############################################################################
+# Host: helsinki-a (100.67.6.27)
+# URL:  https://auth.pez.sh
+#
+# Secrets are mounted via Docker environment variables pointing to /secrets/.
+# The LDAP bind password and SMTP password are referenced from the same
+# secrets directory. See config.enc.yml for encrypted values.
+#
+# This file is deployed to /root/authelia/config/configuration.yml
+
+server:
+  address: 'tcp://:9091/'
+
+log:
+  level: 'info'
+  format: 'text'
+  file_path: '/config/authelia.log'
+  keep_stdout: true
+
+identity_validation:
+  reset_password:
+
+##
+## Authentication Backend — LLDAP
+##
+authentication_backend:
+  ldap:
+    address: 'ldap://lldap:3890'
+    implementation: 'lldap'
+    timeout: '20 seconds'
+    start_tls: false
+    base_dn: 'dc=pez,dc=sh'
+    additional_users_dn: 'ou=people'
+    additional_groups_dn: 'ou=groups'
+    user: 'cn=admin,ou=people,dc=pez,dc=sh'
+    # Password provided via AUTHELIA_AUTHENTICATION_BACKEND_LDAP_PASSWORD_FILE env var
+
+##
+## Access Control — default deny, per-service groups
+##
+access_control:
+  default_policy: 'deny'
+  rules:
+    # pez.sh domains
+    - domain: 'grafana.pez.sh'
+      subject: 'group:pez_grafana_users'
+      policy: 'one_factor'
+    - domain: 'prometheus.pez.sh'
+      subject: 'group:pez_prometheus_users'
+      policy: 'one_factor'
+    - domain: 'radarr.pez.sh'
+      subject: 'group:pez_radarr_users'
+      policy: 'one_factor'
+    - domain: 'sonarr.pez.sh'
+      subject: 'group:pez_sonarr_users'
+      policy: 'one_factor'
+    - domain: 'lidarr.pez.sh'
+      subject: 'group:pez_lidarr_users'
+      policy: 'one_factor'
+    - domain: 'readarr.pez.sh'
+      subject: 'group:pez_readarr_users'
+      policy: 'one_factor'
+    - domain: 'download.pez.sh'
+      subject: 'group:pez_download_users'
+      policy: 'one_factor'
+    - domain: 'rss.pez.sh'
+      subject: 'group:pez_rss_users'
+      policy: 'one_factor'
+    - domain: 'soulseek.pez.sh'
+      subject: 'group:pez_soulseek_users'
+      policy: 'one_factor'
+    - domain: 'prowlarr.pez.sh'
+      subject: 'group:pez_prowlarr_users'
+      policy: 'one_factor'
+    - domain: 'git.pez.sh'
+      subject: 'group:pez_git_users'
+      policy: 'one_factor'
+
+    # pez.solutions domains (mirrors)
+    - domain: 'grafana.pez.solutions'
+      subject: 'group:pez_grafana_users'
+      policy: 'one_factor'
+    - domain: 'prometheus.pez.solutions'
+      subject: 'group:pez_prometheus_users'
+      policy: 'one_factor'
+    - domain: 'radarr.pez.solutions'
+      subject: 'group:pez_radarr_users'
+      policy: 'one_factor'
+    - domain: 'sonarr.pez.solutions'
+      subject: 'group:pez_sonarr_users'
+      policy: 'one_factor'
+    - domain: 'lidarr.pez.solutions'
+      subject: 'group:pez_lidarr_users'
+      policy: 'one_factor'
+    - domain: 'readarr.pez.solutions'
+      subject: 'group:pez_readarr_users'
+      policy: 'one_factor'
+    - domain: 'download.pez.solutions'
+      subject: 'group:pez_download_users'
+      policy: 'one_factor'
+    - domain: 'soulseek.pez.solutions'
+      subject: 'group:pez_soulseek_users'
+      policy: 'one_factor'
+    - domain: 'prowlarr.pez.solutions'
+      subject: 'group:pez_prowlarr_users'
+      policy: 'one_factor'
+
+    # Shared apps portals
+    - domain: 'apps.pez.sh'
+      subject: 'group:pez_plebs'
+      policy: 'one_factor'
+    - domain: 'apps.pez.solutions'
+      subject: 'group:pez_plebs'
+      policy: 'one_factor'
+
+##
+## Session — cookie domains
+##
+session:
+  cookies:
+    - domain: 'pez.sh'
+      authelia_url: 'https://auth.pez.sh'
+    - domain: 'pez.solutions'
+      authelia_url: 'https://auth.pez.solutions'
+
+##
+## Storage — MariaDB
+##
+storage:
+  mysql:
+    address: 'tcp://mariadb:3306'
+    database: 'authelia'
+    username: 'authelia'
+    timeout: '10 seconds'
+    # Password provided via AUTHELIA_STORAGE_MYSQL_PASSWORD_FILE env var
+
+##
+## Notifier — SMTP via poste.io on nuremberg-a
+##
+notifier:
+  disable_startup_check: true
+  smtp:
+    address: 'smtp://mail.pez.sh'
+    username: 'pez'
+    # Password provided via AUTHELIA_NOTIFIER_SMTP_PASSWORD_FILE env var
+    sender: 'Authelia <pez@pez.sh>'
+    tls:
+      server_name: 'mail.pez.sh'
