@@ -1,16 +1,17 @@
 [Unit]
-Description=MaNGOS Zero Realm Server
-After=network.target mariadb.service
+Description=MaNGOS Zero World Server
+After=network.target mariadb.service mangos-realmd.service
 Requires=mariadb.service
+Wants=mangos-realmd.service
 
 [Service]
 Type=simple
 User=mangos
 Group=mangos
 WorkingDirectory=/home/mangos/mangos/zero/bin
-ExecStart=/home/mangos/mangos/zero/bin/realmd
+ExecStart=/home/mangos/mangos/zero/bin/mangosd
 Restart=on-failure
-RestartSec=5
+RestartSec=10
 
 [Install]
 WantedBy=multi-user.target
