@@ -4,3 +4,8 @@ host_description: "Reverse proxy (Caddy), main traffic gateway"
 host_location: "Hetzner Cloud"
 
 caddy_config_src: "{{ playbook_dir }}/services/caddy/Caddyfile"
+
+docker_services:
+  - authelia
+  - forgejo
+  - bitwarden
