@@ -15,9 +15,9 @@
     mode: '0644'
     backup: true
   loop:
-    - { src: 'config/tmux/tmux.conf', dest: '/root/.tmux.conf' }
-    - { src: 'config/fish/config.fish', dest: '/root/.config/fish/config.fish' }
-    - { src: 'config/git/gitconfig', dest: '/root/.gitconfig' }
+    - {src: 'config/tmux/tmux.conf', dest: '/root/.tmux.conf'}
+    - {src: 'config/fish/config.fish', dest: '/root/.config/fish/config.fish'}
+    - {src: 'config/git/gitconfig', dest: '/root/.gitconfig'}
   failed_when: false
   when:
     - dotfiles_dir.stat.exists

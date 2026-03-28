@@ -88,9 +88,9 @@
     line: "{{ item.line }}"
     state: present
   loop:
-    - { regexp: '^#?PermitRootLogin', line: 'PermitRootLogin prohibit-password' }
-    - { regexp: '^#?PasswordAuthentication', line: 'PasswordAuthentication no' }
-    - { regexp: '^#?X11Forwarding', line: 'X11Forwarding no' }
+    - {regexp: '^#?PermitRootLogin', line: 'PermitRootLogin prohibit-password'}
+    - {regexp: '^#?PasswordAuthentication', line: 'PasswordAuthentication no'}
+    - {regexp: '^#?X11Forwarding', line: 'X11Forwarding no'}
   notify: Restart sshd
   when: ansible_facts["os_family"] != "FreeBSD"
 
