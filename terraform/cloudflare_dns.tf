@@ -424,7 +424,7 @@ resource "cloudflare_dns_record" "dmarc" {
   zone_id = cloudflare_zone.pez-sh.id
   name    = "_dmarc"
   type    = "TXT"
-  content = "v=DMARC1; p=none; rua=mailto:pez@pez.sh"
+  content = "v=DMARC1; p=quarantine; rua=mailto:pez@pez.sh; adkim=r; aspf=r"
   ttl     = 1
 }
 
@@ -432,7 +432,7 @@ resource "cloudflare_dns_record" "root-txt-spf" {
   zone_id = cloudflare_zone.pez-sh.id
   name    = "@"
   type    = "TXT"
-  content = "v=spf1 include:_spf.protonmail.ch ~all"
+  content = "v=spf1 ip4:167.235.134.154 ip6:2a01:4f8:1c1e:9c53::1 -all"
   ttl     = 1
 }
 
