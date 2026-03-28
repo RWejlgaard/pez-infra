@@ -1,3 +1,4 @@
+---
 # Prometheus configuration — extracted from london-a (FreeBSD)
 # Config file location on london-a: /usr/local/etc/prometheus.yml
 # Prometheus runs as: /usr/local/bin/prometheus --config.file=/usr/local/etc/prometheus.yml
@@ -10,12 +11,9 @@ global:
 alerting:
   alertmanagers:
     - static_configs:
-        - targets:
-          # - alertmanager:9093
+        - targets: []
 
-rule_files:
-  # - "first_rules.yml"
-  # - "second_rules.yml"
+rule_files: []
 
 scrape_configs:
   - job_name: "prometheus"

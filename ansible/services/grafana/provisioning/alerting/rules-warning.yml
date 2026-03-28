@@ -1,3 +1,4 @@
+---
 apiVersion: 1
 
 # Tier 2 — Warning alerts. These send email only (non-paging).
@@ -239,4 +240,3 @@ groups:
         labels:
           severity: warning
         isPaused: false
-

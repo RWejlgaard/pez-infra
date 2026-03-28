@@ -1,3 +1,4 @@
+---
 # Plex exporter - Plex metrics for Prometheus
 # Host: london-b (100.84.65.101)
 # Access: http://london-b:9000/metrics
