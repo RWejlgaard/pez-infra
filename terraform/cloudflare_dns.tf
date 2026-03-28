@@ -261,15 +261,6 @@ resource "cloudflare_dns_record" "rss" {
   ttl     = 1
 }
 
-resource "cloudflare_dns_record" "satisfactory" {
-  zone_id = cloudflare_zone.pez-sh.id
-  name    = "satisfactory"
-  type    = "A"
-  content = "162.55.55.2"
-  proxied = false
-  ttl     = 1
-}
-
 resource "cloudflare_dns_record" "sonarr" {
   zone_id = cloudflare_zone.pez-sh.id
   name    = "sonarr"
