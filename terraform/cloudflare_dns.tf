@@ -392,21 +392,7 @@ resource "cloudflare_dns_record" "root-mx-20" {
 # PTR Records
 # =============================================================================
 
-resource "cloudflare_dns_record" "ptr-83-94-248-182" {
-  zone_id = cloudflare_zone.pez-sh.id
-  name    = "83.94.248.182"
-  type    = "PTR"
-  content = "mail.pez.sh"
-  ttl     = 1
-}
 
-resource "cloudflare_dns_record" "mail-ptr" {
-  zone_id = cloudflare_zone.pez-sh.id
-  name    = "mail"
-  type    = "PTR"
-  content = "154.134.235.167.in-addr.arpa"
-  ttl     = 1
-}
 
 # =============================================================================
 # TXT Records
