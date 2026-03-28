@@ -22,6 +22,7 @@ override.tf.json
 .vault_pass
 .vault-password
 secrets.yml
+config.yml
 secrets.yaml
 vault.yml
 vault.yaml

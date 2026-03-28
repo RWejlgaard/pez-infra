@@ -4,32 +4,15 @@ Infrastructure-as-code monorepo for Pez's homelab and cloud fleet. Everything ne
 
 ## Architecture Overview
 
-```
-                    ┌─────────────┐
-                    │  Cloudflare  │
-                    │  DNS + CDN   │
-                    └──────┬──────┘
-                           │
-                    ┌──────▼──────┐
-                    │  helsinki-a  │  Hetzner Cloud
-                    │  Caddy proxy│  Reverse proxy + TLS
-                    └──────┬──────┘
-                           │
-              ┌────────────┼────────────┐
-              │      Tailscale mesh     │
-              │                         │
-    ┌─────────▼──┐  ┌──────▼──────┐  ┌─▼───────────┐
-    │  london-b  │  │  london-a   │  │ copenhagen-a │
-    │  Storage   │  │  Monitoring │  │  Gaming      │
-    │  Docker    │  │  Prometheus │  │  Minecraft   │
-    │  services  │  │  Grafana    │  │  WoW (MaNGOS)│
-    └────────────┘  └─────────────┘  └──────────────┘
-              │
-    ┌─────────▼──┐  ┌─────────────┐
-    │ nuremberg-a│  │copenhagen-c │
-    │  Mail      │  │  (idle)     │
-    │  poste.io  │  │             │
-    └────────────┘  └─────────────┘
+```mermaid
+graph TD
+    CF[Cloudflare<br/>DNS + CDN] --> HEL[helsinki-a<br/>Caddy proxy<br/><i>Hetzner Cloud</i>]
+    HEL --> TS{Tailscale mesh}
+    TS --> LB[london-b<br/>Storage, Docker services]
+    TS --> LA[london-a<br/>Monitoring<br/>Prometheus, Grafana]
+    TS --> CA[copenhagen-a<br/>Gaming<br/>Minecraft, WoW MaNGOS]
+    TS --> NUR[nuremberg-a<br/>Mail, poste.io]
+    TS --> CC[copenhagen-c<br/>idle]
 ```
 
 ### Hosts
