@@ -1,0 +1,34 @@
+name: Lint Ansible
+
+on:
+  push:
+    paths:
+      - 'ansible/**'
+      - '.github/workflows/lint-ansible.yml'
+  pull_request:
+    paths:
+      - 'ansible/**'
+      - '.github/workflows/lint-ansible.yml'
+
+jobs:
+  ansible-lint:
+    name: ansible-lint
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Check for Ansible files
+        id: check
+        run: |
+          if find ansible/ -name '*.yml' -o -name '*.yaml' | grep -q .; then
+            echo "has_files=true" >> "$GITHUB_OUTPUT"
+          else
+            echo "has_files=false" >> "$GITHUB_OUTPUT"
+            echo "No Ansible YAML files found — skipping lint."
+          fi
+
+      - name: Run ansible-lint
+        if: steps.check.outputs.has_files == 'true'
+        uses: ansible/ansible-lint@v25
+        with:
+          working_directory: ansible/

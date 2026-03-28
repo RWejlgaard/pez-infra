@@ -1,0 +1,31 @@
+---
+# Install Docker and docker-compose, start the daemon.
+
+- name: Install Docker (Debian)
+  ansible.builtin.apt:
+    name:
+      - docker.io
+      - docker-compose
+    state: present
+  when: ansible_facts["os_family"] == "Debian"
+
+- name: Install Docker (Alpine)
+  community.general.apk:
+    name:
+      - docker
+      - docker-cli-compose
+    state: present
+  when: ansible_facts["os_family"] == "Alpine"
+
+- name: Enable and start Docker
+  ansible.builtin.service:
+    name: docker
+    state: started
+    enabled: true
+
+- name: Create docker compose project directories
+  ansible.builtin.file:
+    path: "/opt/docker/{{ item }}"
+    state: directory
+    mode: '0755'
+  loop: "{{ docker_services | default([]) }}"

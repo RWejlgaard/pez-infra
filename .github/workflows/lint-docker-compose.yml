@@ -1,0 +1,32 @@
+name: Lint Docker Compose
+
+on:
+  push:
+    paths:
+      - 'ansible/services/**'
+      - '.github/workflows/lint-docker-compose.yml'
+  pull_request:
+    paths:
+      - 'ansible/services/**'
+      - '.github/workflows/lint-docker-compose.yml'
+
+jobs:
+  compose-lint:
+    name: docker compose config
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Validate Compose files
+        run: |
+          found=0
+          shopt -s globstar nullglob
+          for f in ansible/services/**/docker-compose.yml ansible/services/**/docker-compose.yaml ansible/services/**/compose.yml ansible/services/**/compose.yaml; do
+            echo "::group::Validating $f"
+            docker compose -f "$f" config --quiet 2>&1 || true
+            echo "::endgroup::"
+            found=1
+          done
+          if [ "$found" -eq 0 ]; then
+            echo "No Compose files found — skipping."
+          fi

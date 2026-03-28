@@ -1,0 +1,198 @@
+# Caddyfile template for helsinki-a reverse proxy
+#
+# Variables (replace before deploying):
+#   {{HELSINKI_A_IP}}    - helsinki-a Tailscale IP (currently 100.67.6.27)
+#   {{LONDON_A_IP}}     - london-a Tailscale IP   (currently 100.122.219.41)
+#   {{LONDON_B_IP}}     - london-b Tailscale IP   (currently 100.84.65.101)
+#   {{AUTHELIA_PORT}}   - Authelia port            (currently 9091)
+#   {{DOMAIN_PRIMARY}}  - Primary domain           (currently pez.sh)
+#   {{DOMAIN_ALT}}      - Alternate domain          (currently pez.solutions)
+#
+# Authelia forward_auth pattern: see README.md for details.
+
+{
+        admin {{HELSINKI_A_IP}}:2019
+        metrics {
+                per_host
+        }
+}
+
+# ============================================================
+# Snippet: Authelia forward_auth
+# Include with `import authelia` inside any site block.
+# ============================================================
+(authelia) {
+        forward_auth localhost:{{AUTHELIA_PORT}} {
+                uri /api/authz/forward-auth
+                copy_headers Remote-User Remote-Groups Remote-Name Remote-Email
+        }
+}
+
+## LONDON-A SERVICES ##
+
+# Grafana
+grafana.{{DOMAIN_ALT}}, grafana.{{DOMAIN_PRIMARY}} {
+        import authelia
+        reverse_proxy {{LONDON_A_IP}}:3000
+}
+
+# Prometheus
+prometheus.{{DOMAIN_ALT}}, prometheus.{{DOMAIN_PRIMARY}} {
+        import authelia
+        reverse_proxy {{LONDON_A_IP}}:9090
+}
+
+# Alertmanager
+alertmanager.{{DOMAIN_ALT}}, alertmanager.{{DOMAIN_PRIMARY}} {
+        import authelia
+        reverse_proxy {{LONDON_A_IP}}:3000
+}
+
+## LONDON-B SERVICES ##
+
+# Jellyfin (no auth — has its own login)
+jellyfin.{{DOMAIN_ALT}}, jellyfin.{{DOMAIN_PRIMARY}} {
+        reverse_proxy {{LONDON_B_IP}}:8096
+}
+
+# Plex (no auth — has its own login)
+plex.{{DOMAIN_ALT}}, plex.{{DOMAIN_PRIMARY}} {
+        reverse_proxy {{LONDON_B_IP}}:32400
+}
+
+# Radarr
+radarr.{{DOMAIN_ALT}}, radarr.{{DOMAIN_PRIMARY}} {
+        import authelia
+        reverse_proxy {{LONDON_B_IP}}:7878
+}
+
+# Sonarr
+sonarr.{{DOMAIN_ALT}}, sonarr.{{DOMAIN_PRIMARY}} {
+        import authelia
+        reverse_proxy {{LONDON_B_IP}}:8989
+}
+
+# Lidarr
+lidarr.{{DOMAIN_ALT}}, lidarr.{{DOMAIN_PRIMARY}} {
+        import authelia
+        reverse_proxy {{LONDON_B_IP}}:8686
+}
+
+# Readarr
+readarr.{{DOMAIN_ALT}}, readarr.{{DOMAIN_PRIMARY}} {
+        import authelia
+        reverse_proxy {{LONDON_B_IP}}:8787
+}
+
+# slskd (Soulseek)
+soulseek.{{DOMAIN_ALT}}, soulseek.{{DOMAIN_PRIMARY}} {
+        import authelia
+        reverse_proxy {{LONDON_B_IP}}:5030
+}
+
+# Prowlarr
+prowlarr.{{DOMAIN_ALT}}, prowlarr.{{DOMAIN_PRIMARY}} {
+        import authelia
+        reverse_proxy {{LONDON_B_IP}}:9696
+}
+
+# Transmission
+download.{{DOMAIN_ALT}}, download.{{DOMAIN_PRIMARY}} {
+        import authelia
+        reverse_proxy {{LONDON_B_IP}}:9091
+}
+
+# Overseerr (no auth — has its own login)
+request.{{DOMAIN_ALT}}, request.{{DOMAIN_PRIMARY}} {
+        reverse_proxy {{LONDON_B_IP}}:5055
+}
+
+# Jellyseerr (no auth — has its own login)
+jellyfin-requests.{{DOMAIN_ALT}}, jellyfin-requests.{{DOMAIN_PRIMARY}} {
+        reverse_proxy {{LONDON_B_IP}}:5056
+}
+
+# Nextcloud AIO
+https://cloud.{{DOMAIN_PRIMARY}}:443 {
+        reverse_proxy {{LONDON_B_IP}}:11000
+}
+
+# Navidrome
+music.{{DOMAIN_PRIMARY}} {
+        reverse_proxy {{LONDON_B_IP}}:4533
+}
+
+# Miniflux RSS
+rss.{{DOMAIN_PRIMARY}} {
+        import authelia
+        reverse_proxy {{LONDON_B_IP}}:8181
+}
+
+## HELSINKI-A SERVICES (localhost) ##
+
+# Bitwarden
+https://bitwarden.{{DOMAIN_PRIMARY}} {
+        reverse_proxy localhost:8443 {
+                transport http {
+                        tls_insecure_skip_verify
+                }
+        }
+}
+
+# Authelia portal
+auth.{{DOMAIN_ALT}}, auth.{{DOMAIN_PRIMARY}} {
+        reverse_proxy localhost:{{AUTHELIA_PORT}}
+}
+
+# LLDAP web UI
+ldap.{{DOMAIN_PRIMARY}} {
+        reverse_proxy 127.0.0.1:17170
+}
+
+# Apps dashboard
+apps.{{DOMAIN_ALT}}, apps.{{DOMAIN_PRIMARY}} {
+        root * /srv/apps
+        import authelia
+        file_server
+}
+
+# Static sites
+{{DOMAIN_ALT}} {
+        root * /srv/pez.solutions
+        file_server
+}
+
+cloud.{{DOMAIN_ALT}} {
+        root * /srv/cloud.pez.solutions
+        file_server
+}
+
+{{DOMAIN_PRIMARY}} {
+        root * /srv/pez.sh
+        file_server
+}
+
+signup.{{DOMAIN_ALT}} {
+        root * /srv/pez-signup
+        file_server
+}
+
+naveen.{{DOMAIN_PRIMARY}} {
+        root * /srv/naveen
+        file_server
+}
+
+status.{{DOMAIN_PRIMARY}} {
+        root * /srv/status
+        file_server
+}
+
+# Forgejo (auth handled by Forgejo itself)
+git.{{DOMAIN_PRIMARY}} {
+        reverse_proxy localhost:3000
+}
+
+# This Website Does Not Exist
+thiswebsitedoesnotexist.{{DOMAIN_PRIMARY}} {
+        reverse_proxy localhost:3721
+}

@@ -1,0 +1,12 @@
+# smartctl-exporter - SMART disk metrics for Prometheus
+# Host: london-b (100.84.65.101)
+# Access: http://london-b:9633/metrics
+
+services:
+  smartctl-exporter:
+    image: prometheuscommunity/smartctl-exporter
+    container_name: smartctl_exporter
+    restart: unless-stopped
+    privileged: true  # Required for direct disk access
+    ports:
+      - "9633:9633"

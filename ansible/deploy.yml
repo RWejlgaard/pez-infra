@@ -1,0 +1,194 @@
+---
+# deploy.yml — One-command host rebuild
+#
+# Rebuilds a host from bare metal to fully configured using repo state.
+# Assumes: SSH access via Tailscale, root user, host is in inventory.
+#
+# Usage:
+#   Full fleet:   ansible-playbook deploy.yml
+#   Single host:  ansible-playbook deploy.yml --limit helsinki-a
+#   Dry run:      ansible-playbook deploy.yml --check --diff
+#
+# Prerequisites:
+#   - Target host has SSH access via Tailscale
+#   - Target host has a base OS installed (Debian/Alpine/FreeBSD)
+#   - ansible-galaxy install -r requirements.yml
+
+# ──────────────────────────────────────────────
+# Stage 1: Common baseline — all hosts
+# ──────────────────────────────────────────────
+- name: "Stage 1: Common baseline"
+  hosts: all
+  tags: [common, baseline]
+  roles:
+    - role: common
+    - role: dotfiles
+
+# ──────────────────────────────────────────────
+# Stage 2: Docker engine — hosts that run containers
+# ──────────────────────────────────────────────
+- name: "Stage 2: Docker engine"
+  hosts: docker_hosts
+  tags: [docker]
+  roles:
+    - role: docker
+
+# ──────────────────────────────────────────────
+# Stage 3: Monitoring agent — all hosts
+# ──────────────────────────────────────────────
+- name: "Stage 3: Node exporter"
+  hosts: all
+  tags: [monitoring, node_exporter]
+  roles:
+    - role: node_exporter
+
+# ──────────────────────────────────────────────
+# Stage 4: Per-host services
+# ──────────────────────────────────────────────
+
+# helsinki-a: Caddy reverse proxy
+- name: "Stage 4a: Caddy (helsinki-a)"
+  hosts: helsinki-a
+  tags: [services, caddy]
+  roles:
+    - role: caddy
+
+# london-b: Docker services (storage, apps)
+- name: "Stage 4b: Docker services (london-b)"
+  hosts: london-b
+  tags: [services, london-b]
+  roles:
+    - role: docker_services
+
+# nuremberg-a: Mail (poste.io via Docker)
+- name: "Stage 4c: Mail (nuremberg-a)"
+  hosts: nuremberg-a
+  tags: [services, mail]
+  roles:
+    - role: docker_services
+
+# copenhagen-a: Gaming servers
+- name: "Stage 4d: Gaming servers (copenhagen-a)"
+  hosts: copenhagen-a
+  tags: [services, gaming]
+  roles:
+    - role: docker_services
+    - role: systemd_services
+
+# london-a: Monitoring stack (FreeBSD — Prometheus, Grafana)
+# Note: london-a uses FreeBSD; monitoring roles handle this via conditionals.
+- name: "Stage 4e: Monitoring stack (london-a)"
+  hosts: london-a
+  tags: [services, monitoring]
+  tasks:
+    - name: Check for Prometheus config
+      delegate_to: localhost
+      ansible.builtin.stat:
+        path: "{{ playbook_dir }}/services/prometheus/prometheus.yml"
+      register: prometheus_config
+
+    - name: Deploy Prometheus config
+      ansible.builtin.copy:
+        src: "{{ playbook_dir }}/services/prometheus/prometheus.yml"
+        dest: /usr/local/etc/prometheus.yml
+        mode: '0644'
+        backup: true
+      when: prometheus_config.stat.exists
+      notify: Restart prometheus
+
+    - name: Deploy Prometheus alerting rules
+      ansible.builtin.copy:
+        src: "{{ playbook_dir }}/services/prometheus/rules/"
+        dest: /usr/local/etc/prometheus/rules/
+        mode: '0644'
+      failed_when: false
+      notify: Restart prometheus
+
+    - name: Ensure unified_alerting section exists in Grafana config
+      ansible.builtin.lineinfile:
+        path: /usr/local/etc/grafana/grafana.ini
+        regexp: '^\[unified_alerting\]'
+        line: '[unified_alerting]'
+      notify: Restart grafana
+
+    - name: Allow provenance status change in Grafana
+      ansible.builtin.lineinfile:
+        path: /usr/local/etc/grafana/grafana.ini
+        regexp: '^allow_prov_status_change'
+        insertafter: '^\[unified_alerting\]'
+        line: 'allow_prov_status_change = true'
+      notify: Restart grafana
+
+    - name: Deploy Grafana dashboards
+      ansible.posix.synchronize:
+        src: "{{ playbook_dir }}/services/grafana/dashboards/"
+        dest: /usr/local/etc/grafana/dashboards/
+      failed_when: false
+
+    - name: Ensure provisioning dir exists
+      ansible.builtin.file:
+        path: "{{ grafana_provisioning_dir }}"
+        state: directory
+        mode: '0755'
+
+    - name: Ensure alerting dir exists
+      ansible.builtin.file:
+        path: "{{ grafana_provisioning_dir }}/alerting"
+        state: directory
+        mode: '0755'
+
+    - name: Deploy Grafana provisioning
+      ansible.posix.synchronize:
+        src: "{{ playbook_dir }}/services/grafana/provisioning/"
+        dest: "{{ grafana_provisioning_dir }}/"
+      failed_when: false
+
+    - name: Template contact points with PagerDuty key
+      ansible.builtin.template:
+        src: "{{ playbook_dir }}/services/grafana/provisioning/alerting/contact-points.yml"
+        dest: "{{ grafana_provisioning_dir }}/alerting/contact-points.yml"
+        mode: '0640'
+        owner: root
+        group: grafana
+      no_log: true
+      notify: Restart grafana
+
+  handlers:
+    - name: Restart prometheus
+      ansible.builtin.service:
+        name: prometheus
+        state: restarted
+
+    - name: Restart grafana
+      ansible.builtin.service:
+        name: grafana
+        state: restarted
+
+# ──────────────────────────────────────────────
+# Stage 5: Verification
+# ──────────────────────────────────────────────
+- name: "Stage 5: Post-deploy verification"
+  hosts: all
+  tags: [verify]
+  tasks:
+    - name: Check SSH is working
+      ansible.builtin.ping:
+
+    - name: Gather uptime
+      ansible.builtin.command: uptime
+      changed_when: false
+      register: uptime_result
+
+    - name: Check Docker containers (where applicable)
+      ansible.builtin.command: docker ps --format "table {{ '{{' }}.Names{{ '}}' }}\t{{ '{{' }}.Status{{ '}}' }}"
+      changed_when: false
+      register: docker_status
+      when: "'docker_hosts' in group_names"
+      failed_when: false
+
+    - name: Report host status
+      ansible.builtin.debug:
+        msg: |
+          Host: {{ inventory_hostname }} ({{ host_description | default('no description') }})
+          Uptime: {{ uptime_result.stdout }}
+          Docker: {{ docker_status.stdout_lines | default(['N/A']) | join('\n') }}

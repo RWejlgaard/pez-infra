@@ -1,0 +1,24 @@
+---
+# Deploy dotfiles from the repo's dotfiles/ directory.
+# Symlinks config files into the home directory.
+
+- name: Check for dotfiles source
+  delegate_to: localhost
+  ansible.builtin.stat:
+    path: "{{ playbook_dir }}/dotfiles"
+  register: dotfiles_dir
+
+- name: Copy dotfiles
+  ansible.builtin.copy:
+    src: "{{ playbook_dir }}/dotfiles/{{ item.src }}"
+    dest: "{{ item.dest }}"
+    mode: '0644'
+    backup: true
+  loop:
+    - { src: 'config/tmux/tmux.conf', dest: '/root/.tmux.conf' }
+    - { src: 'config/fish/config.fish', dest: '/root/.config/fish/config.fish' }
+    - { src: 'config/git/gitconfig', dest: '/root/.gitconfig' }
+  failed_when: false
+  when:
+    - dotfiles_dir.stat.exists
+    - not (inventory_hostname == 'london-a' and item.src is search('fish'))

@@ -1,0 +1,16 @@
+---
+host_role: storage
+host_description: "Primary storage (ZFS), Docker services"
+host_location: "London"
+
+docker_services:
+  - nextcloud-aio
+  - jellyseerr
+  - navidrome
+  - slskd
+  - authelia
+  - forgejo
+  - bitwarden
+  - miniflux
+  - smartctl-exporter
+  - plex-exporter

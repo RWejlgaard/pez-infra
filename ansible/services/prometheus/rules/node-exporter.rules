@@ -1,0 +1,9 @@
+groups:
+- name: alerts
+  rules:
+#   - alert: ServerRunningBtrfs
+#     expr: node_btrfs_info > 0
+#     for: 5m
+#     annotations:
+#       summary: "Server {{ $labels.job }} is running btrfs"
+#       description: "{{ $labels.job }} has uuid of '{{ $labels.uuid }}'"

@@ -1,0 +1,34 @@
+# nuremberg-a
+
+Dedicated mail server. One job, does it well.
+
+## Overview
+
+| | |
+|---|---|
+| **Location** | Hetzner Cloud (Nuremberg) |
+| **OS** | Alpine Linux |
+| **Tailscale IP** | 100.117.235.28 |
+| **Role** | Mail server (poste.io) |
+| **Provider** | Hetzner Cloud VPS |
+
+## Services
+
+| Service | Ports | Deployment |
+|---------|-------|-----------|
+| poste.io | 25, 587, 993, 443 | Docker |
+
+poste.io is a batteries-included mail server that bundles postfix, dovecot, rspamd, and webmail into a single Docker container. No juggling separate containers for each mail component.
+
+## Why a separate server
+
+Mail lives on its own VPS to isolate its IP reputation. If the IP gets flagged for any reason, it doesn't affect the rest of the infrastructure. And if something else gets flagged, it doesn't affect mail deliverability.
+
+## DNS
+
+Mail-related DNS records are managed via Cloudflare (Terraform):
+
+- **MX** record for inbound mail routing
+- **SPF** for sender verification
+- **DKIM** for message signing
+- **DMARC** for policy enforcement

@@ -1,0 +1,35 @@
+name: Validate Caddyfile
+
+on:
+  push:
+    paths:
+      - 'ansible/services/caddy/**'
+      - '.github/workflows/validate-caddyfile.yml'
+  pull_request:
+    paths:
+      - 'ansible/services/caddy/**'
+      - '.github/workflows/validate-caddyfile.yml'
+
+jobs:
+  caddy-validate:
+    name: caddy validate
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Check for Caddyfile
+        id: check
+        run: |
+          if [ -f ansible/services/caddy/Caddyfile ]; then
+            echo "has_file=true" >> "$GITHUB_OUTPUT"
+          else
+            echo "has_file=false" >> "$GITHUB_OUTPUT"
+            echo "No Caddyfile found — skipping."
+          fi
+
+      - name: Validate Caddyfile
+        if: steps.check.outputs.has_file == 'true'
+        run: |
+          curl -sL "https://github.com/caddyserver/caddy/releases/latest/download/caddy_$(curl -sL https://api.github.com/repos/caddyserver/caddy/releases/latest | jq -r .tag_name | tr -d v)_linux_amd64.tar.gz" | tar xz caddy
+          chmod +x caddy
+          ./caddy validate --config ansible/services/caddy/Caddyfile --adapter caddyfile

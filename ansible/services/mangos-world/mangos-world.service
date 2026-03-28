@@ -1,0 +1,16 @@
+[Unit]
+Description=MaNGOS Zero Realm Server
+After=network.target mariadb.service
+Requires=mariadb.service
+
+[Service]
+Type=simple
+User=mangos
+Group=mangos
+WorkingDirectory=/home/mangos/mangos/zero/bin
+ExecStart=/home/mangos/mangos/zero/bin/realmd
+Restart=on-failure
+RestartSec=5
+
+[Install]
+WantedBy=multi-user.target

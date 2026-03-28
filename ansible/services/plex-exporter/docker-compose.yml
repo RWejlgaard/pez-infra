@@ -1,0 +1,14 @@
+# Plex exporter - Plex metrics for Prometheus
+# Host: london-b (100.84.65.101)
+# Access: http://london-b:9000/metrics
+
+services:
+  plex-exporter:
+    image: ghcr.io/axsuul/plex-media-server-exporter
+    container_name: prom-plex-exporter
+    restart: unless-stopped
+    ports:
+      - "9000:9594"
+    environment:
+      PLEX_ADDR: "http://192.168.1.253:32400"
+      PLEX_TOKEN: "${PLEX_TOKEN}"

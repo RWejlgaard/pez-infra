@@ -1,0 +1,31 @@
+---
+# Deploy Caddy reverse proxy on helsinki-a.
+# Expects Caddyfile in services/caddy/.
+
+- name: Install Caddy
+  ansible.builtin.apt:
+    name: caddy
+    state: present
+  when: ansible_facts["os_family"] == "Debian"
+
+- name: Check for Caddyfile in repo
+  delegate_to: localhost
+  ansible.builtin.stat:
+    path: "{{ playbook_dir }}/services/caddy/Caddyfile"
+  register: caddy_caddyfile_src
+
+- name: Deploy Caddyfile
+  ansible.builtin.copy:
+    src: "{{ playbook_dir }}/services/caddy/Caddyfile"
+    dest: /etc/caddy/Caddyfile
+    mode: '0644'
+    backup: true
+    validate: "caddy validate --config %s --adapter caddyfile"
+  notify: Reload caddy
+  when: caddy_caddyfile_src.stat.exists
+
+- name: Enable and start Caddy
+  ansible.builtin.service:
+    name: caddy
+    state: started
+    enabled: true

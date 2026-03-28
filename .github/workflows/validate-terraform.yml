@@ -1,0 +1,54 @@
+name: Validate Terraform
+
+on:
+  push:
+    paths:
+      - 'terraform/**'
+      - '.github/workflows/validate-terraform.yml'
+  pull_request:
+    paths:
+      - 'terraform/**'
+      - '.github/workflows/validate-terraform.yml'
+
+jobs:
+  tofu-validate:
+    name: tofu validate
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Install OpenTofu
+        uses: opentofu/setup-opentofu@v1
+        with:
+          tofu_version: latest
+
+      - name: Install SOPS
+        run: |
+          wget -qO /tmp/sops.deb https://github.com/getsops/sops/releases/download/v3.9.4/sops_3.9.4_amd64.deb
+          sudo dpkg -i /tmp/sops.deb
+
+      - name: Decrypt secrets
+        env:
+          SOPS_AGE_KEY: ${{ secrets.AGE_SECRET_KEY }}
+        run: |
+          find . -name '*.enc.yml' -o -name '*.enc.yaml' | while read f; do
+            out="${f/.enc/}"
+            sops -d "$f" > "$out"
+            echo "Decrypted: $f -> $out"
+          done
+
+      - name: Find and validate Terraform roots
+        run: |
+          found=0
+          for dir in $(find terraform/ -name '*.tf' -printf '%h\n' | sort -u); do
+            echo "::group::Validating $dir"
+            cd "$dir"
+            tofu init -backend=false
+            tofu validate
+            cd "$GITHUB_WORKSPACE"
+            echo "::endgroup::"
+            found=1
+          done
+          if [ "$found" -eq 0 ]; then
+            echo "No .tf files found — skipping validation."
+          fi

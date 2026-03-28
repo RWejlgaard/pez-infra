@@ -1,0 +1,24 @@
+# Poste.io - Self-hosted mail server
+# Host: nuremberg-a (100.117.235.28)
+# Data: /root/postio/data
+# Access: https://mail.pez.sh
+
+services:
+  posteio:
+    image: analogic/poste.io
+    container_name: posteio
+    restart: unless-stopped
+    environment:
+      TZ: Europe/London
+    ports:
+      - "25:25"      # SMTP
+      - "80:80"      # HTTP (web UI)
+      - "110:110"    # POP3
+      - "143:143"    # IMAP
+      - "443:443"    # HTTPS (web UI)
+      - "465:465"    # SMTPS
+      - "587:587"    # Submission
+      - "993:993"    # IMAPS
+      - "995:995"    # POP3S
+    volumes:
+      - /root/postio/data:/data

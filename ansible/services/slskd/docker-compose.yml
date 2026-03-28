@@ -1,0 +1,19 @@
+# slskd - Soulseek client (web UI)
+# Host: london-b (100.84.65.101)
+# Data: /root/slskd (app), /hdd/music/slskd (downloads)
+# Status: Currently stopped (not set to auto-restart)
+
+services:
+  slskd:
+    image: slskd/slskd:latest
+    container_name: slskd
+    restart: unless-stopped
+    ports:
+      - "5030:5030"   # HTTP
+      - "5031:5031"   # HTTPS
+      - "50300:50300"  # Soulseek listen port
+    environment:
+      SLSKD_REMOTE_CONFIGURATION: "true"
+    volumes:
+      - /root/slskd:/app
+      - /hdd/music/slskd:/app/downloads

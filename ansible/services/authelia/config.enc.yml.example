@@ -1,0 +1,10 @@
+# Example: services/authelia/config.enc.yml
+# Authelia secrets — encrypt with: sops -e -i config.enc.yml
+---
+jwt_secret: CHANGEME
+session_secret: CHANGEME
+storage_encryption_key: CHANGEME
+lldap_admin_password: CHANGEME
+mariadb_root_password: CHANGEME
+mariadb_authelia_password: CHANGEME
+oidc_hmac_secret: CHANGEME

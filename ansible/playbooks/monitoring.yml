@@ -1,0 +1,95 @@
+---
+# Deploy monitoring stack to london-a (Prometheus + Grafana).
+# Usage: ansible-playbook playbooks/monitoring.yml
+#        ansible-playbook playbooks/monitoring.yml --check --diff
+
+- name: "Monitoring stack (london-a)"
+  hosts: london-a
+  pre_tasks:
+    - name: Load secrets
+      ansible.builtin.include_vars:
+        file: "{{ playbook_dir }}/../group_vars/all/secrets.yaml"
+      no_log: true
+  tasks:
+    - name: Check for Prometheus config
+      delegate_to: localhost
+      ansible.builtin.stat:
+        path: "{{ playbook_dir }}/../services/prometheus/prometheus.yml"
+      register: prometheus_config
+
+    - name: Deploy Prometheus config
+      ansible.builtin.copy:
+        src: "{{ playbook_dir }}/../services/prometheus/prometheus.yml"
+        dest: /usr/local/etc/prometheus.yml
+        mode: '0644'
+        backup: true
+      when: prometheus_config.stat.exists
+      notify: Restart prometheus
+
+    - name: Deploy Prometheus alerting rules
+      ansible.builtin.copy:
+        src: "{{ playbook_dir }}/../services/prometheus/rules/"
+        dest: /usr/local/etc/prometheus/rules/
+        mode: '0644'
+      failed_when: false
+      notify: Restart prometheus
+
+    - name: Ensure unified_alerting section exists in Grafana config
+      ansible.builtin.lineinfile:
+        path: /usr/local/etc/grafana/grafana.ini
+        regexp: '^\[unified_alerting\]'
+        line: '[unified_alerting]'
+      notify: Restart grafana
+
+    - name: Allow provenance status change in Grafana
+      ansible.builtin.lineinfile:
+        path: /usr/local/etc/grafana/grafana.ini
+        regexp: '^allow_prov_status_change'
+        insertafter: '^\[unified_alerting\]'
+        line: 'allow_prov_status_change = true'
+      notify: Restart grafana
+
+    - name: Deploy Grafana dashboards
+      ansible.posix.synchronize:
+        src: "{{ playbook_dir }}/../services/grafana/dashboards/"
+        dest: /usr/local/etc/grafana/dashboards/
+      failed_when: false
+
+    - name: Ensure provisioning dir exists
+      ansible.builtin.file:
+        path: "{{ grafana_provisioning_dir }}"
+        state: directory
+        mode: '0755'
+
+    - name: Ensure alerting dir exists
+      ansible.builtin.file:
+        path: "{{ grafana_provisioning_dir }}/alerting"
+        state: directory
+        mode: '0755'
+
+    - name: Deploy Grafana provisioning
+      ansible.posix.synchronize:
+        src: "{{ playbook_dir }}/../services/grafana/provisioning/"
+        dest: "{{ grafana_provisioning_dir }}/"
+      failed_when: false
+
+    - name: Template contact points with PagerDuty key
+      ansible.builtin.template:
+        src: "{{ playbook_dir }}/../services/grafana/provisioning/alerting/contact-points.yml"
+        dest: "{{ grafana_provisioning_dir }}/alerting/contact-points.yml"
+        mode: '0640'
+        owner: root
+        group: grafana
+      no_log: true
+      notify: Restart grafana
+
+  handlers:
+    - name: Restart prometheus
+      ansible.builtin.service:
+        name: prometheus
+        state: restarted
+
+    - name: Restart grafana
+      ansible.builtin.service:
+        name: grafana
+        state: restarted

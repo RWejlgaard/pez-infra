@@ -1,0 +1,53 @@
+# Terraform
+*.tfstate
+*.tfstate.backup
+*.tfstate.*.backup
+.terraform/
+.terraform.lock.hcl
+crash.log
+override.tf
+override.tf.json
+*_override.tf
+*_override.tf.json
+
+# Ansible
+*.retry
+
+# Secrets — never commit plaintext secrets
+*.key
+*.pem
+*.crt
+*.p12
+*.pfx
+.vault_pass
+.vault-password
+secrets.yml
+secrets.yaml
+vault.yml
+vault.yaml
+**/secret.env
+**/.env.secret
+
+# SOPS (encrypted files are OK, but age keys are not)
+keys.txt
+*.agekey
+
+# Editor / OS
+.vscode/
+.idea/
+*.swp
+*.swo
+*~
+.DS_Store
+Thumbs.db
+
+# Python
+__pycache__/
+*.pyc
+.venv/
+venv/
+
+# Misc
+*.log
+*.bak
+*.tmp

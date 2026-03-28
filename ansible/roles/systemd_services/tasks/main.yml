@@ -1,0 +1,22 @@
+---
+# Deploy custom systemd unit files from the repo.
+# Looks for unit files in services/<name>/<name>.service
+
+- name: Copy systemd unit files
+  ansible.builtin.copy:
+    src: "{{ playbook_dir }}/services/{{ item }}/{{ item }}.service"
+    dest: "/etc/systemd/system/{{ item }}.service"
+    mode: '0644'
+  loop: "{{ systemd_services | default([]) }}"
+  register: systemd_services_unit_files
+  failed_when: false
+  notify: Reload systemd daemon
+
+- name: Enable and start systemd services
+  ansible.builtin.systemd:
+    name: "{{ item.item }}"
+    state: started
+    enabled: true
+  loop: "{{ systemd_services_unit_files.results | default([]) }}"
+  when: item is not failed
+  failed_when: false

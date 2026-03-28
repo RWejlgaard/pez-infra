@@ -1,0 +1,35 @@
+# Miniflux - RSS reader
+# Host: london-b (100.84.65.101)
+# Data: Docker volume (miniflux-db)
+# Access: https://rss.pez.sh (via Caddy reverse proxy on helsinki-a)
+
+services:
+  miniflux-db:
+    image: postgres:15-alpine
+    container_name: miniflux-db
+    restart: unless-stopped
+    volumes:
+      - miniflux-db:/var/lib/postgresql/data
+    environment:
+      POSTGRES_DB: miniflux
+      POSTGRES_USER: miniflux
+      POSTGRES_PASSWORD: "${MINIFLUX_DB_PASSWORD}"
+
+  miniflux:
+    image: miniflux/miniflux:latest
+    container_name: miniflux
+    restart: unless-stopped
+    depends_on:
+      - miniflux-db
+    ports:
+      - "100.84.65.101:8181:8080"
+    environment:
+      DATABASE_URL: "postgres://miniflux:${MINIFLUX_DB_PASSWORD}@miniflux-db/miniflux?sslmode=disable"
+      RUN_MIGRATIONS: "1"
+      CREATE_ADMIN: "1"
+      ADMIN_USERNAME: pez
+      ADMIN_PASSWORD: "${MINIFLUX_ADMIN_PASSWORD}"
+      BASE_URL: https://rss.pez.sh
+
+volumes:
+  miniflux-db:

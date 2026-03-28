@@ -1,0 +1,17 @@
+# Jellyseerr - Media request management
+# Host: london-b (100.84.65.101)
+# Data: /var/share/jellyseer
+# Access: https://requests.pez.sh (via Caddy reverse proxy on helsinki-a)
+
+services:
+  jellyseerr:
+    image: fallenbagel/jellyseerr:latest
+    container_name: jellyseer
+    restart: always
+    ports:
+      - "5056:5055"
+    environment:
+      LOG_LEVEL: debug
+      TZ: Europe/London
+    volumes:
+      - /var/share/jellyseer:/app/config

@@ -1,0 +1,68 @@
+---
+# Reboot a specific host and wait for it to come back.
+# Usage: ansible-playbook playbooks/reboot.yml --limit <hostname>
+#
+# Safety: copenhagen-a has netplan pre-flight check.
+#         london-b should NOT be rebooted without manual approval.
+
+- name: Reboot host safely
+  hosts: all
+  ignore_unreachable: true
+  tasks:
+    - name: SAFETY — refuse unscoped reboot
+      ansible.builtin.fail:
+        msg: >
+          ABORT: You must use --limit <hostname> to reboot a specific host.
+          Running against all hosts is not allowed.
+      when: play_hosts | length > 1
+
+    - name: SAFETY — london-b requires manual approval
+      ansible.builtin.pause:
+        prompt: >
+          WARNING: london-b is the primary storage server. Rebooting will
+          take down ZFS pools and all Docker services. Type 'yes' to confirm.
+      register: london_b_confirm
+      when: inventory_hostname == 'london-b'
+
+    - name: Abort if london-b not confirmed
+      ansible.builtin.fail:
+        msg: "Reboot of london-b was not confirmed."
+      when: inventory_hostname == 'london-b' and london_b_confirm.user_input != 'yes'
+
+    - name: Check netplan config (copenhagen-a)
+      ansible.builtin.command: netplan get all
+      register: netplan_config
+      failed_when: false
+      changed_when: false
+      when: inventory_hostname == 'copenhagen-a'
+
+    - name: Verify copenhagen-a static IP
+      ansible.builtin.assert:
+        that:
+          - "'192.168.0.251' in netplan_config.stdout"
+        fail_msg: >
+          ABORT: copenhagen-a netplan doesn't show expected static IP
+          192.168.0.251. Check netplan config before rebooting.
+        success_msg: "copenhagen-a netplan OK — static IP present."
+      when: inventory_hostname == 'copenhagen-a'
+
+    - name: Reboot
+      ansible.builtin.reboot:
+        reboot_timeout: 300
+        connect_timeout: 10
+        pre_reboot_delay: 5
+        post_reboot_delay: 15
+        test_command: uptime
+
+    - name: Verify SSH is back
+      ansible.builtin.wait_for_connection:
+        timeout: 120
+
+    - name: Show uptime after reboot
+      ansible.builtin.command: uptime
+      register: uptime_result
+      changed_when: false
+
+    - name: Post-reboot uptime
+      ansible.builtin.debug:
+        msg: "{{ inventory_hostname }} is back: {{ uptime_result.stdout }}"

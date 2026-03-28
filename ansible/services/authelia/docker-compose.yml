@@ -1,0 +1,77 @@
+# Authelia - SSO/authentication portal with LLDAP + MariaDB
+# Host: helsinki-a (100.67.6.27)
+# Data: /root/authelia/
+# Access: https://auth.pez.sh (via Caddy forward_auth)
+
+services:
+  authelia:
+    container_name: authelia
+    image: docker.io/authelia/authelia:latest
+    restart: unless-stopped
+    ports:
+      - '127.0.0.1:9091:9091'
+    environment:
+      AUTHELIA_IDENTITY_VALIDATION_RESET_PASSWORD_JWT_SECRET_FILE: /secrets/JWT_SECRET
+      AUTHELIA_SESSION_SECRET_FILE: /secrets/SESSION_SECRET
+      AUTHELIA_STORAGE_ENCRYPTION_KEY_FILE: /secrets/STORAGE_ENCRYPTION_KEY
+      AUTHELIA_STORAGE_MYSQL_PASSWORD_FILE: /secrets/MYSQL_PASSWORD
+      TZ: UTC
+    volumes:
+      - /root/authelia/config:/config
+      - /root/authelia/secrets:/secrets
+    depends_on:
+      mariadb:
+        condition: service_healthy
+      lldap:
+        condition: service_started
+    networks:
+      - authelia
+
+  mariadb:
+    container_name: authelia-mariadb
+    image: docker.io/library/mariadb:11
+    restart: unless-stopped
+    environment:
+      MYSQL_ROOT_PASSWORD_FILE: /run/secrets/MYSQL_ROOT_PASSWORD
+      MYSQL_DATABASE: authelia
+      MYSQL_USER: authelia
+      MYSQL_PASSWORD_FILE: /run/secrets/MYSQL_PASSWORD
+      TZ: UTC
+    volumes:
+      - /root/authelia/mariadb:/var/lib/mysql
+      - /root/authelia/secrets/MYSQL_ROOT_PASSWORD:/run/secrets/MYSQL_ROOT_PASSWORD:ro
+      - /root/authelia/secrets/MYSQL_PASSWORD:/run/secrets/MYSQL_PASSWORD:ro
+    networks:
+      - authelia
+    healthcheck:
+      test: ["CMD", "healthcheck.sh", "--connect", "--innodb_initialized"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+      start_period: 30s
+
+  lldap:
+    container_name: authelia-lldap
+    image: docker.io/lldap/lldap:latest
+    restart: unless-stopped
+    ports:
+      - '17170:17170'  # Web UI
+      - '3890:3890'    # LDAP
+    environment:
+      UID: '1000'
+      GID: '1000'
+      TZ: UTC
+      LLDAP_LDAP_BASE_DN: dc=pez,dc=sh
+      LLDAP_LDAP_USER_DN: admin
+      LLDAP_LDAP_USER_PASS_FILE: /secrets/LLDAP_ADMIN_PASSWORD
+      LLDAP_JWT_SECRET_FILE: /secrets/LLDAP_JWT_SECRET
+    volumes:
+      - /root/authelia/lldap:/data
+      - /root/authelia/secrets/LLDAP_ADMIN_PASSWORD:/secrets/LLDAP_ADMIN_PASSWORD:ro
+      - /root/authelia/secrets/LLDAP_JWT_SECRET:/secrets/LLDAP_JWT_SECRET:ro
+    networks:
+      - authelia
+
+networks:
+  authelia:
+    driver: bridge

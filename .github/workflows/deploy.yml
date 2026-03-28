@@ -1,0 +1,82 @@
+name: Deploy (manual)
+
+on:
+  workflow_dispatch:
+    inputs:
+      target:
+        description: 'Target host (e.g. helsinki-a, london-b, all)'
+        required: true
+        type: string
+      playbook:
+        description: 'Ansible playbook to run (e.g. site.yml, update.yml)'
+        required: true
+        type: string
+      dry_run:
+        description: 'Dry run (--check mode)'
+        required: false
+        type: boolean
+        default: true
+
+# Requires these repository secrets:
+#   TAILSCALE_AUTHKEY  — Tailscale auth key for mesh access
+#   SSH_PRIVATE_KEY    — SSH key authorized on target hosts
+#   AGE_SECRET_KEY     — age private key for SOPS decryption
+
+jobs:
+  deploy:
+    name: Deploy to ${{ inputs.target }}
+    runs-on: ubuntu-latest
+    environment: production  # requires manual approval in repo settings
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Set up Tailscale
+        uses: tailscale/github-action@v3
+        with:
+          authkey: ${{ secrets.TAILSCALE_AUTHKEY }}
+
+      - name: Set up SSH key
+        run: |
+          mkdir -p ~/.ssh
+          echo "${{ secrets.SSH_PRIVATE_KEY }}" > ~/.ssh/id_ed25519
+          chmod 600 ~/.ssh/id_ed25519
+          ssh-keyscan -H 100.67.6.27 100.84.65.101 100.122.219.41 100.117.235.28 100.89.206.60 100.115.45.53 >> ~/.ssh/known_hosts 2>/dev/null || true
+
+      - name: Install tools
+        run: |
+          pip install ansible
+          wget -qO /tmp/sops.deb https://github.com/getsops/sops/releases/download/v3.9.4/sops_3.9.4_amd64.deb
+          sudo dpkg -i /tmp/sops.deb
+
+      - name: Decrypt secrets
+        env:
+          SOPS_AGE_KEY: ${{ secrets.AGE_SECRET_KEY }}
+        run: |
+          # Decrypt all .enc. files to their plaintext counterparts
+          find . -name '*.enc.yml' -o -name '*.enc.yaml' -o -name '*.enc.env' | while read f; do
+            out="${f/.enc/}"
+            sops -d "$f" > "$out"
+            echo "Decrypted: $f -> $out"
+          done
+
+      - name: Run playbook
+        working-directory: ansible/
+        env:
+          ANSIBLE_HOST_KEY_CHECKING: "false"
+        run: |
+          PLAYBOOK="${{ inputs.playbook }}"
+          # Normalize: strip prefix/suffix, then re-add as needed
+          PLAYBOOK="${PLAYBOOK#playbooks/}"
+          PLAYBOOK="${PLAYBOOK%.yml}.yml"
+          if [ "$PLAYBOOK" != "deploy.yml" ]; then
+            PLAYBOOK="playbooks/$PLAYBOOK"
+          fi
+
+          ARGS=""
+          if [ "${{ inputs.target }}" != "all" ]; then
+            ARGS="--limit ${{ inputs.target }}"
+          fi
+          if [ "${{ inputs.dry_run }}" = "true" ]; then
+            ARGS="$ARGS --check --diff"
+          fi
+          ansible-playbook "$PLAYBOOK" $ARGS

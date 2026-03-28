@@ -1,0 +1,23 @@
+apiVersion: 1
+
+# Contact points — defines where alerts are sent.
+# PagerDuty key is managed via Grafana UI / environment variable; do not commit secrets here.
+
+contactPoints:
+  - orgId: 1
+    name: PagerDuty
+    receivers:
+      - uid: bf0ukmhpefshsc
+        type: pagerduty
+        settings:
+          integrationKey: "{{ grafana_pagerduty_integration_key }}"
+        disableResolveMessage: false
+
+  - orgId: 1
+    name: email
+    receivers:
+      - uid: email-receiver
+        type: email
+        settings:
+          addresses: pez@pez.sh
+        disableResolveMessage: false

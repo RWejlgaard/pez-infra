@@ -1,0 +1,16 @@
+---
+# Show running Docker containers on all docker hosts.
+# Usage: ansible-playbook playbooks/docker-status.yml
+
+- name: Docker container status
+  hosts: docker_hosts
+  ignore_unreachable: true
+  tasks:
+    - name: Run docker ps
+      ansible.builtin.command: docker ps --format "table {{ '{{' }}.Names{{ '}}' }}\t{{ '{{' }}.Status{{ '}}' }}\t{{ '{{' }}.Ports{{ '}}' }}"
+      register: docker_ps
+      changed_when: false
+
+    - name: Show containers on {{ inventory_hostname }}
+      ansible.builtin.debug:
+        msg: "{{ docker_ps.stdout_lines }}"

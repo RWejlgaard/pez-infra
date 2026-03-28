@@ -1,0 +1,48 @@
+---
+# Install node_exporter for Prometheus monitoring.
+# Uses system packages on Linux, pkg on FreeBSD.
+
+- name: Install prometheus-node-exporter (Debian)
+  ansible.builtin.apt:
+    name: prometheus-node-exporter
+    state: present
+  when: ansible_facts["os_family"] == "Debian"
+
+- name: Install prometheus-node-exporter (Alpine)
+  community.general.apk:
+    name: prometheus-node-exporter
+    state: present
+  when: ansible_facts["os_family"] == "Alpine"
+
+- name: Enable and start node-exporter (Debian)
+  ansible.builtin.service:
+    name: prometheus-node-exporter
+    state: started
+    enabled: true
+  when: ansible_facts["os_family"] == "Debian"
+
+- name: Enable and start node-exporter (Alpine)
+  ansible.builtin.service:
+    name: node-exporter
+    state: started
+    enabled: true
+  when: ansible_facts["os_family"] == "Alpine"
+
+- name: Install node_exporter (FreeBSD)
+  community.general.pkgng:
+    name: node_exporter
+    state: present
+  when: ansible_facts["os_family"] == "FreeBSD"
+
+- name: Enable node_exporter (FreeBSD)
+  ansible.builtin.lineinfile:
+    path: /etc/rc.conf
+    regexp: '^node_exporter_enable='
+    line: 'node_exporter_enable="YES"'
+  when: ansible_facts["os_family"] == "FreeBSD"
+
+- name: Start node_exporter (FreeBSD)
+  ansible.builtin.service:
+    name: node_exporter
+    state: started
+  when: ansible_facts["os_family"] == "FreeBSD"

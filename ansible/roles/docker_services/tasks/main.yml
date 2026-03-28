@@ -1,0 +1,32 @@
+---
+# Deploy Docker Compose services from the repo's services/ directory.
+# Expects docker_services list in host_vars and compose files in services/<name>/.
+
+- name: Copy docker-compose files
+  ansible.builtin.copy:
+    src: "{{ playbook_dir }}/services/{{ item }}/docker-compose.yml"
+    dest: "/opt/docker/{{ item }}/docker-compose.yml"
+    mode: '0644'
+  loop: "{{ docker_services | default([]) }}"
+  register: docker_services_compose_files
+  failed_when: false
+
+- name: Copy service config files
+  ansible.posix.synchronize:
+    src: "{{ playbook_dir }}/services/{{ item }}/"
+    dest: "/opt/docker/{{ item }}/"
+    rsync_opts:
+      - "--exclude=docker-compose.yml"
+      - "--exclude=README.md"
+      - "--exclude=.gitkeep"
+  loop: "{{ docker_services | default([]) }}"
+  failed_when: false
+
+- name: Start/update docker compose services
+  community.docker.docker_compose_v2:
+    project_src: "/opt/docker/{{ item.item }}"
+    state: present
+    pull: policy
+  loop: "{{ docker_services_compose_files.results | default([]) }}"
+  when: item is not failed and item is changed
+  failed_when: false

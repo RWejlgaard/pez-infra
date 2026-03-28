@@ -1,0 +1,12 @@
+---
+host_role: gaming
+host_description: "Gaming servers (Minecraft, WoW/MaNGOS)"
+host_location: "Copenhagen"
+
+docker_services:
+  - minecraft
+
+# MaNGOS runs as systemd services, not Docker
+systemd_services:
+  - mangos-realmd
+  - mangos-world

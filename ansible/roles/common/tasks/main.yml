@@ -1,0 +1,102 @@
+---
+# Common baseline for all Linux hosts.
+# Installs core packages, configures SSH, sets up the shell environment.
+
+- name: Update apt cache
+  ansible.builtin.apt:
+    update_cache: true
+    cache_valid_time: 3600
+  when: ansible_facts["os_family"] == "Debian"
+
+- name: Install baseline packages (Debian)
+  ansible.builtin.apt:
+    name:
+      - curl
+      - wget
+      - git
+      - htop
+      - tmux
+      - vim
+      - jq
+      - unzip
+      - fish
+      - rsync
+      - fail2ban
+      - ufw
+    state: present
+  when: ansible_facts["os_family"] == "Debian"
+
+- name: Install baseline packages (Alpine)
+  community.general.apk:
+    name:
+      - curl
+      - wget
+      - git
+      - htop
+      - tmux
+      - vim
+      - jq
+      - fish
+      - rsync
+      - shadow
+      - py3-requests
+    state: present
+  when: ansible_facts["os_family"] == "Alpine"
+
+- name: Install baseline packages (FreeBSD)
+  community.general.pkgng:
+    name:
+      - curl
+      - wget
+      - git
+      - htop
+      - tmux
+      - vim
+      - jq
+      - rsync
+    state: present
+  when: ansible_facts["os_family"] == "FreeBSD"
+
+- name: Install fish shell
+  ansible.builtin.package:
+    name: fish
+    state: present
+  when: inventory_hostname != 'london-a'
+
+- name: Get fish shell path
+  ansible.builtin.command: which fish
+  changed_when: false
+  register: common_fish_path
+  when: inventory_hostname != 'london-a'
+
+- name: Set fish as default shell
+  ansible.builtin.user:
+    name: root
+    shell: "{{ common_fish_path.stdout }}"
+  when: inventory_hostname != 'london-a'
+
+- name: Ensure SSH directory exists
+  ansible.builtin.file:
+    path: /root/.ssh
+    state: directory
+    mode: '0700'
+
+- name: Harden SSH config
+  ansible.builtin.lineinfile:
+    path: /etc/ssh/sshd_config
+    regexp: "{{ item.regexp }}"
+    line: "{{ item.line }}"
+    state: present
+  loop:
+    - { regexp: '^#?PermitRootLogin', line: 'PermitRootLogin prohibit-password' }
+    - { regexp: '^#?PasswordAuthentication', line: 'PasswordAuthentication no' }
+    - { regexp: '^#?X11Forwarding', line: 'X11Forwarding no' }
+  notify: Restart sshd
+  when: ansible_facts["os_family"] != "FreeBSD"
+
+- name: Enable fail2ban (Debian)
+  ansible.builtin.service:
+    name: fail2ban
+    state: started
+    enabled: true
+  when: ansible_facts["os_family"] == "Debian"
