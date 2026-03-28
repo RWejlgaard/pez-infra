@@ -1,6 +1,6 @@
 name: PR Test
 
-on:
+"on":
   pull_request:
     branches:
       - master
