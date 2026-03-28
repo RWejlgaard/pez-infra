@@ -8,9 +8,6 @@ docker_services:
   - jellyseerr
   - navidrome
   - slskd
-  - authelia
-  - forgejo
-  - bitwarden
   - miniflux
   - smartctl-exporter
   - plex-exporter
