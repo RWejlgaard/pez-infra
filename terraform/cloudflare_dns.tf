@@ -424,7 +424,7 @@ resource "cloudflare_dns_record" "dmarc" {
   zone_id = cloudflare_zone.pez-sh.id
   name    = "_dmarc"
   type    = "TXT"
-  content = "v=DMARC1; p=none; rua=mailto:pez@pez.sh"
+  content = "v=DMARC1; p=quarantine; rua=mailto:pez@pez.sh; adkim=r; aspf=r"
   ttl     = 1
 }
 
