@@ -8,4 +8,4 @@ rules:
     allowed-values: ["true", "false"]
 
 ignore:
-  - group_vars/all/secrets.enc.yaml
+  - "**/*.enc.*"
