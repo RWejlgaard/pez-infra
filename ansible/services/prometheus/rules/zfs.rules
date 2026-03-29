@@ -1,0 +1,29 @@
+groups:
+- name: zfs
+  rules:
+    - alert: ZfsPoolDegraded
+      expr: node_zfs_zpool_state{state="degraded"} == 1
+      for: 5m
+      labels:
+        severity: warning
+      annotations:
+        summary: "ZFS pool {{ $labels.zpool }} is degraded on {{ $labels.instance }}"
+        description: "Pool {{ $labels.zpool }} on {{ $labels.instance }} has entered a degraded state. Check disk health immediately."
+
+    - alert: ZfsPoolFaulted
+      expr: node_zfs_zpool_state{state="faulted"} == 1
+      for: 1m
+      labels:
+        severity: critical
+      annotations:
+        summary: "ZFS pool {{ $labels.zpool }} is FAULTED on {{ $labels.instance }}"
+        description: "Pool {{ $labels.zpool }} on {{ $labels.instance }} is faulted. Data may be at risk."
+
+    - alert: ZfsPoolOffline
+      expr: node_zfs_zpool_state{state="offline"} == 1
+      for: 5m
+      labels:
+        severity: warning
+      annotations:
+        summary: "ZFS pool {{ $labels.zpool }} is offline on {{ $labels.instance }}"
+        description: "Pool {{ $labels.zpool }} on {{ $labels.instance }} is offline."

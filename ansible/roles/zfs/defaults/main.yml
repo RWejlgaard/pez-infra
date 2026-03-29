@@ -1,0 +1,15 @@
+---
+# ZFS management defaults
+
+# List of ZFS pools to manage scrubs for.
+# Override per-host in host_vars.
+zfs_pools: []
+
+# Scrub schedule (cron format).
+# Default: weekly on Sunday at noon.
+zfs_scrub_weekday: "0"    # 0 = Sunday
+zfs_scrub_hour: "12"
+zfs_scrub_minute: "0"
+
+# Whether to enable ZFS scrub scheduling.
+zfs_scrub_enabled: true
