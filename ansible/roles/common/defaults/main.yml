@@ -1,0 +1,7 @@
+---
+# UFW firewall defaults
+# Override ufw_allowed_ports in host_vars for public-facing services.
+ufw_enabled: true
+ufw_allowed_ports: []
+#   - { port: 80, proto: tcp, comment: "HTTP" }
+#   - { port: 443, proto: tcp, comment: "HTTPS" }

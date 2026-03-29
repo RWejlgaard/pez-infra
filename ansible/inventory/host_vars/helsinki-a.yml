@@ -9,3 +9,7 @@ docker_services:
   - authelia
   - forgejo
   - bitwarden
+
+ufw_allowed_ports:
+  - { port: 80, proto: tcp, comment: "HTTP" }
+  - { port: 443, proto: tcp, comment: "HTTPS" }

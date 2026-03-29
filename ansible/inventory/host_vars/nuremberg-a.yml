@@ -3,3 +3,5 @@ host_role: mail
 host_description: "Mail server (poste.io)"
 host_location: "Hetzner Cloud"
 ansible_python_interpreter: /usr/bin/python3
+# NOTE: Alpine host — UFW tasks are Debian-only.
+# Firewall rules for mail ports (25,465,587,993,143,80,443) managed separately.
