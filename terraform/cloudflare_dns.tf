@@ -9,15 +9,6 @@ resource "cloudflare_zone" "pez-sh" {
 # A Records
 # =============================================================================
 
-resource "cloudflare_dns_record" "ecp-dev-0o9lix" {
-  zone_id = cloudflare_zone.pez-sh.id
-  name    = "0o9lix.ecp-dev"
-  type    = "A"
-  content = "0.0.0.0"
-  proxied = false
-  ttl     = 300
-}
-
 resource "cloudflare_dns_record" "alertmanager" {
   zone_id = cloudflare_zone.pez-sh.id
   name    = "alertmanager"
@@ -54,15 +45,6 @@ resource "cloudflare_dns_record" "bitwarden" {
   ttl     = 1
 }
 
-resource "cloudflare_dns_record" "chimera" {
-  zone_id = cloudflare_zone.pez-sh.id
-  name    = "chimera"
-  type    = "A"
-  content = "13.43.223.167"
-  proxied = false
-  ttl     = 1
-}
-
 resource "cloudflare_dns_record" "cloud" {
   zone_id = cloudflare_zone.pez-sh.id
   name    = "cloud"
@@ -86,15 +68,6 @@ resource "cloudflare_dns_record" "git" {
   name    = "git"
   type    = "A"
   content = "65.108.48.44"
-  proxied = false
-  ttl     = 1
-}
-
-resource "cloudflare_dns_record" "gopher" {
-  zone_id = cloudflare_zone.pez-sh.id
-  name    = "gopher"
-  type    = "A"
-  content = "83.94.248.182"
   proxied = false
   ttl     = 1
 }
@@ -410,45 +383,5 @@ resource "cloudflare_dns_record" "root-txt-spf" {
   name    = "@"
   type    = "TXT"
   content = "v=spf1 ip4:167.235.134.154 ip6:2a01:4f8:1c1e:9c53::1 -all"
-  ttl     = 1
-}
-
-resource "cloudflare_dns_record" "root-txt-protonmail" {
-  zone_id = cloudflare_zone.pez-sh.id
-  name    = "@"
-  type    = "TXT"
-  content = "protonmail-verification=66cf5eff60c61c46a0d36b108c5cfbddc4f2eede"
-  ttl     = 1
-}
-
-resource "cloudflare_dns_record" "root-txt-keybase" {
-  zone_id = cloudflare_zone.pez-sh.id
-  name    = "@"
-  type    = "TXT"
-  content = "keybase-site-verification=ur7GwlgtEEPgIZ-2P0fyFsniuu6YwdkluO7N6LkymK0"
-  ttl     = 1
-}
-
-resource "cloudflare_dns_record" "root-txt-ms" {
-  zone_id = cloudflare_zone.pez-sh.id
-  name    = "@"
-  type    = "TXT"
-  content = "MS=ms99554544"
-  ttl     = 300
-}
-
-resource "cloudflare_dns_record" "root-txt-google" {
-  zone_id = cloudflare_zone.pez-sh.id
-  name    = "@"
-  type    = "TXT"
-  content = "google-site-verification=BZD6ITg5SFnc7mQcb9KGkPwhP9gQKDZgw4nrFOZ0Y0w"
-  ttl     = 1
-}
-
-resource "cloudflare_dns_record" "root-txt-apple" {
-  zone_id = cloudflare_zone.pez-sh.id
-  name    = "@"
-  type    = "TXT"
-  content = "apple-domain=1zXuOydmezm51GT8"
   ttl     = 1
 }
