@@ -1,0 +1,14 @@
+# {{ ansible_managed }}
+# iptables rules for {{ inventory_hostname }}
+#
+# Docker and Tailscale manage their own chains automatically.
+# This file captures non-Docker, non-Tailscale rules only.
+#
+# Mail ports (25,80,110,143,443,465,587,993,995) are exposed via
+# Docker port mappings in the poste-io docker-compose.yml — not here.
+
+*filter
+:INPUT ACCEPT [0:0]
+:FORWARD ACCEPT [0:0]
+:OUTPUT ACCEPT [0:0]
+COMMIT

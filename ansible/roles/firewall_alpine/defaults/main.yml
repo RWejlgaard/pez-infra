@@ -1,0 +1,9 @@
+---
+# firewall_alpine defaults
+
+# Enable iptables persistence via OpenRC
+firewall_alpine_persist: true
+
+# fail2ban SSH protection
+firewall_alpine_fail2ban_enabled: true
+firewall_alpine_fail2ban_maxretry: 10
