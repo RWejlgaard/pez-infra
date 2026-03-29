@@ -109,7 +109,7 @@
     default: deny
   when:
     - ansible_facts["os_family"] == "Debian"
-    - ufw_enabled | bool
+    - common_ufw_enabled | bool
   notify: Reload ufw
 
 - name: Set UFW default allow outgoing
@@ -118,18 +118,18 @@
     default: allow
   when:
     - ansible_facts["os_family"] == "Debian"
-    - ufw_enabled | bool
+    - common_ufw_enabled | bool
   notify: Reload ufw
 
 - name: Allow all traffic on Tailscale interface
   community.general.ufw:
     rule: allow
-    interface_or_direction: in
+    direction: in
     interface: tailscale0
     comment: "Tailscale mesh - allow all"
   when:
     - ansible_facts["os_family"] == "Debian"
-    - ufw_enabled | bool
+    - common_ufw_enabled | bool
   notify: Reload ufw
 
 - name: Allow SSH (safety net)
@@ -140,7 +140,7 @@
     comment: "SSH"
   when:
     - ansible_facts["os_family"] == "Debian"
-    - ufw_enabled | bool
+    - common_ufw_enabled | bool
   notify: Reload ufw
 
 - name: Allow host-specific ports
@@ -149,11 +149,11 @@
     port: "{{ item.port | string }}"
     proto: "{{ item.proto | default('tcp') }}"
     comment: "{{ item.comment | default(omit) }}"
-  loop: "{{ ufw_allowed_ports }}"
+  loop: "{{ common_ufw_allowed_ports }}"
   when:
     - ansible_facts["os_family"] == "Debian"
-    - ufw_enabled | bool
-    - ufw_allowed_ports | length > 0
+    - common_ufw_enabled | bool
+    - common_ufw_allowed_ports | length > 0
   notify: Reload ufw
 
 - name: Enable UFW
@@ -161,4 +161,4 @@
     state: enabled
   when:
     - ansible_facts["os_family"] == "Debian"
-    - ufw_enabled | bool
+    - common_ufw_enabled | bool
