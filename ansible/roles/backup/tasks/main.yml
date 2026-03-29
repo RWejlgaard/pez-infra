@@ -1,0 +1,22 @@
+---
+# Deploy backup script and cron job for rclone-to-B2 backups.
+
+- name: Ensure scripts directory exists
+  ansible.builtin.file:
+    path: /root/scripts
+    state: directory
+    mode: '0755'
+
+- name: Deploy backup script
+  ansible.builtin.copy:
+    src: "{{ playbook_dir }}/scripts/hdd-backup.sh"
+    dest: /root/scripts/backup.sh
+    mode: '0755'
+
+- name: Configure backup cron job
+  ansible.builtin.cron:
+    name: "HDD backup to B2"
+    minute: "0"
+    hour: "22"
+    job: "/root/scripts/backup.sh"
+    user: root
