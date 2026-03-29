@@ -68,7 +68,49 @@ RAIDZ1 tolerates one drive failure per vdev. With this many drives and this much
 | smartctl_exporter | 9633 | (Prometheus scrape) |
 | prom-plex-exporter | — | (Prometheus scrape) |
 
-All services run in Docker. Media is served directly from the ZFS pool.
+### Systemd Services (non-Docker)
+
+The media automation suite and several supporting services run as native systemd units, not in Docker:
+
+| Service | Unit Name | Notes |
+|---------|-----------|-------|
+| Sonarr | sonarr | Package-managed (mono) |
+| Radarr | radarr | /opt/Radarr, custom unit |
+| Prowlarr | prowlarr | /opt/Prowlarr, custom unit |
+| Lidarr | lidarr | /opt/Lidarr, custom unit |
+| Readarr | readarr | /opt/Readarr, custom unit |
+| Whisparr | whisparr | /opt/Whisparr, custom unit (disabled) |
+| Plex | plexmediaserver | Package-managed |
+| Jellyfin | jellyfin | Package-managed |
+| Transmission | transmission-daemon | Package-managed |
+| Samba | smbd | Package-managed |
+| Ollama | ollama | /usr/local/bin, custom unit |
+| Promtail | promtail | Custom unit, ships logs to Loki |
+| Cloudflared | cloudflared | Tunnel to Cloudflare |
+| vsftpd | vsftpd | FTP server for /hdd/ftp |
+| systemd_exporter | systemd_exporter | Ansible-managed |
+| node_exporter | node_exporter | Ansible-managed |
+
+Docker services: Nextcloud AIO, Jellyseerr, Navidrome, slskd, Miniflux, smartctl-exporter, plex-exporter.
+
+### Cron Jobs
+
+| Schedule | Job |
+|----------|-----|
+| Every hour | `/root/scripts/movie-rename-fix.fish` |
+| Midnight daily | `systemctl restart radarr` |
+| Midnight daily | `systemctl restart sonarr` |
+| 22:00 daily | `/root/scripts/backup.sh` (rclone to B2) |
+
+### Samba Shares
+
+| Share | Path | Access |
+|-------|------|--------|
+| HDD | /hdd | pez, root (rw) |
+| Movies | /hdd/movies | public (ro) |
+| TV Shows | /hdd/tv | public (ro) |
+
+Media is served directly from the ZFS pool.
 
 ## Networking
 
