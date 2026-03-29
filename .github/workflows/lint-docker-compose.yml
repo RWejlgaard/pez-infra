@@ -1,14 +1,7 @@
 name: Lint Docker Compose
 
 on:
-  push:
-    paths:
-      - 'ansible/services/**'
-      - '.github/workflows/lint-docker-compose.yml'
   pull_request:
-    paths:
-      - 'ansible/services/**'
-      - '.github/workflows/lint-docker-compose.yml'
 
 jobs:
   compose-lint:

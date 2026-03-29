@@ -1,14 +1,7 @@
 name: Validate Caddyfile
 
 on:
-  push:
-    paths:
-      - 'ansible/services/caddy/**'
-      - '.github/workflows/validate-caddyfile.yml'
   pull_request:
-    paths:
-      - 'ansible/services/caddy/**'
-      - '.github/workflows/validate-caddyfile.yml'
 
 jobs:
   caddy-validate:

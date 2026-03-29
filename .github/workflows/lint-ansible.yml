@@ -2,9 +2,6 @@ name: Lint Ansible
 
 on:
   pull_request:
-    paths:
-      - 'ansible/**'
-      - '.github/workflows/lint-ansible.yml'
 
 jobs:
   ansible-lint:
