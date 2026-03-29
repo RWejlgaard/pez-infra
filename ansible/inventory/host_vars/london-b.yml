@@ -12,6 +12,9 @@ docker_services:
   - smartctl-exporter
   - plex-exporter
 
+zfs_pools:
+  - hdd
+
 common_ufw_allowed_ports:
   - {port: 32400, proto: tcp, comment: "Plex Media Server"}
   - {port: 6881, proto: tcp, comment: "BitTorrent"}

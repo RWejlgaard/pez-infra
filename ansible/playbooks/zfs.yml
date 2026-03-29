@@ -1,0 +1,9 @@
+---
+# Deploy ZFS management (scrub scheduling, monitoring).
+# Usage: ansible-playbook playbooks/zfs.yml
+#        ansible-playbook playbooks/zfs.yml --check --diff
+
+- name: "ZFS management"
+  hosts: zfs_hosts
+  roles:
+    - zfs
