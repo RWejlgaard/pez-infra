@@ -13,7 +13,7 @@ resource "cloudflare_dns_record" "alertmanager" {
   zone_id = cloudflare_zone.pez-sh.id
   name    = "alertmanager"
   type    = "A"
-  content = "65.108.48.44"
+  content = hcloud_server.helsinki-a.ipv4_address
   proxied = false
   ttl     = 1
 }
@@ -22,7 +22,7 @@ resource "cloudflare_dns_record" "apps" {
   zone_id = cloudflare_zone.pez-sh.id
   name    = "apps"
   type    = "A"
-  content = "65.108.48.44"
+  content = hcloud_server.helsinki-a.ipv4_address
   proxied = false
   ttl     = 1
 }
@@ -31,7 +31,7 @@ resource "cloudflare_dns_record" "auth" {
   zone_id = cloudflare_zone.pez-sh.id
   name    = "auth"
   type    = "A"
-  content = "65.108.48.44"
+  content = hcloud_server.helsinki-a.ipv4_address
   proxied = false
   ttl     = 1
 }
@@ -40,7 +40,7 @@ resource "cloudflare_dns_record" "bitwarden" {
   zone_id = cloudflare_zone.pez-sh.id
   name    = "bitwarden"
   type    = "A"
-  content = "65.108.48.44"
+  content = hcloud_server.helsinki-a.ipv4_address
   proxied = false
   ttl     = 1
 }
@@ -49,7 +49,7 @@ resource "cloudflare_dns_record" "cloud" {
   zone_id = cloudflare_zone.pez-sh.id
   name    = "cloud"
   type    = "A"
-  content = "65.108.48.44"
+  content = hcloud_server.helsinki-a.ipv4_address
   proxied = false
   ttl     = 1
 }
@@ -58,7 +58,7 @@ resource "cloudflare_dns_record" "download" {
   zone_id = cloudflare_zone.pez-sh.id
   name    = "download"
   type    = "A"
-  content = "65.108.48.44"
+  content = hcloud_server.helsinki-a.ipv4_address
   proxied = false
   ttl     = 1
 }
@@ -67,7 +67,7 @@ resource "cloudflare_dns_record" "git" {
   zone_id = cloudflare_zone.pez-sh.id
   name    = "git"
   type    = "A"
-  content = "65.108.48.44"
+  content = hcloud_server.helsinki-a.ipv4_address
   proxied = false
   ttl     = 1
 }
@@ -76,7 +76,7 @@ resource "cloudflare_dns_record" "grafana" {
   zone_id = cloudflare_zone.pez-sh.id
   name    = "grafana"
   type    = "A"
-  content = "65.108.48.44"
+  content = hcloud_server.helsinki-a.ipv4_address
   proxied = false
   ttl     = 1
 }
@@ -85,7 +85,7 @@ resource "cloudflare_dns_record" "helsinki-a" {
   zone_id = cloudflare_zone.pez-sh.id
   name    = "helsinki-a"
   type    = "A"
-  content = "65.108.48.44"
+  content = hcloud_server.helsinki-a.ipv4_address
   proxied = false
   ttl     = 1
 }
@@ -94,7 +94,7 @@ resource "cloudflare_dns_record" "jellyfin" {
   zone_id = cloudflare_zone.pez-sh.id
   name    = "jellyfin"
   type    = "A"
-  content = "65.108.48.44"
+  content = hcloud_server.helsinki-a.ipv4_address
   proxied = false
   ttl     = 1
 }
@@ -103,7 +103,7 @@ resource "cloudflare_dns_record" "jellyfin-requests" {
   zone_id = cloudflare_zone.pez-sh.id
   name    = "jellyfin-requests"
   type    = "A"
-  content = "65.108.48.44"
+  content = hcloud_server.helsinki-a.ipv4_address
   proxied = false
   ttl     = 1
 }
@@ -112,7 +112,7 @@ resource "cloudflare_dns_record" "ldap" {
   zone_id = cloudflare_zone.pez-sh.id
   name    = "ldap"
   type    = "A"
-  content = "65.108.48.44"
+  content = hcloud_server.helsinki-a.ipv4_address
   proxied = false
   ttl     = 1
 }
@@ -121,7 +121,7 @@ resource "cloudflare_dns_record" "lidarr" {
   zone_id = cloudflare_zone.pez-sh.id
   name    = "lidarr"
   type    = "A"
-  content = "65.108.48.44"
+  content = hcloud_server.helsinki-a.ipv4_address
   proxied = false
   ttl     = 1
 }
@@ -148,7 +148,7 @@ resource "cloudflare_dns_record" "music" {
   zone_id = cloudflare_zone.pez-sh.id
   name    = "music"
   type    = "A"
-  content = "65.108.48.44"
+  content = hcloud_server.helsinki-a.ipv4_address
   proxied = false
   ttl     = 1
 }
@@ -157,7 +157,7 @@ resource "cloudflare_dns_record" "naveen" {
   zone_id = cloudflare_zone.pez-sh.id
   name    = "naveen"
   type    = "A"
-  content = "65.108.48.44"
+  content = hcloud_server.helsinki-a.ipv4_address
   proxied = false
   ttl     = 1
 }
@@ -166,7 +166,7 @@ resource "cloudflare_dns_record" "root" {
   zone_id = cloudflare_zone.pez-sh.id
   name    = "@"
   type    = "A"
-  content = "65.108.48.44"
+  content = hcloud_server.helsinki-a.ipv4_address
   proxied = false
   ttl     = 1
 }
@@ -175,7 +175,7 @@ resource "cloudflare_dns_record" "plex" {
   zone_id = cloudflare_zone.pez-sh.id
   name    = "plex"
   type    = "A"
-  content = "65.108.48.44"
+  content = hcloud_server.helsinki-a.ipv4_address
   proxied = false
   ttl     = 1
 }
@@ -184,7 +184,7 @@ resource "cloudflare_dns_record" "prometheus" {
   zone_id = cloudflare_zone.pez-sh.id
   name    = "prometheus"
   type    = "A"
-  content = "65.108.48.44"
+  content = hcloud_server.helsinki-a.ipv4_address
   proxied = false
   ttl     = 1
 }
@@ -193,7 +193,7 @@ resource "cloudflare_dns_record" "prowlarr" {
   zone_id = cloudflare_zone.pez-sh.id
   name    = "prowlarr"
   type    = "A"
-  content = "65.108.48.44"
+  content = hcloud_server.helsinki-a.ipv4_address
   proxied = false
   ttl     = 1
 }
@@ -202,7 +202,7 @@ resource "cloudflare_dns_record" "radarr" {
   zone_id = cloudflare_zone.pez-sh.id
   name    = "radarr"
   type    = "A"
-  content = "65.108.48.44"
+  content = hcloud_server.helsinki-a.ipv4_address
   proxied = false
   ttl     = 1
 }
@@ -211,7 +211,7 @@ resource "cloudflare_dns_record" "readarr" {
   zone_id = cloudflare_zone.pez-sh.id
   name    = "readarr"
   type    = "A"
-  content = "65.108.48.44"
+  content = hcloud_server.helsinki-a.ipv4_address
   proxied = false
   ttl     = 1
 }
@@ -220,7 +220,7 @@ resource "cloudflare_dns_record" "request" {
   zone_id = cloudflare_zone.pez-sh.id
   name    = "request"
   type    = "A"
-  content = "65.108.48.44"
+  content = hcloud_server.helsinki-a.ipv4_address
   proxied = false
   ttl     = 1
 }
@@ -229,7 +229,7 @@ resource "cloudflare_dns_record" "rss" {
   zone_id = cloudflare_zone.pez-sh.id
   name    = "rss"
   type    = "A"
-  content = "65.108.48.44"
+  content = hcloud_server.helsinki-a.ipv4_address
   proxied = true
   ttl     = 1
 }
@@ -238,7 +238,7 @@ resource "cloudflare_dns_record" "sonarr" {
   zone_id = cloudflare_zone.pez-sh.id
   name    = "sonarr"
   type    = "A"
-  content = "65.108.48.44"
+  content = hcloud_server.helsinki-a.ipv4_address
   proxied = false
   ttl     = 1
 }
@@ -247,7 +247,7 @@ resource "cloudflare_dns_record" "soulseek" {
   zone_id = cloudflare_zone.pez-sh.id
   name    = "soulseek"
   type    = "A"
-  content = "65.108.48.44"
+  content = hcloud_server.helsinki-a.ipv4_address
   proxied = false
   ttl     = 1
 }
@@ -256,7 +256,7 @@ resource "cloudflare_dns_record" "status" {
   zone_id = cloudflare_zone.pez-sh.id
   name    = "status"
   type    = "A"
-  content = "65.108.48.44"
+  content = hcloud_server.helsinki-a.ipv4_address
   proxied = true
   ttl     = 1
 }
@@ -265,7 +265,7 @@ resource "cloudflare_dns_record" "thiswebsitedoesnotexist" {
   zone_id = cloudflare_zone.pez-sh.id
   name    = "thiswebsitedoesnotexist"
   type    = "A"
-  content = "65.108.48.44"
+  content = hcloud_server.helsinki-a.ipv4_address
   proxied = true
   ttl     = 1
 }
@@ -274,7 +274,7 @@ resource "cloudflare_dns_record" "webdav" {
   zone_id = cloudflare_zone.pez-sh.id
   name    = "webdav"
   type    = "A"
-  content = "65.108.48.44"
+  content = hcloud_server.helsinki-a.ipv4_address
   proxied = false
   ttl     = 1
 }

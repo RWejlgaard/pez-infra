@@ -5,7 +5,13 @@ terraform {
     cloudflare = {
       source  = "cloudflare/cloudflare"
     }
+    
+    hcloud = {
+      source  = "hetznercloud/hcloud"
+      version = "~> 1.45"
+    }
   }
+
 
   backend "s3" {
     bucket                      = "pez-infra-tfstate"
@@ -22,3 +28,8 @@ provider "cloudflare" {
   email   = local.secrets["cloudflare_email"]
   api_token = local.secrets["cloudflare_api_key"]
 }
+
+provider "hcloud" {
+  token = local.secrets["hetzner_token"]
+}
+
