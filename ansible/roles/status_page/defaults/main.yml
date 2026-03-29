@@ -1,0 +1,5 @@
+---
+status_page_script_dest: /usr/local/bin/update-status.sh
+status_page_output_dir: /srv/status
+status_page_log_file: /var/log/update-status.log
+status_page_cron_schedule: "* * * * *"

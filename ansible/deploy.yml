@@ -46,12 +46,13 @@
 # Stage 4: Per-host services
 # ──────────────────────────────────────────────
 
-# helsinki-a: Caddy reverse proxy
-- name: "Stage 4a: Caddy (helsinki-a)"
+# helsinki-a: Caddy reverse proxy + status page
+- name: "Stage 4a: Caddy + status page (helsinki-a)"
   hosts: helsinki-a
-  tags: [services, caddy]
+  tags: [services, caddy, status_page]
   roles:
     - role: caddy
+    - role: status_page
 
 # london-b: Docker services (storage, apps) + backups
 - name: "Stage 4b: Docker services (london-b)"
