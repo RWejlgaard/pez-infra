@@ -54,12 +54,13 @@
     - role: caddy
     - role: status_page
 
-# london-b: Docker services (storage, apps) + backups
-- name: "Stage 4b: Docker services (london-b)"
+# london-b: Docker services (storage, apps) + media stack + backups
+- name: "Stage 4b: Services (london-b)"
   hosts: london-b
   tags: [services, london-b]
   roles:
     - role: docker_services
+    - role: media_stack
     - role: backup
 
 # nuremberg-a: Mail (poste.io via Docker)
