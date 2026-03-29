@@ -11,3 +11,6 @@ docker_services:
   - miniflux
   - smartctl-exporter
   - plex-exporter
+
+common_ufw_allowed_ports:
+  - {port: 32400, proto: tcp, comment: "Plex Media Server"}
