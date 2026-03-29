@@ -130,7 +130,7 @@ resource "cloudflare_dns_record" "mail-a" {
   zone_id = cloudflare_zone.pez-sh.id
   name    = "mail"
   type    = "A"
-  content = "167.235.134.154"
+  content = hcloud_server.nuremberg-a.ipv4_address
   proxied = false
   ttl     = 1
 }
@@ -296,7 +296,7 @@ resource "cloudflare_dns_record" "mail-aaaa" {
   zone_id = cloudflare_zone.pez-sh.id
   name    = "mail"
   type    = "AAAA"
-  content = "2a01:4f8:1c1e:9c53::1"
+  content = hcloud_server.nuremberg-a.ipv6_address
   proxied = false
   ttl     = 1
 }
@@ -382,6 +382,6 @@ resource "cloudflare_dns_record" "root-txt-spf" {
   zone_id = cloudflare_zone.pez-sh.id
   name    = "@"
   type    = "TXT"
-  content = "v=spf1 ip4:167.235.134.154 ip6:2a01:4f8:1c1e:9c53::1 -all"
+  content = "v=spf1 ip4:${hcloud_server.nuremberg-a.ipv4_address} ip6:${hcloud_server.nuremberg-a.ipv6_address} -all"
   ttl     = 1
 }
