@@ -65,6 +65,7 @@
   hosts: nuremberg-a
   tags: [services, mail]
   roles:
+    - role: firewall_alpine
     - role: docker_services
 
 # copenhagen-a: Gaming servers
