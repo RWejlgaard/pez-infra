@@ -1,0 +1,30 @@
+---
+# Deploy the status page update script and cron job.
+# Runs every minute, queries Prometheus for Caddy upstream health,
+# writes status.json + history to /srv/status/.
+
+- name: Ensure status output directory exists
+  ansible.builtin.file:
+    path: "{{ status_page_output_dir }}"
+    state: directory
+    mode: '0755'
+
+- name: Deploy update-status.sh
+  ansible.builtin.copy:
+    src: "{{ playbook_dir }}/services/status-page/update-status.sh"
+    dest: "{{ status_page_script_dest }}"
+    mode: '0755'
+    backup: true
+
+- name: Ensure python3 is installed (for history generation)
+  ansible.builtin.apt:
+    name: python3
+    state: present
+  when: ansible_facts["os_family"] == "Debian"
+
+- name: Set up status page cron job
+  ansible.builtin.cron:
+    name: "update-status-page"
+    job: "{{ status_page_script_dest }} >> {{ status_page_log_file }} 2>&1"
+    minute: "*"
+    user: root
