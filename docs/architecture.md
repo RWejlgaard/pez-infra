@@ -8,44 +8,22 @@ The setup is entirely self-hosted (with the exception of Hetzner Cloud VPSs and 
 
 ## Network Topology
 
-```
-                        ┌──────────────┐
-                        │  Cloudflare  │
-                        │  DNS + CDN   │
-                        │  *.pez.sh    │
-                        └──────┬───────┘
-                               │
-                               │ HTTPS
-                               │
-                  ┌────────────▼────────────┐
-                  │       helsinki-a        │
-                  │    Hetzner Cloud VPS    │
-                  │                         │
-                  │  Caddy (reverse proxy)  │
-                  │  Authelia (SSO)         │
-                  │  Bitwarden              │
-                  │  LLDAP                  │
-                  └────────────┬────────────┘
-                               │
-               ┌───────────────┼───────────────┐
-               │        Tailscale Mesh         │
-               │     (WireGuard-based VPN)     │
-               └───┬───────┬───────┬───────┬───┘
-                   │       │       │       │
-          ┌────────▼──┐ ┌──▼────────┐ ┌────▼───────┐ ┌──▼──────────┐
-          │ london-b  │ │ london-a  │ │nuremberg-a │ │copenhagen-a │
-          │           │ │           │ │            │ │             │
-          │ Storage   │ │ Monitoring│ │ Mail       │ │ Gaming      │
-          │ Media     │ │ Prometheus│ │ poste.io   │ │ Minecraft   │
-          │ Docker    │ │ Grafana   │ │            │ │ WoW/MaNGOS  │
-          │ services  │ │           │ │            │ │             │
-          │ (46T ZFS) │ │ (FreeBSD) │ │ (Alpine)   │ │ (Ubuntu)    │
-          └───────────┘ └───────────┘ └────────────┘ └─────────────┘
+```mermaid
+graph TD
+    CF["<b>Cloudflare</b><br/>DNS + CDN<br/>*.pez.sh"]
+    CF -->|HTTPS| HEL
 
-                                                      ┌─────────────┐
-                                                      │copenhagen-c │
-                                                      │  (idle)     │
-                                                      └─────────────┘
+    HEL["<b>helsinki-a</b><br/>Hetzner Cloud VPS<br/><br/>Caddy (reverse proxy)<br/>Authelia (SSO)<br/>Bitwarden<br/>LLDAP"]
+
+    HEL --> TS["<b>Tailscale Mesh</b><br/>WireGuard-based VPN"]
+
+    TS --> LB["<b>london-b</b><br/>Storage / Media<br/>Docker services<br/>(46T ZFS)"]
+    TS --> LA["<b>london-a</b><br/>Monitoring<br/>Prometheus / Grafana<br/>(FreeBSD)"]
+    TS --> NA["<b>nuremberg-a</b><br/>Mail<br/>poste.io<br/>(Alpine)"]
+    TS --> CA["<b>copenhagen-a</b><br/>Gaming<br/>Minecraft / WoW/MaNGOS<br/>(Ubuntu)"]
+    TS --> CC["<b>copenhagen-c</b><br/>(idle)"]
+
+    style CC stroke-dasharray: 5 5
 ```
 
 ## Traffic Flow
@@ -62,39 +40,27 @@ User → Cloudflare (DNS + TLS) → helsinki-a (Caddy) → Backend (over Tailsca
 4. For protected services, Caddy calls Authelia first (`forward_auth`)
 5. If authenticated (or no auth required), traffic is proxied over Tailscale to the backend
 
-```
-                    ┌─────────────────────────────────────────────┐
-                    │              helsinki-a (Caddy)              │
-                    │                                             │
- radarr.pez.sh ──► │  forward_auth → Authelia ──► london-b:7878  │
-                    │                                             │
- jellyfin.pez.sh ─►│  (no auth) ───────────────► london-b:8096  │
-                    │                                             │
- grafana.pez.sh ──►│  forward_auth → Authelia ──► london-a:3000  │
-                    │                                             │
- auth.pez.sh ─────►│  (local) ────────────────► localhost:9091   │
-                    └─────────────────────────────────────────────┘
+```mermaid
+graph LR
+    subgraph "helsinki-a (Caddy)"
+        A1["forward_auth → Authelia"]
+        A2["(no auth)"]
+        A3["forward_auth → Authelia"]
+        A4["(local)"]
+    end
+
+    R["radarr.pez.sh"] --> A1 --> LB1["london-b:7878"]
+    J["jellyfin.pez.sh"] --> A2 --> LB2["london-b:8096"]
+    G["grafana.pez.sh"] --> A3 --> LA["london-a:3000"]
+    AU["auth.pez.sh"] --> A4 --> LO["localhost:9091"]
 ```
 
 ## Auth Architecture
 
-```
-                    ┌──────────┐
-                    │  Caddy   │
-                    │          │
-                    │ forward_ │
-                    │  auth    │
-                    └────┬─────┘
-                         │
-                    ┌────▼─────┐
-                    │ Authelia │  auth.pez.sh
-                    │  (SSO)   │
-                    └────┬─────┘
-                         │
-                    ┌────▼─────┐
-                    │  LLDAP   │  User directory
-                    │          │
-                    └──────────┘
+```mermaid
+graph TD
+    Caddy["<b>Caddy</b><br/>forward_auth"] --> Authelia["<b>Authelia</b><br/>SSO<br/>auth.pez.sh"]
+    Authelia --> LLDAP["<b>LLDAP</b><br/>User directory"]
 ```
 
 Authelia authenticates against LLDAP (both on helsinki-a). One place to manage users — add or remove someone in LDAP and it propagates to all protected services.
