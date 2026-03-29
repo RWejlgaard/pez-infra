@@ -38,7 +38,7 @@ alertmanager.pez.solutions, alertmanager.pez.sh {
 		uri /api/authz/forward-auth
 		copy_headers Remote-User Remote-Groups Remote-Name Remote-Email
 	}
-        reverse_proxy 100.122.219.41:3000
+        reverse_proxy 100.122.219.41:9093
 }
 
 ## LONDON-B SERVICES ##
