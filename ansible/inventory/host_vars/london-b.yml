@@ -20,4 +20,3 @@ common_ufw_allowed_ports:
   - {port: 6881, proto: tcp, comment: "BitTorrent"}
   - {port: 6881, proto: udp, comment: "BitTorrent"}
   - {port: 445, proto: tcp, comment: "Samba"}
-
