@@ -1,14 +1,7 @@
 name: Validate Terraform
 
 on:
-  push:
-    paths:
-      - 'terraform/**'
-      - '.github/workflows/validate-terraform.yml'
   pull_request:
-    paths:
-      - 'terraform/**'
-      - '.github/workflows/validate-terraform.yml'
 
 jobs:
   tofu-validate:

@@ -6,10 +6,6 @@ on:
     paths:
       - 'terraform/**'
       - '.github/workflows/terraform.yml'
-  pull_request:
-    paths:
-      - 'terraform/**'
-      - '.github/workflows/terraform.yml'
 
 # Requires these repository secrets:
 #   AGE_SECRET_KEY     — age private key for SOPS decryption
