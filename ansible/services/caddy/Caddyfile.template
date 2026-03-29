@@ -45,7 +45,7 @@ prometheus.{{DOMAIN_ALT}}, prometheus.{{DOMAIN_PRIMARY}} {
 # Alertmanager
 alertmanager.{{DOMAIN_ALT}}, alertmanager.{{DOMAIN_PRIMARY}} {
         import authelia
-        reverse_proxy {{LONDON_A_IP}}:3000
+        reverse_proxy {{LONDON_A_IP}}:9093
 }
 
 ## LONDON-B SERVICES ##
