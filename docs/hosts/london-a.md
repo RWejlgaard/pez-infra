@@ -23,12 +23,31 @@ Old gaming PC, now perfectly happy as a monitoring host. Very lightly loaded —
 
 ## Services
 
-| Service | Port | URL |
-|---------|------|-----|
-| Prometheus | 9090 | prometheus.pez.sh |
-| Grafana | 3000 | grafana.pez.sh |
+| Service | Port | Status | Notes |
+|---------|------|--------|-------|
+| Prometheus | 9090 | Active | prometheus.pez.sh |
+| Grafana | 3000 | Active | grafana.pez.sh |
+| node_exporter | 9100 | Active | Metrics exporter |
+| cloudflared | — | Active | Tunnel 168eccae-... proxying Grafana/Prometheus |
+| Tailscale | — | Active | Mesh networking |
 
-Both are behind Authelia (auth handled by Caddy on helsinki-a).
+Both Prometheus and Grafana are behind Authelia (auth handled by Caddy on helsinki-a).
+
+### Unused services (audit 2026-03-30)
+
+These services are enabled in rc.conf but appear unused. Pending cleanup.
+
+| Service | Port | Finding |
+|---------|------|---------|
+| InfluxDB | 8086 (all interfaces!) | Only `_internal` database — never used. Listening on `*:8086` is also a security concern. |
+| Redis | 6379 (localhost) | Empty keyspace, no clients. |
+| PostgreSQL | 5432 (localhost) | Has `pez_vps` database from a defunct VPS management project. Data may need backup before removal. |
+| libvirtd | — | Zero VMs. Installed for the same pez_vps project. |
+
+## ZFS
+
+- Pool: `zroot`
+- Weekly scrub: `0 12 * * sun zpool scrub zroot` (root crontab, not ansible-managed yet)
 
 ## Why FreeBSD
 
