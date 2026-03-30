@@ -32,15 +32,6 @@ prometheus.pez.solutions, prometheus.pez.sh {
         reverse_proxy 100.122.219.41:9090
 }
 
-# Alertmanager
-alertmanager.pez.solutions, alertmanager.pez.sh {
-	forward_auth localhost:9091 {
-		uri /api/authz/forward-auth
-		copy_headers Remote-User Remote-Groups Remote-Name Remote-Email
-	}
-        reverse_proxy 100.122.219.41:9093
-}
-
 ## LONDON-B SERVICES ##
 
 # Jellyfin
@@ -126,11 +117,6 @@ jellyfin-requests.pez.solutions, jellyfin-requests.pez.sh {
         reverse_proxy 100.84.65.101:5056
 }
 
-#WebDAV
-#https://cloud.pez.sh {
-#        reverse_proxy 100.84.65.101:8080
-#}
-
 https://cloud.pez.sh:443 {
 	reverse_proxy 100.84.65.101:11000 # Adjust to match APACHE_PORT and APACHE_IP_BINDING. See https://github.com/nextcloud/all-in-one/blob/main/reverse-proxy.md#adapting-the-sample-web-server-configurations-below
 }
@@ -139,13 +125,7 @@ music.pez.sh {
 	reverse_proxy 100.84.65.101:4533
 }
 
-## LONDON-C SERVICES ##
-
 ## COPENHAGEN-A SERVICES ##
-
-## COPENHAGEN-B SERVICES ##
-
-## COPENHAGEN-C SERVICES ##
 
 ## NUREMBERG-A SERVICES ##
 

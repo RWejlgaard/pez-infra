@@ -9,15 +9,6 @@ resource "cloudflare_zone" "pez-sh" {
 # A Records
 # =============================================================================
 
-resource "cloudflare_dns_record" "alertmanager" {
-  zone_id = cloudflare_zone.pez-sh.id
-  name    = "alertmanager"
-  type    = "A"
-  content = hcloud_server.helsinki-a.ipv4_address
-  proxied = false
-  ttl     = 1
-}
-
 resource "cloudflare_dns_record" "apps" {
   zone_id = cloudflare_zone.pez-sh.id
   name    = "apps"
@@ -270,15 +261,6 @@ resource "cloudflare_dns_record" "thiswebsitedoesnotexist" {
   ttl     = 1
 }
 
-resource "cloudflare_dns_record" "webdav" {
-  zone_id = cloudflare_zone.pez-sh.id
-  name    = "webdav"
-  type    = "A"
-  content = hcloud_server.helsinki-a.ipv4_address
-  proxied = false
-  ttl     = 1
-}
-
 resource "cloudflare_dns_record" "wow" {
   zone_id = cloudflare_zone.pez-sh.id
   name    = "wow"
@@ -317,18 +299,6 @@ resource "cloudflare_dns_record" "public" {
 # =============================================================================
 # HTTPS Records
 # =============================================================================
-
-resource "cloudflare_dns_record" "status-https" {
-  zone_id = cloudflare_zone.pez-sh.id
-  name    = "status"
-  type    = "HTTPS"
-  data = {
-    priority = 100
-    target   = "https://pezsolutions.statuspage.io."
-    value    = "ipv6hint=\"::1\""
-  }
-  ttl = 1
-}
 
 # =============================================================================
 # MX Records
