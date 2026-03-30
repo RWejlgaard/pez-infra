@@ -1,6 +1,7 @@
 ---
 # Install node_exporter for Prometheus monitoring.
 # Uses system packages on Linux, pkg on FreeBSD.
+# Optionally binds to Tailscale IP on public-facing hosts.
 
 - name: Install prometheus-node-exporter (Debian)
   ansible.builtin.apt:
@@ -13,6 +14,16 @@
     name: prometheus-node-exporter
     state: present
   when: ansible_facts["os_family"] == "Alpine"
+
+- name: Configure listen address (Debian)
+  ansible.builtin.lineinfile:
+    path: /etc/default/prometheus-node-exporter
+    regexp: '^ARGS='
+    line: 'ARGS="--web.listen-address={{ ansible_host }}:9100"'
+  when:
+    - ansible_facts["os_family"] == "Debian"
+    - node_exporter_bind_tailscale | bool
+  notify: Restart node-exporter (Debian)
 
 - name: Enable and start node-exporter (Debian)
   ansible.builtin.service:
@@ -40,6 +51,16 @@
     regexp: '^node_exporter_enable='
     line: 'node_exporter_enable="YES"'
   when: ansible_facts["os_family"] == "FreeBSD"
+
+- name: Configure listen address (FreeBSD)
+  ansible.builtin.lineinfile:
+    path: /etc/rc.conf
+    regexp: '^node_exporter_listen_address='
+    line: 'node_exporter_listen_address="{{ ansible_host }}:9100"'
+  when:
+    - ansible_facts["os_family"] == "FreeBSD"
+    - node_exporter_bind_tailscale | bool
+  notify: Restart node_exporter (FreeBSD)
 
 - name: Start node_exporter (FreeBSD)
   ansible.builtin.service:

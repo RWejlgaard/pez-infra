@@ -1,0 +1,4 @@
+---
+# When true, bind node_exporter to the Tailscale IP (ansible_host) only.
+# Use on public-facing hosts to avoid exposing metrics on 0.0.0.0.
+node_exporter_bind_tailscale: false
