@@ -1,0 +1,10 @@
+---
+- name: Restart node-exporter (Debian)
+  ansible.builtin.service:
+    name: prometheus-node-exporter
+    state: restarted
+
+- name: Restart node_exporter (FreeBSD)
+  ansible.builtin.service:
+    name: node_exporter
+    state: restarted

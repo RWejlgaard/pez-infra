@@ -1,4 +1,5 @@
 ---
+node_exporter_bind_tailscale: true
 host_role: monitoring
 host_description: "Monitoring stack (Prometheus, Grafana)"
 host_location: "London"
