@@ -19,8 +19,3 @@ systemd_services:
 system_packages_services:
   - mariadb
 
-# Installed but appear unused (only default/empty databases).
-# Likely leftover from old projects. Candidates for removal.
-undocumented_services:
-  - postgresql@14-main  # only template0/template1/postgres DBs
-  - redis-server        # no known consumers
