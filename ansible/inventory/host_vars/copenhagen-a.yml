@@ -18,4 +18,3 @@ systemd_services:
 # MaNGOS database backend — managed by apt, not Ansible
 system_packages_services:
   - mariadb
-
