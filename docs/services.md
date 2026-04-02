@@ -6,7 +6,7 @@ Complete map of every service in the fleet — what it does, where it runs, how 
 
 | Service | Port | Deployment | Auth | URL |
 |---------|------|-----------|------|-----|
-| Caddy | 80, 443 | Docker | — | (reverse proxy, no direct URL) |
+| Caddy | 80, 443 | Native (apt) | — | (reverse proxy, no direct URL) |
 | Authelia | 9091 | Docker | — | auth.pez.sh |
 | Bitwarden (Vaultwarden) | 8443 | Docker | Own auth | bitwarden.pez.sh |
 | LLDAP | 3890/17170 | Docker | — | (internal, used by Authelia) |
@@ -21,8 +21,8 @@ The workhorse. Threadripper 3970X, 64GB RAM, 64TB ZFS storage. Everything media-
 
 | Service | Port | Deployment | Auth | URL |
 |---------|------|-----------|------|-----|
-| Plex | 32400 | Docker | Own auth | plex.pez.sh |
-| Jellyfin | 8096 | Docker | Own auth | jellyfin.pez.sh |
+| Plex | 32400 | Native (apt/systemd) | Own auth | plex.pez.sh |
+| Jellyfin | 8096 | Native (apt/systemd) | Own auth | jellyfin.pez.sh |
 | Navidrome | 4533 | Docker | Own auth | music.pez.sh |
 
 I run both Plex and Jellyfin — some clients work better with one than the other. Media is served directly from the ZFS pool.
@@ -31,12 +31,12 @@ I run both Plex and Jellyfin — some clients work better with one than the othe
 
 | Service | Port | Deployment | Auth | URL |
 |---------|------|-----------|------|-----|
-| Radarr | 7878 | Docker | Authelia | radarr.pez.sh |
-| Sonarr | 8989 | Docker | Authelia | sonarr.pez.sh |
-| Lidarr | 8686 | Docker | Authelia | lidarr.pez.sh |
-| Readarr | 8787 | Docker | Authelia | readarr.pez.sh |
-| Prowlarr | 9696 | Docker | Authelia | prowlarr.pez.sh |
-| Transmission | 9091 | Docker | Authelia | download.pez.sh |
+| Radarr | 7878 | Native (systemd) | Authelia | radarr.pez.sh |
+| Sonarr | 8989 | Native (apt/systemd) | Authelia | sonarr.pez.sh |
+| Lidarr | 8686 | Native (systemd) | Authelia | lidarr.pez.sh |
+| Readarr | 8787 | Native (systemd) | Authelia | readarr.pez.sh |
+| Prowlarr | 9696 | Native (systemd) | Authelia | prowlarr.pez.sh |
+| Transmission | 9091 | Native (apt/systemd) | Authelia | download.pez.sh |
 | Jellyseerr | 5055 | Docker | Own auth | request.pez.sh |
 
 The arr stack pipeline: Jellyseerr accepts requests → Radarr/Sonarr/Lidarr/Readarr search via Prowlarr → sends to Transmission → downloaded content is moved to the library → Plex and Jellyfin pick it up automatically.
