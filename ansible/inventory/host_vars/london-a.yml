@@ -21,26 +21,6 @@ zfs_scrub_schedule: "0 12 * * 0"
 # Cloudflare Tunnel — proxies Grafana/Prometheus via pez.sh
 cloudflared_tunnel_id: "168eccae-2497-48e2-a1e2-c12cd3448d9a"
 
-# --- Undocumented / likely unused services (audit 2026-03-30) ---
-# These were found running but appear unused. Candidates for removal.
-
-# InfluxDB — listening on *:8086, only _internal database exists.
-# No user databases. Probably installed for testing and never used.
-# RECOMMENDATION: disable (influxd_enable="NO" in rc.conf)
-undocumented_influxdb: "unused — no databases, disable"
-
-# Redis — listening on localhost:6379, empty keyspace.
-# No clients connected. No data.
-# RECOMMENDATION: disable (redis_enable="NO" in rc.conf)
-undocumented_redis: "unused — empty keyspace, disable"
-
-# PostgreSQL — listening on localhost:5432, has a pez_vps database
-# with tables: vms, snapshots, ip_addresses, users, audit_logs, isos.
-# Appears to be from a defunct VPS management project (Rust/sqlx).
-# RECOMMENDATION: confirm with Pez before removing data, then disable
-undocumented_postgresql: "defunct pez_vps project — confirm before disabling"
-
-# libvirtd — running, zero VMs defined.
-# Likely installed for the same pez_vps project.
-# RECOMMENDATION: disable (libvirtd_enable="NO" in rc.conf)
-undocumented_libvirtd: "unused — no VMs, disable"
+# --- Disabled services (cleaned up 2026-04-02, PESO-113) ---
+# InfluxDB, Redis, PostgreSQL, libvirtd — all disabled in rc.conf.
+# Were leftover from a defunct pez_vps project. Pez approved removal.
