@@ -2,13 +2,32 @@
 # iptables rules for {{ inventory_hostname }}
 #
 # Docker and Tailscale manage their own chains automatically.
-# This file captures non-Docker, non-Tailscale rules only.
+# This file captures non-Docker, non-Tailscale INPUT rules only.
 #
 # Mail ports (25,80,110,143,443,465,587,993,995) are exposed via
-# Docker port mappings in the poste-io docker-compose.yml — not here.
+# Docker port mappings — traffic goes through FORWARD, not INPUT.
 
 *filter
-:INPUT ACCEPT [0:0]
+:INPUT DROP [0:0]
 :FORWARD ACCEPT [0:0]
 :OUTPUT ACCEPT [0:0]
+
+# Allow loopback
+-A INPUT -i lo -j ACCEPT
+
+# Allow established and related connections
+-A INPUT -m conntrack --ctstate ESTABLISHED,RELATED -j ACCEPT
+
+# Allow all traffic on Tailscale interface
+-A INPUT -i tailscale0 -j ACCEPT
+
+# Allow SSH (public access — fail2ban provides brute-force protection)
+-A INPUT -p tcp --dport 22 -j ACCEPT
+
+# Allow ICMP (ping)
+-A INPUT -p icmp -j ACCEPT
+
+{% for rule in firewall_alpine_extra_input_rules | default([]) %}
+{{ rule }}
+{% endfor %}
 COMMIT
