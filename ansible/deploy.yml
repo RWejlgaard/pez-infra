@@ -53,6 +53,7 @@
   roles:
     - role: caddy
     - role: status_page
+    - role: systemd_services
 
 # london-b: Docker services (storage, apps) + media stack + backups
 - name: "Stage 4b: Services (london-b)"
