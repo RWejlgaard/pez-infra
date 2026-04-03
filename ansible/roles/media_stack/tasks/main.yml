@@ -55,6 +55,32 @@
     - vsftpd
     - cloudflared
 
+# ── Snap packages ──
+
+- name: Install Overseerr via snap
+  community.general.snap:
+    name: overseerr
+    channel: latest/beta
+    state: present
+
+- name: Ensure Overseerr snap service is running
+  ansible.builtin.command: snap start overseerr
+  changed_when: false
+  failed_when: false
+
+# ── APT-managed services ──
+
+- name: Install Syncthing
+  ansible.builtin.apt:
+    name: syncthing
+    state: present
+
+- name: Enable and start Syncthing for pez user
+  ansible.builtin.systemd:
+    name: syncthing@pez
+    state: started
+    enabled: true
+
 # ── Configuration files ──
 
 - name: Deploy promtail config

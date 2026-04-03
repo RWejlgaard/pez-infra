@@ -12,6 +12,14 @@ docker_services:
   - smartctl-exporter
   - plex-exporter
 
+# Snap-managed services (deployed by media_stack role)
+snap_services:
+  - overseerr
+
+# APT-managed user services (deployed by media_stack role)
+apt_user_services:
+  - syncthing@pez
+
 zfs_pools:
   - hdd
 
