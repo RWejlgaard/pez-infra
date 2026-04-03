@@ -15,6 +15,13 @@ docker_services:
 zfs_pools:
   - hdd
 
+node_exporter_extra_collectors:
+  - systemd
+  - processes
+  - sysctl
+  - ethtool
+  - zfs
+
 common_ufw_allowed_ports:
   - {port: 32400, proto: tcp, comment: "Plex Media Server"}
   - {port: 6881, proto: tcp, comment: "BitTorrent"}
