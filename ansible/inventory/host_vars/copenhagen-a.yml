@@ -15,6 +15,7 @@ systemd_services:
 # Docker Compose services deployed by docker_services role
 docker_services:
   - minecraft
+  - smartctl-exporter
 
 # MaNGOS database backend — managed by apt, not Ansible
 system_packages_services:
