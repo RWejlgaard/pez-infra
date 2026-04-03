@@ -53,6 +53,10 @@ scrape_configs:
         labels:
           location: london
           server: london-b
+      - targets: ["100.89.206.60:9633"]
+        labels:
+          location: copenhagen
+          server: copenhagen-a
 
   - job_name: "plex"
     static_configs:
