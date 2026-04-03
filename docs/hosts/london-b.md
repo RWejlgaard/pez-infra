@@ -86,7 +86,6 @@ The media automation suite and several supporting services run as native systemd
 | Samba | smbd | Package-managed |
 | Ollama | ollama | /usr/local/bin, custom unit |
 | Promtail | promtail | Custom unit, ships logs to Loki |
-| Cloudflared | cloudflared | Tunnel to Cloudflare |
 | vsftpd | vsftpd | FTP server for /hdd/ftp |
 | systemd_exporter | systemd_exporter | Ansible-managed |
 | node_exporter | node_exporter | Ansible-managed |

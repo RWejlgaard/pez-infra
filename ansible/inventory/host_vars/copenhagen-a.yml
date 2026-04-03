@@ -5,11 +5,9 @@ host_location: "Copenhagen"
 
 # MaNGOS runs as systemd services, not Docker
 # MariaDB is the MaNGOS database backend (character, world, auth DBs)
-# cloudflared provides Cloudflare Tunnel access
 systemd_services:
   - mangos-realmd
   - mangos-world
-  - cloudflared
   - node_exporter
 
 # Docker Compose services deployed by docker_services role
