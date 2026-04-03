@@ -8,6 +8,13 @@ global:
   scrape_interval: 15s
   evaluation_interval: 15s
 
+# Alerting notifications are handled by Grafana (unified alerting with
+# PagerDuty + email contact points), not Alertmanager.  No alerting:
+# section is needed here.  Prometheus still evaluates these rule_files
+# so the ALERTS / ALERTS_FOR_STATE metrics are available for queries.
+rule_files:
+  - /usr/local/etc/prometheus/rules/*.rules
+
 scrape_configs:
   - job_name: "prometheus"
     static_configs:
