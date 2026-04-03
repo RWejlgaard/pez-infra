@@ -170,6 +170,15 @@
         state: restarted
 
 # ──────────────────────────────────────────────
+# Stage 4f: ZFS scrub scheduling — zfs_hosts
+# ──────────────────────────────────────────────
+- name: "Stage 4f: ZFS scrub scheduling"
+  hosts: zfs_hosts
+  tags: [services, zfs]
+  roles:
+    - role: zfs
+
+# ──────────────────────────────────────────────
 # Stage 5: Verification
 # ──────────────────────────────────────────────
 - name: "Stage 5: Post-deploy verification"
