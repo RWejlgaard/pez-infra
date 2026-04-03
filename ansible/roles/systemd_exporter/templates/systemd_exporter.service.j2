@@ -1,0 +1,31 @@
+#
+# Ansible managed
+#
+
+[Unit]
+Description=Prometheus SystemD Exporter
+After=network-online.target
+
+[Service]
+Type=simple
+User={{ systemd_exporter_user }}
+Group={{ systemd_exporter_group }}
+ExecStart=/usr/local/bin/systemd_exporter \
+    --log.level={{ systemd_exporter_log_level }} \
+    --web.listen-address={{ systemd_exporter_listen_address }}:{{ systemd_exporter_listen_port }}
+
+SyslogIdentifier=systemd_exporter
+Restart=always
+RestartSec=1
+StartLimitInterval=0
+
+ProtectHome=yes
+NoNewPrivileges=yes
+
+ProtectSystem=strict
+ProtectControlGroups=true
+ProtectKernelModules=true
+ProtectKernelTunables=yes
+
+[Install]
+WantedBy=multi-user.target

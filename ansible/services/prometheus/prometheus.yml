@@ -61,6 +61,17 @@ scrape_configs:
           location: london
           server: london-b
 
+  - job_name: "systemd_exporter"
+    static_configs:
+      - targets: ["100.84.65.101:9558"]
+        labels:
+          location: london
+          server: london-b
+      - targets: ["100.89.206.60:9558"]
+        labels:
+          location: copenhagen
+          server: copenhagen-a
+
   - job_name: "caddy"
     static_configs:
       - targets: ["100.67.6.27:2019"]
