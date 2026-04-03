@@ -29,14 +29,27 @@
   failed_when: false
   when: _systemd_exporter_bin.stat.exists
 
+- name: Set architecture and release facts
+  ansible.builtin.set_fact:
+    _sde_arch: >-
+      {{ ansible_architecture
+         | regex_replace('x86_64', 'amd64')
+         | regex_replace('aarch64', 'arm64') }}
+
+- name: Set release name
+  ansible.builtin.set_fact:
+    _sde_release: "systemd_exporter-{{ systemd_exporter_version }}.linux-{{ _sde_arch }}"
+    _sde_base_url: "https://github.com/prometheus-community/systemd_exporter"
+
 - name: Download and install systemd_exporter
   when: >-
     not _systemd_exporter_bin.stat.exists or
-    systemd_exporter_version not in (_systemd_exporter_installed_version.stdout | default(''))
+    systemd_exporter_version not in
+    (_systemd_exporter_installed_version.stdout | default(''))
   block:
     - name: Download systemd_exporter tarball
       ansible.builtin.get_url:
-        url: "https://github.com/prometheus-community/systemd_exporter/releases/download/v{{ systemd_exporter_version }}/systemd_exporter-{{ systemd_exporter_version }}.linux-{{ ansible_architecture | regex_replace('x86_64', 'amd64') | regex_replace('aarch64', 'arm64') }}.tar.gz"
+        url: "{{ _sde_base_url }}/releases/download/v{{ systemd_exporter_version }}/{{ _sde_release }}.tar.gz"
         dest: /tmp/systemd_exporter.tar.gz
         mode: '0644'
 
@@ -48,7 +61,7 @@
 
     - name: Install systemd_exporter binary
       ansible.builtin.copy:
-        src: "/tmp/systemd_exporter-{{ systemd_exporter_version }}.linux-{{ ansible_architecture | regex_replace('x86_64', 'amd64') | regex_replace('aarch64', 'arm64') }}/systemd_exporter"
+        src: "/tmp/{{ _sde_release }}/systemd_exporter"
         dest: /usr/local/bin/systemd_exporter
         mode: '0755'
         owner: root
@@ -62,7 +75,7 @@
         state: absent
       loop:
         - /tmp/systemd_exporter.tar.gz
-        - "/tmp/systemd_exporter-{{ systemd_exporter_version }}.linux-{{ ansible_architecture | regex_replace('x86_64', 'amd64') | regex_replace('aarch64', 'arm64') }}"
+        - "/tmp/{{ _sde_release }}"
 
 - name: Deploy systemd_exporter service file
   ansible.builtin.template:
