@@ -58,7 +58,7 @@ jobs:
               ansible/roles/caddy/*|ansible/roles/status_page/*)
                 HOSTS="$HOSTS helsinki-a" ;;
               ansible/roles/docker/*)
-                HOSTS="$HOSTS helsinki-a london-b nuremberg-a" ;;
+                HOSTS="$HOSTS helsinki-a london-b nuremberg-a copenhagen-a" ;;
               ansible/roles/docker_services/*)
                 HOSTS="$HOSTS helsinki-a london-b nuremberg-a copenhagen-a" ;;
               ansible/roles/media_stack/*|ansible/roles/backup/*)
