@@ -2,27 +2,15 @@
 
 ## Stack Overview
 
-```
-  ┌─────────────────────────────────────────────────┐
-  │                   london-a                      │
-  │                  (FreeBSD)                      │
-  │                                                 │
-  │  ┌────────────┐         ┌──────────┐            │
-  │  │ Prometheus │────────►│ Grafana  │            │
-  │  │  :9090     │ query   │  :3000   │            │
-  │  └─────┬──────┘         └──────────┘            │
-  │        │ scrape                                 │
-  └────────┼────────────────────────────────────────┘
-           │
-           │ Tailscale
-           │
-     ┌─────┼──────────────────────────────────┐
-     │     │                                  │
-     │     ▼            ▼            ▼        │
-     │ node_exporter  smartctl   plex         │
-     │ (all hosts)    exporter   exporter     │
-     │                (london-b) (london-b)   │
-     └────────────────────────────────────────┘
+```mermaid
+graph TD
+    subgraph "london-a (FreeBSD)"
+        Prometheus[":9090 Prometheus"] -->|query| Grafana[":3000 Grafana"]
+    end
+
+    Prometheus -->|scrape over Tailscale| NE["node_exporter<br/>(all hosts) :9100"]
+    Prometheus -->|scrape over Tailscale| SE["smartctl_exporter<br/>(london-b) :9633"]
+    Prometheus -->|scrape over Tailscale| PE["plex_exporter<br/>(london-b)"]
 ```
 
 Both Prometheus and Grafana are accessible via:

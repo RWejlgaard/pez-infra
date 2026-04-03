@@ -25,19 +25,28 @@ All inter-server communication uses Tailscale IPs:
 
 ### Mesh Diagram
 
-```
-    helsinki-a ◄──────────────────────────► london-b
-        ▲  ▲                                ▲  ▲
-        │  │                                │  │
-        │  └──────────► london-a ◄──────────┘  │
-        │                  ▲                   │
-        │                  │                   │
-        ▼                  │                   ▼
-    nuremberg-a    copenhagen-a ◄────► copenhagen-c
+```mermaid
+graph TD
+    HEL["helsinki-a"] <--> LB["london-b"]
+    HEL <--> LA["london-a"]
+    HEL <--> NA["nuremberg-a"]
+    LB <--> LA
+    LB <--> CA["copenhagen-a"]
+    LA <--> CA
+    CA <--> CC["copenhagen-c"]
+    NA <--> CA
+    HEL <--> CA
+    HEL <--> CC
+    LB <--> CC
+    NA <--> LB
+    NA <--> CC
+    NA <--> LA
+    LA <--> CC
 
-    Every node can reach every other node directly.
-    Connections shown are illustrative — the mesh is fully connected.
+    style CC stroke-dasharray: 5 5
 ```
+
+> Every node can reach every other node directly. The mesh is fully connected.
 
 ## Physical Networking
 
@@ -75,28 +84,20 @@ The domain is registered on Hover.com with nameservers pointed to Cloudflare.
 
 ### How a request reaches a service
 
-```
-1. Browser requests radarr.pez.sh
-   │
-2. Cloudflare resolves DNS (proxied record → Cloudflare IP)
-   │
-3. Cloudflare terminates external TLS, forwards to helsinki-a
-   │
-4. Caddy on helsinki-a receives the request
-   │
-5. Caddy checks: does this subdomain require auth?
-   │
-   ├── YES: forward_auth to Authelia (localhost:9091)
-   │        │
-   │        ├── Authenticated → proceed to step 6
-   │        └── Not authenticated → redirect to auth.pez.sh
-   │
-   └── NO: proceed to step 6
-   │
-6. Caddy reverse-proxies to the backend over Tailscale
-   (e.g., london-b:7878 for Radarr)
-   │
-7. Response flows back: backend → Caddy → Cloudflare → browser
+```mermaid
+graph TD
+    Browser["1. Browser requests radarr.pez.sh"] --> CF
+    CF["2. Cloudflare resolves DNS<br/>(proxied record)"] --> TLS
+    TLS["3. Cloudflare terminates TLS,<br/>forwards to helsinki-a"] --> Caddy
+    Caddy["4. Caddy receives request"] --> AuthCheck{"5. Requires auth?"}
+
+    AuthCheck -->|YES| Authelia["forward_auth → Authelia<br/>(localhost:9091)"]
+    AuthCheck -->|NO| Proxy
+
+    Authelia -->|Authenticated| Proxy["6. Reverse-proxy to backend<br/>over Tailscale<br/>(e.g. london-b:7878)"]
+    Authelia -->|Not authenticated| Redirect["Redirect to auth.pez.sh"]
+
+    Proxy --> Response["7. Response flows back:<br/>backend → Caddy → Cloudflare → browser"]
 ```
 
 ### Public Subdomains
