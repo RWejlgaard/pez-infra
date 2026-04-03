@@ -1,4 +1,0 @@
----
-tunnel: 168eccae-2497-48e2-a1e2-c12cd3448d9a
-protocol: http2
-credentials-file: /root/.cloudflared/168eccae-2497-48e2-a1e2-c12cd3448d9a.json
