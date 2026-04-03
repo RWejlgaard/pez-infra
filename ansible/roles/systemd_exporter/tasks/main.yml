@@ -1,0 +1,80 @@
+---
+# Install and configure systemd_exporter for Prometheus monitoring.
+# Downloads the binary from GitHub releases and deploys a systemd service.
+# Linux only — systemd_exporter has no FreeBSD equivalent.
+
+- name: Create systemd_exporter group
+  ansible.builtin.group:
+    name: "{{ systemd_exporter_group }}"
+    system: true
+    state: present
+
+- name: Create systemd_exporter user
+  ansible.builtin.user:
+    name: "{{ systemd_exporter_user }}"
+    group: "{{ systemd_exporter_group }}"
+    system: true
+    shell: /usr/sbin/nologin
+    create_home: false
+
+- name: Check if systemd_exporter binary exists
+  ansible.builtin.stat:
+    path: /usr/local/bin/systemd_exporter
+  register: _systemd_exporter_bin
+
+- name: Get installed version
+  ansible.builtin.command: /usr/local/bin/systemd_exporter --version
+  register: _systemd_exporter_installed_version
+  changed_when: false
+  failed_when: false
+  when: _systemd_exporter_bin.stat.exists
+
+- name: Download and install systemd_exporter
+  when: >-
+    not _systemd_exporter_bin.stat.exists or
+    systemd_exporter_version not in (_systemd_exporter_installed_version.stdout | default(''))
+  block:
+    - name: Download systemd_exporter tarball
+      ansible.builtin.get_url:
+        url: "https://github.com/prometheus-community/systemd_exporter/releases/download/v{{ systemd_exporter_version }}/systemd_exporter-{{ systemd_exporter_version }}.linux-{{ ansible_architecture | regex_replace('x86_64', 'amd64') | regex_replace('aarch64', 'arm64') }}.tar.gz"
+        dest: /tmp/systemd_exporter.tar.gz
+        mode: '0644'
+
+    - name: Extract systemd_exporter binary
+      ansible.builtin.unarchive:
+        src: /tmp/systemd_exporter.tar.gz
+        dest: /tmp
+        remote_src: true
+
+    - name: Install systemd_exporter binary
+      ansible.builtin.copy:
+        src: "/tmp/systemd_exporter-{{ systemd_exporter_version }}.linux-{{ ansible_architecture | regex_replace('x86_64', 'amd64') | regex_replace('aarch64', 'arm64') }}/systemd_exporter"
+        dest: /usr/local/bin/systemd_exporter
+        mode: '0755'
+        owner: root
+        group: root
+        remote_src: true
+      notify: Restart systemd_exporter
+
+    - name: Clean up tarball
+      ansible.builtin.file:
+        path: "{{ item }}"
+        state: absent
+      loop:
+        - /tmp/systemd_exporter.tar.gz
+        - "/tmp/systemd_exporter-{{ systemd_exporter_version }}.linux-{{ ansible_architecture | regex_replace('x86_64', 'amd64') | regex_replace('aarch64', 'arm64') }}"
+
+- name: Deploy systemd_exporter service file
+  ansible.builtin.template:
+    src: systemd_exporter.service.j2
+    dest: /etc/systemd/system/systemd_exporter.service
+    mode: '0644'
+  notify:
+    - Reload systemd
+    - Restart systemd_exporter
+
+- name: Enable and start systemd_exporter
+  ansible.builtin.service:
+    name: systemd_exporter
+    state: started
+    enabled: true

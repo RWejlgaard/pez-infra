@@ -65,6 +65,8 @@ jobs:
                 HOSTS="$HOSTS london-b" ;;
               ansible/roles/firewall_alpine/*)
                 HOSTS="$HOSTS nuremberg-a" ;;
+              ansible/roles/systemd_exporter/*)
+                HOSTS="$HOSTS london-b copenhagen-a" ;;
               ansible/roles/systemd_services/*)
                 HOSTS="$HOSTS helsinki-a copenhagen-a" ;;
               ansible/roles/zfs/*)

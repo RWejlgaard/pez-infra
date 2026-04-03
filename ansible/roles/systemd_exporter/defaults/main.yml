@@ -1,0 +1,7 @@
+---
+systemd_exporter_version: "0.6.0"
+systemd_exporter_listen_address: "0.0.0.0"
+systemd_exporter_listen_port: 9558
+systemd_exporter_log_level: "info"
+systemd_exporter_user: "systemd-exporter"
+systemd_exporter_group: "systemd-exporter"

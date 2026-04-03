@@ -43,6 +43,15 @@
     - role: node_exporter
 
 # ──────────────────────────────────────────────
+# Stage 3b: systemd_exporter — Linux hosts with systemd metrics
+# ──────────────────────────────────────────────
+- name: "Stage 3b: systemd_exporter"
+  hosts: systemd_exporter_hosts
+  tags: [monitoring, systemd_exporter]
+  roles:
+    - role: systemd_exporter
+
+# ──────────────────────────────────────────────
 # Stage 4: Per-host services
 # ──────────────────────────────────────────────
 
