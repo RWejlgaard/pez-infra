@@ -2,7 +2,6 @@
 # slskd - Soulseek client (web UI)
 # Host: london-b (100.84.65.101)
 # Data: /root/slskd (app), /hdd/music/slskd (downloads)
-# Status: Currently stopped (not set to auto-restart)
 
 services:
   slskd:
