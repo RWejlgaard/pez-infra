@@ -1,7 +1,7 @@
 ---
 # media_stack role — deploys the full media stack on london-b
 # Manages: *arr suite, jellyfin, plex, transmission, samba,
-#           ollama, promtail, cloudflared, vsftpd, and cron jobs.
+#           ollama, promtail, vsftpd, and cron jobs.
 
 # ── Systemd service units (custom, not package-managed) ──
 
@@ -53,7 +53,6 @@
     - transmission-daemon
     - smbd
     - vsftpd
-    - cloudflared
 
 # ── Snap packages ──
 

@@ -50,16 +50,6 @@ WoW 1.12 (Vanilla) private server using the MaNGOS Zero emulator. Runs natively 
 
 Both `mangos-realmd` and `mangos-world` start automatically on boot via systemd.
 
-### Cloudflare Tunnel
-
-| | |
-|---|---|
-| Binary | `/usr/bin/cloudflared` |
-| Managed by | systemd |
-| Unit file | `ansible/services/systemd/copenhagen-a/cloudflared.service` |
-
-Provides Cloudflare Tunnel access to the host. Token-based authentication configured directly in the systemd unit.
-
 ### Monitoring
 
 | Service | Port | Managed by |

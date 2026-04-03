@@ -104,7 +104,7 @@ jobs:
                 HOSTS="$HOSTS nuremberg-a" ;;
 
               # copenhagen-a services (gaming)
-              ansible/services/minecraft/*|ansible/services/mangos-*|ansible/services/cloudflared/*)
+              ansible/services/minecraft/*|ansible/services/mangos-*)
                 HOSTS="$HOSTS copenhagen-a" ;;
 
               # --- Unmapped ansible paths → full fleet as safety fallback ---

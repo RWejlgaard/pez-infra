@@ -28,7 +28,6 @@ Old gaming PC, now perfectly happy as a monitoring host. Very lightly loaded —
 | Prometheus | 9090 | Active | prometheus.pez.sh |
 | Grafana | 3000 | Active | grafana.pez.sh |
 | node_exporter | 9100 | Active | Metrics exporter |
-| cloudflared | — | Active | Tunnel 168eccae-... proxying Grafana/Prometheus |
 | Tailscale | — | Active | Mesh networking |
 
 Both Prometheus and Grafana are behind Authelia (auth handled by Caddy on helsinki-a).
