@@ -4,7 +4,7 @@ host_role: monitoring
 host_description: "Monitoring stack (Prometheus, Grafana)"
 host_location: "London"
 ansible_python_interpreter: /usr/local/bin/python3
-grafana_provisioning_dir: /usr/local/share/grafana/conf/provisioning
+grafana_provisioning_dir: /usr/local/etc/grafana/provisioning
 
 zfs_pools:
   - zroot
