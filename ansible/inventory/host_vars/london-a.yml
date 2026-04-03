@@ -18,9 +18,7 @@ zfs_scrub_schedule: "0 12 * * 0"
 # Core services (documented)
 # sshd, ntpd, powerd, zfs, tailscaled, grafana, prometheus, node_exporter
 
-# Cloudflare Tunnel — proxies Grafana/Prometheus via pez.sh
-cloudflared_tunnel_id: "168eccae-2497-48e2-a1e2-c12cd3448d9a"
-
-# --- Disabled services (cleaned up 2026-04-02, PESO-113) ---
-# InfluxDB, Redis, PostgreSQL, libvirtd — all disabled in rc.conf.
+# --- Disabled/removed services ---
+# cloudflared — removed 2026-04-03 (PESO-134). Replaced by Caddy + Authelia.
+# InfluxDB, Redis, PostgreSQL, libvirtd — disabled 2026-04-02 (PESO-113).
 # Were leftover from a defunct pez_vps project. Pez approved removal.
