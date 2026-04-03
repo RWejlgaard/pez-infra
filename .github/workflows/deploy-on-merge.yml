@@ -14,18 +14,126 @@ on:
 
 jobs:
   deploy:
-    name: Deploy to all
+    name: Deploy
     runs-on: ubuntu-latest
     environment: production
     steps:
       - uses: actions/checkout@v4
+        with:
+          fetch-depth: 2
+
+      - name: Determine deploy scope from changed files
+        id: scope
+        run: |
+          # Get files changed in this push
+          CHANGED=$(git diff --name-only HEAD~1 HEAD)
+          echo "Changed files:"
+          echo "$CHANGED"
+          echo ""
+
+          HOSTS=""
+          DEPLOY_ALL=false
+
+          while IFS= read -r file; do
+            [ -z "$file" ] && continue
+            case "$file" in
+
+              # --- Roles that target ALL hosts → full fleet deploy ---
+              ansible/roles/common/*|ansible/roles/dotfiles/*|ansible/roles/node_exporter/*)
+                DEPLOY_ALL=true ;;
+
+              # --- Playbook, inventory, or requirements → full fleet ---
+              ansible/deploy.yml|ansible/inventory/hosts.ini|ansible/requirements.yml)
+                DEPLOY_ALL=true ;;
+
+              # --- host_vars → that specific host ---
+              ansible/inventory/host_vars/helsinki-a.yml)   HOSTS="$HOSTS helsinki-a" ;;
+              ansible/inventory/host_vars/london-b.yml)     HOSTS="$HOSTS london-b" ;;
+              ansible/inventory/host_vars/london-a.yml)     HOSTS="$HOSTS london-a" ;;
+              ansible/inventory/host_vars/nuremberg-a.yml)  HOSTS="$HOSTS nuremberg-a" ;;
+              ansible/inventory/host_vars/copenhagen-a.yml) HOSTS="$HOSTS copenhagen-a" ;;
+              ansible/inventory/host_vars/copenhagen-c.yml) HOSTS="$HOSTS copenhagen-c" ;;
+
+              # --- Roles → mapped hosts ---
+              ansible/roles/caddy/*|ansible/roles/status_page/*)
+                HOSTS="$HOSTS helsinki-a" ;;
+              ansible/roles/docker/*)
+                HOSTS="$HOSTS helsinki-a london-b nuremberg-a copenhagen-a" ;;
+              ansible/roles/docker_services/*)
+                HOSTS="$HOSTS helsinki-a london-b nuremberg-a copenhagen-a" ;;
+              ansible/roles/media_stack/*|ansible/roles/backup/*)
+                HOSTS="$HOSTS london-b" ;;
+              ansible/roles/firewall_alpine/*)
+                HOSTS="$HOSTS nuremberg-a" ;;
+              ansible/roles/systemd_services/*)
+                HOSTS="$HOSTS helsinki-a copenhagen-a" ;;
+              ansible/roles/zfs/*)
+                HOSTS="$HOSTS london-a london-b" ;;
+
+              # --- Services → mapped hosts ---
+              # helsinki-a services
+              ansible/services/caddy/*|ansible/services/status-page/*)
+                HOSTS="$HOSTS helsinki-a" ;;
+              ansible/services/authelia/*|ansible/services/forgejo/*|ansible/services/bitwarden/*)
+                HOSTS="$HOSTS helsinki-a" ;;
+              ansible/services/thiswebsitedoesnotexist/*)
+                HOSTS="$HOSTS helsinki-a" ;;
+
+              # london-a services (monitoring)
+              ansible/services/prometheus/*|ansible/services/grafana/*)
+                HOSTS="$HOSTS london-a" ;;
+
+              # london-b services (media/storage)
+              ansible/services/nextcloud-aio/*|ansible/services/jellyseerr/*)
+                HOSTS="$HOSTS london-b" ;;
+              ansible/services/navidrome/*|ansible/services/slskd/*|ansible/services/miniflux/*)
+                HOSTS="$HOSTS london-b" ;;
+              ansible/services/smartctl-exporter/*|ansible/services/plex-exporter/*)
+                HOSTS="$HOSTS london-b" ;;
+              ansible/services/transmission/*|ansible/services/radarr/*|ansible/services/prowlarr/*)
+                HOSTS="$HOSTS london-b" ;;
+              ansible/services/lidarr/*|ansible/services/readarr/*|ansible/services/whisparr/*)
+                HOSTS="$HOSTS london-b" ;;
+              ansible/services/samba/*|ansible/services/vsftpd/*)
+                HOSTS="$HOSTS london-b" ;;
+
+              # nuremberg-a services (mail)
+              ansible/services/poste-io/*)
+                HOSTS="$HOSTS nuremberg-a" ;;
+
+              # copenhagen-a services (gaming)
+              ansible/services/minecraft/*|ansible/services/mangos-*|ansible/services/cloudflared/*)
+                HOSTS="$HOSTS copenhagen-a" ;;
+
+              # --- Unmapped ansible paths → full fleet as safety fallback ---
+              ansible/*)
+                echo "⚠️  Unmapped path: $file — deploying to all"
+                DEPLOY_ALL=true ;;
+
+              # Non-ansible files (docs, Makefile, etc.) → skip
+              *) ;;
+            esac
+          done <<< "$CHANGED"
+
+          if [ "$DEPLOY_ALL" = "true" ] || [ -z "$HOSTS" ]; then
+            echo "Deploy scope: ALL hosts"
+            echo "limit=" >> "$GITHUB_OUTPUT"
+            echo "skip=false" >> "$GITHUB_OUTPUT"
+          else
+            UNIQUE=$(echo "$HOSTS" | tr ' ' '\n' | grep -v '^$' | sort -u | tr '\n' ',' | sed 's/,$//')
+            echo "Deploy scope: --limit $UNIQUE"
+            echo "limit=$UNIQUE" >> "$GITHUB_OUTPUT"
+            echo "skip=false" >> "$GITHUB_OUTPUT"
+          fi
 
       - name: Set up Tailscale
+        if: steps.scope.outputs.skip != 'true'
         uses: tailscale/github-action@v3
         with:
           authkey: ${{ secrets.TAILSCALE_AUTHKEY }}
 
       - name: Set up SSH key
+        if: steps.scope.outputs.skip != 'true'
         run: |
           mkdir -p ~/.ssh
           echo "${{ secrets.SSH_PRIVATE_KEY }}" > ~/.ssh/id_ed25519
@@ -33,15 +141,18 @@ jobs:
           ssh-keyscan -H 100.67.6.27 100.84.65.101 100.122.219.41 100.117.235.28 100.89.206.60 100.115.45.53 >> ~/.ssh/known_hosts 2>/dev/null || true
 
       - name: Install tools
+        if: steps.scope.outputs.skip != 'true'
         run: |
           pip install ansible
           wget -qO /tmp/sops.deb https://github.com/getsops/sops/releases/download/v3.9.4/sops_3.9.4_amd64.deb
           sudo dpkg -i /tmp/sops.deb
 
       - name: Install Ansible collections
+        if: steps.scope.outputs.skip != 'true'
         run: ansible-galaxy install -r ansible/requirements.yml
 
       - name: Decrypt secrets
+        if: steps.scope.outputs.skip != 'true'
         env:
           SOPS_AGE_KEY: ${{ secrets.AGE_SECRET_KEY }}
         run: |
@@ -53,7 +164,16 @@ jobs:
           done
 
       - name: Run playbook
+        if: steps.scope.outputs.skip != 'true'
         working-directory: ansible/
         env:
           ANSIBLE_HOST_KEY_CHECKING: "false"
-        run: ansible-playbook deploy.yml
+        run: |
+          LIMIT="${{ steps.scope.outputs.limit }}"
+          if [ -n "$LIMIT" ]; then
+            echo "🎯 Deploying with --limit $LIMIT"
+            ansible-playbook deploy.yml --limit "$LIMIT"
+          else
+            echo "🌐 Deploying to all hosts"
+            ansible-playbook deploy.yml
+          fi
