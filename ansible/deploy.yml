@@ -72,12 +72,11 @@
     - role: firewall_alpine
     - role: docker_services
 
-# copenhagen-a: Gaming servers
+# copenhagen-a: Gaming servers (MaNGOS only — Docker removed per PESO-104)
 - name: "Stage 4d: Gaming servers (copenhagen-a)"
   hosts: copenhagen-a
   tags: [services, gaming]
   roles:
-    - role: docker_services
     - role: systemd_services
 
 # london-a: Monitoring stack (FreeBSD — Prometheus, Grafana)
