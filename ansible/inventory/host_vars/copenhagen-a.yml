@@ -12,6 +12,10 @@ systemd_services:
   - cloudflared
   - node_exporter
 
+# Docker Compose services deployed by docker_services role
+docker_services:
+  - minecraft
+
 # MaNGOS database backend — managed by apt, not Ansible
 system_packages_services:
   - mariadb
