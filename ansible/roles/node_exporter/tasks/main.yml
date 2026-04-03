@@ -3,6 +3,29 @@
 # Uses system packages on Linux, pkg on FreeBSD.
 # Optionally binds to Tailscale IP on public-facing hosts.
 
+# ── Cleanup old custom installs ──────────────────────────────
+- name: Stop and disable custom node_exporter service if present
+  ansible.builtin.service:
+    name: node_exporter
+    state: stopped
+    enabled: false
+  failed_when: false
+  when: ansible_facts["os_family"] == "Debian"
+
+- name: Remove custom node_exporter service file
+  ansible.builtin.file:
+    path: /etc/systemd/system/node_exporter.service
+    state: absent
+  when: ansible_facts["os_family"] == "Debian"
+  notify: Reload systemd
+
+- name: Remove custom node_exporter binary
+  ansible.builtin.file:
+    path: /usr/local/bin/node_exporter
+    state: absent
+  when: ansible_facts["os_family"] == "Debian"
+
+# ── Install ──────────────────────────────────────────────────
 - name: Install prometheus-node-exporter (Debian)
   ansible.builtin.apt:
     name: prometheus-node-exporter
@@ -15,14 +38,22 @@
     state: present
   when: ansible_facts["os_family"] == "Alpine"
 
-- name: Configure listen address (Debian)
+# ── Configure (Debian) ──────────────────────────────────────
+- name: Build ARGS for prometheus-node-exporter
+  ansible.builtin.set_fact:
+    _node_exporter_args: >-
+      {{ (node_exporter_extra_collectors | map('regex_replace', '^(.*)$', '--collector.\1') | list)
+         + (['--web.listen-address=' + ansible_host + ':9100'] if node_exporter_bind_tailscale | bool else []) }}
+  when: ansible_facts["os_family"] == "Debian"
+
+- name: Configure prometheus-node-exporter ARGS (Debian)
   ansible.builtin.lineinfile:
     path: /etc/default/prometheus-node-exporter
     regexp: '^ARGS='
-    line: 'ARGS="--web.listen-address={{ ansible_host }}:9100"'
+    line: 'ARGS="{{ _node_exporter_args | join(" ") }}"'
   when:
     - ansible_facts["os_family"] == "Debian"
-    - node_exporter_bind_tailscale | bool
+    - (_node_exporter_args | length > 0)
   notify: Restart node-exporter (Debian)
 
 - name: Enable and start node-exporter (Debian)
@@ -39,6 +70,7 @@
     enabled: true
   when: ansible_facts["os_family"] == "Alpine"
 
+# ── FreeBSD ──────────────────────────────────────────────────
 - name: Install node_exporter (FreeBSD)
   community.general.pkgng:
     name: node_exporter
