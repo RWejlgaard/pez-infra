@@ -34,11 +34,10 @@ Runs on **london-a** (FreeBSD, 100.122.219.41).
 
 ### `rules/node-exporter.rules`
 
-Sourced from pez-ansible. Currently all rules are **commented out** — only a placeholder `ServerRunningBtrfs` alert exists (disabled). No active alerting rules or Alertmanager configured.
+Sourced from pez-ansible. Currently all rules are **commented out** — only a placeholder `ServerRunningBtrfs` alert exists (disabled). No active alerting rules loaded by Prometheus. Alerting is handled exclusively by **Grafana** (not Alertmanager).
 
 ## What's Not Configured
 
-- **Alertmanager** — target is commented out; no alerting pipeline active
 - **Rule files** — referenced lines in `prometheus.yml` are commented out (rules exist in `rules/` but aren't loaded)
 - **Recording rules** — none
 

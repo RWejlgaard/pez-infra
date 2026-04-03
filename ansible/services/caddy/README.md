@@ -77,7 +77,7 @@ forward_auth localhost:9091 {
 
 | Service | Auth | Reason |
 |---------|------|--------|
-| Grafana, Prometheus, Alertmanager | Authelia | Admin dashboards |
+| Grafana, Prometheus | Authelia | Admin dashboards |
 | Radarr, Sonarr, Lidarr, Readarr | Authelia | Media management |
 | Prowlarr, Transmission (download) | Authelia | Download tools |
 | slskd (Soulseek) | Authelia | P2P client |
@@ -124,6 +124,5 @@ The `Caddyfile.template` replaces hardcoded values with placeholders:
 
 - The live Caddyfile on helsinki-a is at `/etc/caddy/Caddyfile`
 - Caddy auto-provisions TLS certificates for all listed domains
-- The Alertmanager proxy currently points to port 3000 (same as Grafana) — this may be intentional (Grafana's built-in alerting UI) or a copy-paste issue worth checking
 - Commented-out WebDAV block was replaced by the Nextcloud AIO reverse proxy
 - Static sites (`pez.sh`, `pez.solutions`, etc.) are served from `/srv/` on helsinki-a
