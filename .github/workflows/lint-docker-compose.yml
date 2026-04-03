@@ -10,16 +10,36 @@ jobs:
     steps:
       - uses: actions/checkout@v4
 
+      - name: Stub missing env files referenced by Compose
+        run: |
+          shopt -s globstar nullglob
+          for f in ansible/services/**/docker-compose.yml ansible/services/**/docker-compose.yaml ansible/services/**/compose.yml ansible/services/**/compose.yaml; do
+            dir=$(dirname "$f")
+            # Create empty stubs for any env_file entries that don't exist
+            grep -oP 'env_file:\s*\K.*|^\s*-\s*\K\S+\.env' "$f" 2>/dev/null | while read -r envfile; do
+              envfile=$(echo "$envfile" | sed 's/^["'\'']*//;s/["'\'']*$//')
+              if [ -n "$envfile" ] && [ ! -f "$dir/$envfile" ]; then
+                echo "Creating stub: $dir/$envfile"
+                touch "$dir/$envfile"
+              fi
+            done
+          done
+
       - name: Validate Compose files
         run: |
+          failed=0
           found=0
           shopt -s globstar nullglob
           for f in ansible/services/**/docker-compose.yml ansible/services/**/docker-compose.yaml ansible/services/**/compose.yml ansible/services/**/compose.yaml; do
             echo "::group::Validating $f"
-            docker compose -f "$f" config --quiet 2>&1 || true
+            if ! docker compose -f "$f" config --quiet 2>&1; then
+              echo "::error file=$f::Compose validation failed"
+              failed=1
+            fi
             echo "::endgroup::"
             found=1
           done
           if [ "$found" -eq 0 ]; then
             echo "No Compose files found — skipping."
           fi
+          exit $failed
