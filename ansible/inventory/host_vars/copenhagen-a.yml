@@ -8,7 +8,6 @@ host_location: "Copenhagen"
 systemd_services:
   - mangos-realmd
   - mangos-world
-  - node_exporter
 
 # Docker Compose services deployed by docker_services role
 docker_services:
