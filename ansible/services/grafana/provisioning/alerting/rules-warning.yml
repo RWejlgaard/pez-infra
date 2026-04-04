@@ -17,6 +17,9 @@ groups:
         data:
           - refId: A
             datasourceUid: bezqqznn81wqof
+            relativeTimeRange:
+              from: 600
+              to: 0
             model:
               expr: |
                 (
@@ -31,6 +34,9 @@ groups:
               refId: A
           - refId: B
             datasourceUid: __expr__
+            relativeTimeRange:
+              from: 0
+              to: 0
             model:
               datasource:
                 type: __expr__
@@ -43,6 +49,9 @@ groups:
               type: reduce
           - refId: C
             datasourceUid: __expr__
+            relativeTimeRange:
+              from: 0
+              to: 0
             model:
               conditions:
                 - evaluator:
@@ -78,6 +87,9 @@ groups:
         data:
           - refId: A
             datasourceUid: bezqqznn81wqof
+            relativeTimeRange:
+              from: 600
+              to: 0
             model:
               expr: |
                 (1 - (node_memory_MemAvailable_bytes{job="node_exporter"} / node_memory_MemTotal_bytes{job="node_exporter"})) * 100
@@ -87,6 +99,9 @@ groups:
               refId: A
           - refId: B
             datasourceUid: __expr__
+            relativeTimeRange:
+              from: 0
+              to: 0
             model:
               datasource:
                 type: __expr__
@@ -99,6 +114,9 @@ groups:
               type: reduce
           - refId: C
             datasourceUid: __expr__
+            relativeTimeRange:
+              from: 0
+              to: 0
             model:
               conditions:
                 - evaluator:
@@ -134,6 +152,9 @@ groups:
         data:
           - refId: A
             datasourceUid: bezqqznn81wqof
+            relativeTimeRange:
+              from: 600
+              to: 0
             model:
               expr: |
                 100 - (avg by (server, instance) (rate(node_cpu_seconds_total{job="node_exporter", mode="idle"}[5m])) * 100)
@@ -143,6 +164,9 @@ groups:
               refId: A
           - refId: B
             datasourceUid: __expr__
+            relativeTimeRange:
+              from: 0
+              to: 0
             model:
               datasource:
                 type: __expr__
@@ -155,6 +179,9 @@ groups:
               type: reduce
           - refId: C
             datasourceUid: __expr__
+            relativeTimeRange:
+              from: 0
+              to: 0
             model:
               conditions:
                 - evaluator:
@@ -190,6 +217,9 @@ groups:
         data:
           - refId: A
             datasourceUid: bezqqznn81wqof
+            relativeTimeRange:
+              from: 600
+              to: 0
             model:
               # Compare 15-minute load against number of CPUs
               expr: |
@@ -200,6 +230,9 @@ groups:
               refId: A
           - refId: B
             datasourceUid: __expr__
+            relativeTimeRange:
+              from: 0
+              to: 0
             model:
               datasource:
                 type: __expr__
@@ -212,6 +245,9 @@ groups:
               type: reduce
           - refId: C
             datasourceUid: __expr__
+            relativeTimeRange:
+              from: 0
+              to: 0
             model:
               conditions:
                 - evaluator:
