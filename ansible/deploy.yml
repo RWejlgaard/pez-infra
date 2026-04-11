@@ -88,6 +88,7 @@
   roles:
     - role: docker_services
     - role: systemd_services
+    - role: mariadb
 
 # london-a: Monitoring stack (FreeBSD — Prometheus, Grafana)
 # Note: london-a uses FreeBSD; monitoring roles handle this via conditionals.

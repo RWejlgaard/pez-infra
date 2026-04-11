@@ -14,6 +14,6 @@ docker_services:
   - minecraft
   - smartctl-exporter
 
-# MaNGOS database backend — managed by apt, not Ansible
+# MaNGOS database backend — installed by apt; config managed by mariadb role
 system_packages_services:
   - mariadb
