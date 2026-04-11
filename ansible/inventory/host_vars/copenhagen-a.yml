@@ -17,3 +17,7 @@ docker_services:
 # MaNGOS database backend — managed by apt, not Ansible
 system_packages_services:
   - mariadb
+
+common_ufw_allowed_ports:
+  - {port: 3724, proto: tcp, comment: "MaNGOS Realmd"}
+  - {port: 8085, proto: tcp, comment: "MaNGOS World Server"}
