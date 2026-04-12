@@ -5,11 +5,11 @@
 
 services:
   plex-exporter:
-    image: ghcr.io/axsuul/plex-media-server-exporter
+    image: ghcr.io/jsclayton/prometheus-plex-exporter
     container_name: prom-plex-exporter
     restart: unless-stopped
     ports:
-      - "9000:9594"
+      - "9000:9000"
     environment:
-      PLEX_ADDR: "http://192.168.1.253:32400"
+      PLEX_SERVER: "http://192.168.1.253:32400"
       PLEX_TOKEN: "${PLEX_TOKEN}"
