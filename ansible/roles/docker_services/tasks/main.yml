@@ -2,9 +2,27 @@
 # Deploy Docker Compose services from the repo's services/ directory.
 # Expects docker_services list in host_vars and compose files in services/<name>/.
 
+- name: Ensure service directories exist
+  ansible.builtin.file:
+    path: "/opt/docker/{{ item }}"
+    state: directory
+    mode: '0755'
+  loop: "{{ docker_services | default([]) }}"
+
+- name: Template service .env files
+  ansible.builtin.template:
+    src: "{{ docker_services_dir | default(playbook_dir + '/services') }}/{{ item }}/.env.j2"
+    dest: "/opt/docker/{{ item }}/.env"
+    mode: '0600'
+  loop: "{{ docker_services | default([]) }}"
+  when: lookup('ansible.builtin.fileglob', (docker_services_dir | default(playbook_dir + '/services')) + '/' + item + '/.env.j2') | length > 0
+  no_log: true
+  failed_when: false
+  register: docker_services_env_files
+
 - name: Copy docker-compose files
-  ansible.builtin.copy:
-    src: "{{ playbook_dir }}/services/{{ item }}/docker-compose.yml"
+  ansible.builtin.template:
+    src: "{{ docker_services_dir | default(playbook_dir + '/services') }}/{{ item }}/docker-compose.yml"
     dest: "/opt/docker/{{ item }}/docker-compose.yml"
     mode: '0644'
   loop: "{{ docker_services | default([]) }}"
@@ -13,12 +31,13 @@
 
 - name: Copy service config files
   ansible.posix.synchronize:
-    src: "{{ playbook_dir }}/services/{{ item }}/"
+    src: "{{ docker_services_dir | default(playbook_dir + '/services') }}/{{ item }}/"
     dest: "/opt/docker/{{ item }}/"
     rsync_opts:
       - "--exclude=docker-compose.yml"
       - "--exclude=README.md"
       - "--exclude=.gitkeep"
+      - "--exclude=*.j2"
   loop: "{{ docker_services | default([]) }}"
   failed_when: false
 
@@ -38,5 +57,9 @@
     state: present
     pull: policy
   loop: "{{ docker_services_compose_files.results | default([]) }}"
-  when: item is not failed and item is changed
+  when: >
+    (item is not failed and item is changed) or
+    (docker_services_env_files.results | default([]) |
+     selectattr('item', 'equalto', item.item) |
+     selectattr('changed', 'equalto', true) | list | length > 0)
   failed_when: false
