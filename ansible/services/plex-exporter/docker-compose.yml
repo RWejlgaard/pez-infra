@@ -12,4 +12,4 @@ services:
       - "9000:9000"
     environment:
       PLEX_SERVER: "http://192.168.1.253:32400"
-      PLEX_TOKEN: "${PLEX_TOKEN}"
+      PLEX_TOKEN: "{{ plex_exporter_plex_token }}"
