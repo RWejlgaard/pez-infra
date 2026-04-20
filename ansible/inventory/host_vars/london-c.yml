@@ -1,0 +1,4 @@
+---
+host_role: idle
+host_description: "Idle/available"
+host_location: "London"
