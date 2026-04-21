@@ -2,6 +2,7 @@
 host_role: mail
 host_description: "Mail server (poste.io)"
 host_location: "Hetzner Cloud"
+prometheus_location: cloud
 ansible_python_interpreter: /usr/bin/python3
 
 docker_services:

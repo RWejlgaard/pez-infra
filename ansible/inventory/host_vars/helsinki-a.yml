@@ -2,6 +2,7 @@
 host_role: proxy
 host_description: "Reverse proxy (Caddy), main traffic gateway"
 host_location: "Hetzner Cloud"
+prometheus_location: cloud
 
 caddy_config_src: "{{ playbook_dir }}/services/caddy/Caddyfile"
 

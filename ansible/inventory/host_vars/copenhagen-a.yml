@@ -2,6 +2,7 @@
 host_role: gaming
 host_description: "Gaming servers (Minecraft, WoW/MaNGOS)"
 host_location: "Copenhagen"
+prometheus_location: copenhagen
 
 # MaNGOS runs as systemd services, not Docker
 # MariaDB is the MaNGOS database backend (character, world, auth DBs)

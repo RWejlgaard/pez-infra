@@ -11,19 +11,12 @@
         file: "{{ playbook_dir }}/../group_vars/all/secrets.yaml"
       no_log: true
   tasks:
-    - name: Check for Prometheus config
-      delegate_to: localhost
-      ansible.builtin.stat:
-        path: "{{ playbook_dir }}/../services/prometheus/prometheus.yml"
-      register: prometheus_config
-
     - name: Deploy Prometheus config
-      ansible.builtin.copy:
-        src: "{{ playbook_dir }}/../services/prometheus/prometheus.yml"
+      ansible.builtin.template:
+        src: "{{ playbook_dir }}/../services/prometheus/prometheus.yml.j2"
         dest: /usr/local/etc/prometheus.yml
         mode: '0644'
         backup: true
-      when: prometheus_config.stat.exists
       notify: Restart prometheus
 
     - name: Deploy Prometheus alerting rules

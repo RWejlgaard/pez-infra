@@ -2,6 +2,7 @@
 host_role: storage
 host_description: "Primary storage (ZFS), Docker services"
 host_location: "London"
+prometheus_location: london
 
 docker_services:
   - nextcloud-aio
