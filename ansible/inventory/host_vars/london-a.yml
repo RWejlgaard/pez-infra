@@ -3,6 +3,7 @@ node_exporter_bind_tailscale: true
 host_role: monitoring
 host_description: "Monitoring stack (Prometheus, Grafana)"
 host_location: "London"
+prometheus_location: london
 ansible_python_interpreter: /usr/local/bin/python3
 grafana_provisioning_dir: /usr/local/etc/grafana/provisioning
 
