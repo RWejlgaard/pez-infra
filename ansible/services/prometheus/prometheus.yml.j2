@@ -22,7 +22,15 @@ scrape_configs:
 
   - job_name: "octopus_exporter"
     static_configs:
-      - targets: ["100.123.72.87:9359"]
+{% for host in groups['all'] | sort %}
+{% set h = hostvars[host] %}
+{% if 'octopus-exporter' in (h.docker_services | default([])) %}
+      - targets: ["{{ h.ansible_host }}:9359"]
+        labels:
+          location: {{ h.prometheus_location }}
+          server: {{ host }}
+{% endif %}
+{% endfor %}
 
   - job_name: "node_exporter"
     static_configs:
