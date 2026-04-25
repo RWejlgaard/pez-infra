@@ -3,3 +3,6 @@ host_role: idle
 host_description: "Idle/available"
 host_location: "London"
 prometheus_location: london
+
+docker_services:
+  - octopus-exporter

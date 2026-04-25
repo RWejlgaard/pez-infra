@@ -1,0 +1,13 @@
+---
+# octopus-exporter - Octopus Energy metrics for Prometheus
+# Host: london-c (100.123.72.87)
+
+services:
+  octopus-exporter:
+    image: rwejlgaard/octopus_exporter:v1.1.0
+    container_name: octopus_exporter
+    restart: unless-stopped
+    ports:
+      - "9359:9359"
+    environment:
+      OCTOPUS_API_KEY: "{{ octopus_energy_api_key }}"
