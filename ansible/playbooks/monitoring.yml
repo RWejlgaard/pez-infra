@@ -10,6 +10,8 @@
       ansible.builtin.include_vars:
         file: "{{ playbook_dir }}/../group_vars/all/secrets.yaml"
       no_log: true
+  roles:
+    - prometheus
   tasks:
     - name: Deploy Prometheus config
       ansible.builtin.template:
@@ -77,11 +79,6 @@
       notify: Restart grafana
 
   handlers:
-    - name: Restart prometheus
-      ansible.builtin.service:
-        name: prometheus
-        state: restarted
-
     - name: Restart grafana
       ansible.builtin.service:
         name: grafana
