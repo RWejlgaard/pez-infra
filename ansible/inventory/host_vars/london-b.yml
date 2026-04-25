@@ -5,7 +5,6 @@ host_location: "London"
 prometheus_location: london
 
 docker_services:
-  - nextcloud-aio
   - jellyseerr
   - navidrome
   - slskd
@@ -32,7 +31,7 @@ node_exporter_extra_collectors:
   - zfs
 
 common_ufw_allowed_ports:
-  - {port: 32400, proto: tcp, comment: "Plex Media Server"}
-  - {port: 6881, proto: tcp, comment: "BitTorrent"}
-  - {port: 6881, proto: udp, comment: "BitTorrent"}
-  - {port: 445, proto: tcp, comment: "Samba"}
+  - { port: 32400, proto: tcp, comment: "Plex Media Server" }
+  - { port: 6881, proto: tcp, comment: "BitTorrent" }
+  - { port: 6881, proto: udp, comment: "BitTorrent" }
+  - { port: 445, proto: tcp, comment: "Samba" }

@@ -85,7 +85,6 @@ forward_auth localhost:9091 {
 | Apps dashboard | Authelia | Internal apps page |
 | Jellyfin, Plex | Own auth | Have built-in user management |
 | Overseerr, Jellyseerr | Own auth | Have built-in user management |
-| Nextcloud | Own auth | Has built-in user management |
 | Navidrome (music) | No auth* | Accessible directly |
 | Bitwarden | Own auth | Has built-in vault auth |
 | Forgejo (git) | Own auth | Has built-in user management |
@@ -124,5 +123,4 @@ The `Caddyfile.template` replaces hardcoded values with placeholders:
 
 - The live Caddyfile on helsinki-a is at `/etc/caddy/Caddyfile`
 - Caddy auto-provisions TLS certificates for all listed domains
-- Commented-out WebDAV block was replaced by the Nextcloud AIO reverse proxy
 - Static sites (`pez.sh`, `pez.solutions`, etc.) are served from `/srv/` on helsinki-a
