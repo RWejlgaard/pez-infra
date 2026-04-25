@@ -1,0 +1,7 @@
+---
+- name: Set Prometheus args in rc.conf (FreeBSD)
+  community.general.sysrc:
+    name: prometheus_args
+    value: "--storage.tsdb.retention.time={{ prometheus_retention_time }}"
+  when: ansible_facts["os_family"] == "FreeBSD"
+  notify: Restart prometheus
