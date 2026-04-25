@@ -40,7 +40,7 @@ The deploy playbook runs in stages, each independently taggable:
 3. **node-exporter** — Prometheus monitoring agent on all hosts
 4. **services** — Per-host service deployment:
    - `helsinki-a`: Caddy reverse proxy
-   - `london-b`: Docker Compose services (Nextcloud, Jellyseer, etc.)
+   - `london-b`: Docker Compose services (Jellyseer, etc.)
    - `nuremberg-a`: poste.io mail
    - `copenhagen-a`: Minecraft + MaNGOS systemd services
    - `london-a`: Prometheus + Grafana (FreeBSD)
