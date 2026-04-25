@@ -32,7 +32,7 @@
 - name: Set architecture fact
   ansible.builtin.set_fact:
     systemd_exporter_arch: >-
-      {{ ansible_architecture
+      {{ ansible_facts['architecture']
          | regex_replace('x86_64', 'amd64')
          | regex_replace('aarch64', 'arm64') }}
 
