@@ -36,15 +36,6 @@ resource "cloudflare_dns_record" "bitwarden" {
   ttl     = 1
 }
 
-resource "cloudflare_dns_record" "cloud" {
-  zone_id = cloudflare_zone.pez-sh.id
-  name    = "cloud"
-  type    = "A"
-  content = hcloud_server.helsinki-a.ipv4_address
-  proxied = false
-  ttl     = 1
-}
-
 resource "cloudflare_dns_record" "download" {
   zone_id = cloudflare_zone.pez-sh.id
   name    = "download"
@@ -246,15 +237,6 @@ resource "cloudflare_dns_record" "soulseek" {
 resource "cloudflare_dns_record" "status" {
   zone_id = cloudflare_zone.pez-sh.id
   name    = "status"
-  type    = "A"
-  content = hcloud_server.helsinki-a.ipv4_address
-  proxied = true
-  ttl     = 1
-}
-
-resource "cloudflare_dns_record" "thiswebsitedoesnotexist" {
-  zone_id = cloudflare_zone.pez-sh.id
-  name    = "thiswebsitedoesnotexist"
   type    = "A"
   content = hcloud_server.helsinki-a.ipv4_address
   proxied = true
