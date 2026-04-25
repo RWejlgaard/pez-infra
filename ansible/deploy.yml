@@ -64,29 +64,33 @@
     - role: status_page
     - role: systemd_services
 
-# london-b: Docker services (storage, apps) + media stack + backups
-- name: "Stage 4b: Services (london-b)"
-  hosts: london-b
-  tags: [services, london-b]
+# All docker hosts: deploy compose services
+- name: "Stage 4b: Docker services"
+  hosts: docker_hosts
+  tags: [services, docker_services]
   roles:
     - role: docker_services
-    - role: media_stack
-    - role: backup
 
-# nuremberg-a: Mail (poste.io via Docker)
-- name: "Stage 4c: Mail (nuremberg-a)"
+# nuremberg-a: Firewall
+- name: "Stage 4c: Firewall (nuremberg-a)"
   hosts: nuremberg-a
   tags: [services, mail]
   roles:
     - role: firewall_alpine
-    - role: docker_services
 
-# copenhagen-a: Gaming servers (MaNGOS + Minecraft via Docker)
-- name: "Stage 4d: Gaming servers (copenhagen-a)"
+# london-b: Media stack + backups
+- name: "Stage 4d: Media stack + backups (london-b)"
+  hosts: london-b
+  tags: [services, london-b]
+  roles:
+    - role: media_stack
+    - role: backup
+
+# copenhagen-a: Gaming servers
+- name: "Stage 4e: Gaming servers (copenhagen-a)"
   hosts: copenhagen-a
   tags: [services, gaming]
   roles:
-    - role: docker_services
     - role: systemd_services
     - role: mariadb
 
