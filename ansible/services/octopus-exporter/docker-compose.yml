@@ -9,3 +9,5 @@ services:
     restart: unless-stopped
     ports:
       - "9359:9359"
+    environment:
+      OCTOPUS_API_KEY: "{{ octopus_energy_api_key }}"
