@@ -72,12 +72,6 @@ services:
       - "/root/authelia/secrets/LLDAP_JWT_SECRET:/secrets/LLDAP_JWT_SECRET:ro"
     networks:
       - authelia
-    # healthcheck:
-    # test: ["CMD", "nc", "-zv", "localhost", "3890"]
-    # interval: 10s
-    # timeout: 5s
-    # retries: 5
-    # start_period: 10s
 
 networks:
   authelia:
