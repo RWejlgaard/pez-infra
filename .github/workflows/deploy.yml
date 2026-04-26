@@ -4,15 +4,15 @@ on:
   workflow_dispatch:
     inputs:
       target:
-        description: 'Target host (e.g. helsinki-a, london-b, all)'
+        description: "Target host (e.g. helsinki-a, london-b, all)"
         required: true
         type: string
       playbook:
-        description: 'Ansible playbook to run (e.g. site.yml, update.yml)'
+        description: "Ansible playbook to run (e.g. site.yml, update.yml)"
         required: true
         type: string
       dry_run:
-        description: 'Dry run (--check mode)'
+        description: "Dry run (--check mode)"
         required: false
         type: boolean
         default: true
@@ -30,7 +30,7 @@ jobs:
     outputs:
       hosts: ${{ steps.prepare.outputs.hosts }}
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v6
 
       - name: Build host matrix
         id: prepare
@@ -48,7 +48,7 @@ jobs:
     needs: prepare
     name: Deploy ${{ inputs.playbook }} → ${{ matrix.host }}
     runs-on: ubuntu-latest
-    environment: production  # requires manual approval in repo settings
+    environment: production # requires manual approval in repo settings
     permissions:
       id-token: write
     strategy:
