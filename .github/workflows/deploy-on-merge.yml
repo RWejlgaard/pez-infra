@@ -20,7 +20,7 @@ jobs:
     outputs:
       hosts: ${{ steps.discover.outputs.hosts }}
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v6
 
       - name: Read hosts from inventory
         id: discover

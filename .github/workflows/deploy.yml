@@ -56,7 +56,7 @@ jobs:
         host: ${{ fromJson(needs.prepare.outputs.hosts) }}
       fail-fast: false
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v6
 
       - name: Set up Tailscale
         uses: tailscale/github-action@v4
