@@ -3,11 +3,6 @@
   ansible.builtin.systemd:
     daemon_reload: true
 
-- name: Restart promtail
-  ansible.builtin.systemd:
-    name: promtail
-    state: restarted
-
 - name: Restart smbd
   ansible.builtin.systemd:
     name: smbd

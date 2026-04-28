@@ -52,6 +52,24 @@
     - role: systemd_exporter
 
 # ──────────────────────────────────────────────
+# Stage 3c: Alloy — all hosts (log shipping agent)
+# ──────────────────────────────────────────────
+- name: "Stage 3c: Alloy"
+  hosts: alloy_hosts
+  tags: [monitoring, alloy]
+  roles:
+    - role: alloy
+
+# ──────────────────────────────────────────────
+# Stage 3d: Loki — london-a (log aggregation server)
+# ──────────────────────────────────────────────
+- name: "Stage 3d: Loki"
+  hosts: london-a
+  tags: [monitoring, loki]
+  roles:
+    - role: loki
+
+# ──────────────────────────────────────────────
 # Stage 4: Per-host services
 # ──────────────────────────────────────────────
 

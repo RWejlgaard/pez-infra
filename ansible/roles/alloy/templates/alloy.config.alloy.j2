@@ -1,0 +1,95 @@
+// Ansible managed — generated from alloy.config.alloy.j2
+// Grafana Alloy log shipping agent — {{ inventory_hostname }}
+
+// ─── System logs ─────────────────────────────────────────────────────────────
+
+{% if ansible_facts['os_family'] == 'Debian' %}
+local.file_match "system" {
+  path_targets = [
+    {"__path__" = "/var/log/syslog",   "job" = "syslog", "host" = "{{ inventory_hostname }}"},
+    {"__path__" = "/var/log/auth.log", "job" = "auth",   "host" = "{{ inventory_hostname }}"},
+    {"__path__" = "/var/log/kern.log", "job" = "kern",   "host" = "{{ inventory_hostname }}"},
+  ]
+}
+{% elif ansible_facts['os_family'] == 'Alpine' %}
+local.file_match "system" {
+  path_targets = [
+    {"__path__" = "/var/log/messages", "job" = "messages", "host" = "{{ inventory_hostname }}"},
+  ]
+}
+{% elif ansible_facts['os_family'] == 'FreeBSD' %}
+local.file_match "system" {
+  path_targets = [
+    {"__path__" = "/var/log/messages",  "job" = "syslog", "host" = "{{ inventory_hostname }}"},
+    {"__path__" = "/var/log/auth.log",  "job" = "auth",   "host" = "{{ inventory_hostname }}"},
+  ]
+}
+{% endif %}
+
+loki.source.file "system" {
+  targets    = local.file_match.system.targets
+  forward_to = [loki.write.default.receiver]
+}
+
+{% if 'docker_hosts' in group_names %}
+// ─── Docker container logs ────────────────────────────────────────────────────
+
+discovery.docker "containers" {
+  host             = "unix:///var/run/docker.sock"
+  refresh_interval = "15s"
+}
+
+discovery.relabel "docker_containers" {
+  targets = discovery.docker.containers.targets
+
+  rule {
+    source_labels = ["__meta_docker_container_state"]
+    action        = "keep"
+    regex         = "running"
+  }
+  rule {
+    source_labels = ["__meta_docker_container_name"]
+    regex         = "/(.*)"
+    target_label  = "container"
+  }
+  rule {
+    source_labels = ["__meta_docker_container_label_com_docker_compose_service"]
+    target_label  = "compose_service"
+  }
+  rule {
+    source_labels = ["__meta_docker_container_label_com_docker_compose_project"]
+    target_label  = "compose_project"
+  }
+}
+
+loki.source.docker "containers" {
+  host       = "unix:///var/run/docker.sock"
+  targets    = discovery.relabel.docker_containers.output
+  forward_to = [loki.write.default.receiver]
+  labels     = {"host" = "{{ inventory_hostname }}"}
+}
+{% endif %}
+
+{% if inventory_hostname == 'london-b' %}
+// ─── london-b app logs ────────────────────────────────────────────────────────
+
+local.file_match "apps" {
+  path_targets = [
+    {"__path__" = "/var/lib/plexmediaserver/Library/Application Support/Plex Media Server/Logs/*.log", "job" = "plex",     "host" = "london-b"},
+    {"__path__" = "/var/log/jellyfin/*.log",                                                            "job" = "jellyfin", "host" = "london-b"},
+  ]
+}
+
+loki.source.file "apps" {
+  targets    = local.file_match.apps.targets
+  forward_to = [loki.write.default.receiver]
+}
+{% endif %}
+
+// ─── Loki output ──────────────────────────────────────────────────────────────
+
+loki.write "default" {
+  endpoint {
+    url = "{{ loki_push_url }}"
+  }
+}

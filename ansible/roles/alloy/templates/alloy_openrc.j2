@@ -1,0 +1,14 @@
+#!/sbin/openrc-run
+# Ansible managed
+
+name="alloy"
+description="Grafana Alloy log shipping agent"
+command="/usr/local/bin/alloy"
+command_args="run --storage.path=/var/lib/alloy/data /etc/alloy/config.alloy"
+command_background=true
+pidfile="/run/${RC_SVCNAME}.pid"
+
+depend() {
+    need net
+    use logger
+}
