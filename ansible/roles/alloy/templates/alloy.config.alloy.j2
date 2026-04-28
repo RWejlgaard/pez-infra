@@ -90,6 +90,6 @@ loki.source.file "apps" {
 
 loki.write "default" {
   endpoint {
-    url = "{{ loki_push_url }}"
+    url = "{{ alloy_loki_url }}"
   }
 }
