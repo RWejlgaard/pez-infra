@@ -38,6 +38,16 @@
     - /var/db/alloy
   when: ansible_facts["os_family"] == "FreeBSD"
 
+# ── Docker socket access ─────────────────────────────────────────────────────
+
+- name: Add alloy to docker group
+  ansible.builtin.user:
+    name: alloy
+    groups: docker
+    append: true
+  when: "'docker_hosts' in group_names"
+  notify: "Restart alloy ({{ ansible_facts['os_family'] }})"
+
 # ── Config — all OS ───────────────────────────────────────────────────────────
 
 - name: Set alloy config path fact
