@@ -1,17 +1,10 @@
 ---
 # Install and configure Grafana Alloy log shipping agent.
-# Debian/Ubuntu: Grafana apt repo + alloy package.
+# Debian/Ubuntu: alloy package (included in default repos).
 # Alpine: musl binary download from GitHub + OpenRC init script.
 # FreeBSD: pkgng (grafana-alloy).
 
-# ── Debian/Ubuntu: Grafana apt repo ─────────────────────────────────────────
-
-- name: Create apt keyrings directory (Debian)
-  ansible.builtin.file:
-    path: /etc/apt/keyrings
-    state: directory
-    mode: '0755'
-  when: ansible_facts["os_family"] == "Debian"
+# ── Debian/Ubuntu ────────────────────────────────────────────────────────────
 
 - name: Set architecture fact
   ansible.builtin.set_fact:
@@ -19,25 +12,7 @@
       {{ ansible_facts['architecture']
          | regex_replace('x86_64', 'amd64')
          | regex_replace('aarch64', 'arm64') }}
-  when: ansible_facts["os_family"] in ["Debian", "Alpine"]
-
-- name: Add Grafana GPG key (Debian)
-  ansible.builtin.get_url:
-    url: https://apt.grafana.com/gpg.key
-    dest: /etc/apt/keyrings/grafana.gpg
-    mode: '0644'
-    force: false
-  when: ansible_facts["os_family"] == "Debian"
-
-- name: Add Grafana apt repository (Debian)
-  ansible.builtin.apt_repository:
-    repo: >-
-      deb [arch={{ alloy_arch }} signed-by=/etc/apt/keyrings/grafana.gpg]
-      https://apt.grafana.com stable main
-    filename: grafana
-    state: present
-    update_cache: true
-  when: ansible_facts["os_family"] == "Debian"
+  when: ansible_facts["os_family"] == "Alpine"
 
 - name: Install alloy (Debian)
   ansible.builtin.apt:
@@ -82,7 +57,7 @@
       ansible.builtin.get_url:
         url: >-
           https://github.com/grafana/alloy/releases/download/v{{ alloy_version
-          }}/alloy-linux-{{ alloy_arch }}-musl.zip
+          }}/alloy-linux-{{ alloy_arch }}.zip
         dest: /tmp/alloy.zip
         mode: '0644'
 
@@ -94,7 +69,7 @@
 
     - name: Install alloy binary
       ansible.builtin.copy:
-        src: "/tmp/alloy-linux-{{ alloy_arch }}-musl"
+        src: "/tmp/alloy-linux-{{ alloy_arch }}"
         dest: /usr/local/bin/alloy
         mode: '0755'
         owner: root
@@ -108,7 +83,7 @@
         state: absent
       loop:
         - /tmp/alloy.zip
-        - "/tmp/alloy-linux-{{ alloy_arch }}-musl"
+        - "/tmp/alloy-linux-{{ alloy_arch }}"
 
 - name: Deploy alloy OpenRC init script (Alpine)
   ansible.builtin.template:
