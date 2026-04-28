@@ -1,7 +1,7 @@
 ---
 # media_stack role — deploys the full media stack on london-b
 # Manages: *arr suite, jellyfin, plex, transmission, samba,
-#           ollama, promtail, vsftpd, and cron jobs.
+#           ollama, vsftpd, and cron jobs.
 
 # ── Systemd service units (custom, not package-managed) ──
 
@@ -17,7 +17,6 @@
     - readarr
     - whisparr
     - ollama
-    - promtail
   notify: Reload systemd daemon
 
 - name: Enable and start custom systemd services
@@ -31,7 +30,6 @@
     - lidarr
     - readarr
     - ollama
-    - promtail
 
 # Whisparr is installed but disabled (kept as-is)
 - name: Ensure whisparr unit is present but disabled
@@ -81,13 +79,6 @@
     enabled: true
 
 # ── Configuration files ──
-
-- name: Deploy promtail config
-  ansible.builtin.copy:
-    src: "{{ playbook_dir }}/services/promtail/config/london-b.yml"
-    dest: /etc/promtail/config.yml
-    mode: '0644'
-  notify: Restart promtail
 
 - name: Deploy samba config
   ansible.builtin.copy:

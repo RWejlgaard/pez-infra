@@ -14,10 +14,12 @@ zfs_pools:
 # 0 12 * * sun zpool scrub zroot
 zfs_scrub_schedule: "0 12 * * 0"
 
+alloy_loki_url: "http://localhost:3100/loki/api/v1/push"
+
 # --- Services enabled in rc.conf ---
 
 # Core services (documented)
-# sshd, ntpd, powerd, zfs, tailscaled, grafana, prometheus, node_exporter
+# sshd, ntpd, powerd, zfs, tailscaled, grafana, prometheus, node_exporter, loki, alloy
 
 # --- Disabled/removed services ---
 # cloudflared — removed 2026-04-03 (PESO-134). Replaced by Caddy + Authelia.

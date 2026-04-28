@@ -1,0 +1,187 @@
+---
+# Install and configure Grafana Alloy log shipping agent.
+# Debian/Ubuntu: Grafana apt repo + alloy package.
+# Alpine: musl binary download from GitHub + OpenRC init script.
+# FreeBSD: pkgng (grafana-alloy).
+
+# ── Debian/Ubuntu: Grafana apt repo ─────────────────────────────────────────
+
+- name: Create apt keyrings directory (Debian)
+  ansible.builtin.file:
+    path: /etc/apt/keyrings
+    state: directory
+    mode: '0755'
+  when: ansible_facts["os_family"] == "Debian"
+
+- name: Set architecture fact
+  ansible.builtin.set_fact:
+    alloy_arch: >-
+      {{ ansible_facts['architecture']
+         | regex_replace('x86_64', 'amd64')
+         | regex_replace('aarch64', 'arm64') }}
+  when: ansible_facts["os_family"] in ["Debian", "Alpine"]
+
+- name: Add Grafana GPG key (Debian)
+  ansible.builtin.get_url:
+    url: https://apt.grafana.com/gpg.key
+    dest: /etc/apt/keyrings/grafana.gpg
+    mode: '0644'
+    force: false
+  when: ansible_facts["os_family"] == "Debian"
+
+- name: Add Grafana apt repository (Debian)
+  ansible.builtin.apt_repository:
+    repo: >-
+      deb [arch={{ alloy_arch }} signed-by=/etc/apt/keyrings/grafana.gpg]
+      https://apt.grafana.com stable main
+    filename: grafana
+    state: present
+    update_cache: true
+  when: ansible_facts["os_family"] == "Debian"
+
+- name: Install alloy (Debian)
+  ansible.builtin.apt:
+    name: alloy
+    state: present
+  when: ansible_facts["os_family"] == "Debian"
+
+# ── Alpine: binary download (musl build) ─────────────────────────────────────
+
+- name: Create alloy directories (Alpine)
+  ansible.builtin.file:
+    path: "{{ item }}"
+    state: directory
+    mode: '0755'
+  loop:
+    - /etc/alloy
+    - /var/lib/alloy/data
+  when: ansible_facts["os_family"] == "Alpine"
+
+- name: Check if alloy binary exists (Alpine)
+  ansible.builtin.stat:
+    path: /usr/local/bin/alloy
+  register: alloy_bin
+  when: ansible_facts["os_family"] == "Alpine"
+
+- name: Get installed alloy version (Alpine)
+  ansible.builtin.command: /usr/local/bin/alloy --version
+  register: alloy_installed_version
+  changed_when: false
+  failed_when: false
+  when:
+    - ansible_facts["os_family"] == "Alpine"
+    - alloy_bin.stat.exists
+
+- name: Download and install alloy binary (Alpine)
+  when:
+    - ansible_facts["os_family"] == "Alpine"
+    - not alloy_bin.stat.exists or
+      alloy_version not in (alloy_installed_version.stdout | default(''))
+  block:
+    - name: Download alloy musl zip
+      ansible.builtin.get_url:
+        url: >-
+          https://github.com/grafana/alloy/releases/download/v{{ alloy_version
+          }}/alloy-linux-{{ alloy_arch }}-musl.zip
+        dest: /tmp/alloy.zip
+        mode: '0644'
+
+    - name: Extract alloy binary
+      ansible.builtin.unarchive:
+        src: /tmp/alloy.zip
+        dest: /tmp
+        remote_src: true
+
+    - name: Install alloy binary
+      ansible.builtin.copy:
+        src: "/tmp/alloy-linux-{{ alloy_arch }}-musl"
+        dest: /usr/local/bin/alloy
+        mode: '0755'
+        owner: root
+        group: root
+        remote_src: true
+      notify: Restart alloy (Alpine)
+
+    - name: Clean up alloy download
+      ansible.builtin.file:
+        path: "{{ item }}"
+        state: absent
+      loop:
+        - /tmp/alloy.zip
+        - "/tmp/alloy-linux-{{ alloy_arch }}-musl"
+
+- name: Deploy alloy OpenRC init script (Alpine)
+  ansible.builtin.template:
+    src: alloy_openrc.j2
+    dest: /etc/init.d/alloy
+    mode: '0755'
+  when: ansible_facts["os_family"] == "Alpine"
+  notify: Restart alloy (Alpine)
+
+# ── FreeBSD: pkgng ────────────────────────────────────────────────────────────
+
+- name: Install alloy (FreeBSD)
+  community.general.pkgng:
+    name: alloy
+    state: present
+  when: ansible_facts["os_family"] == "FreeBSD"
+
+- name: Create alloy directories (FreeBSD)
+  ansible.builtin.file:
+    path: "{{ item }}"
+    state: directory
+    mode: '0755'
+  loop:
+    - /usr/local/etc/alloy
+    - /var/db/alloy
+  when: ansible_facts["os_family"] == "FreeBSD"
+
+# ── Config — all OS ───────────────────────────────────────────────────────────
+
+- name: Set alloy config path fact
+  ansible.builtin.set_fact:
+    alloy_config_path: >-
+      {{ '/usr/local/etc/alloy/config.alloy'
+         if ansible_facts['os_family'] == 'FreeBSD'
+         else '/etc/alloy/config.alloy' }}
+
+- name: Deploy alloy config
+  ansible.builtin.template:
+    src: alloy.config.alloy.j2
+    dest: "{{ alloy_config_path }}"
+    mode: '0644'
+  notify: "Restart alloy ({{ ansible_facts['os_family'] }})"
+
+# ── Service enable + start ────────────────────────────────────────────────────
+
+- name: Enable and start alloy (Debian)
+  ansible.builtin.service:
+    name: alloy
+    state: started
+    enabled: true
+  when: ansible_facts["os_family"] == "Debian"
+
+- name: Enable and start alloy (Alpine)
+  ansible.builtin.service:
+    name: alloy
+    state: started
+    enabled: true
+  when: ansible_facts["os_family"] == "Alpine"
+
+- name: Enable alloy (FreeBSD)
+  community.general.sysrc:
+    name: alloy_enable
+    value: "YES"
+  when: ansible_facts["os_family"] == "FreeBSD"
+
+- name: Set alloy config in rc.conf (FreeBSD)
+  community.general.sysrc:
+    name: alloy_config
+    value: /usr/local/etc/alloy/config.alloy
+  when: ansible_facts["os_family"] == "FreeBSD"
+
+- name: Start alloy (FreeBSD)
+  ansible.builtin.service:
+    name: alloy
+    state: started
+  when: ansible_facts["os_family"] == "FreeBSD"
