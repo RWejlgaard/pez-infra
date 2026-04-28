@@ -1,18 +1,10 @@
 ---
 # Install and configure Grafana Alloy log shipping agent.
 # Debian/Ubuntu: alloy package (included in default repos).
-# Alpine: musl binary download from GitHub + OpenRC init script.
+# Alpine: alloy package (included in default repos).
 # FreeBSD: pkgng (grafana-alloy).
 
 # ── Debian/Ubuntu ────────────────────────────────────────────────────────────
-
-- name: Set architecture fact
-  ansible.builtin.set_fact:
-    alloy_arch: >-
-      {{ ansible_facts['architecture']
-         | regex_replace('x86_64', 'amd64')
-         | regex_replace('aarch64', 'arm64') }}
-  when: ansible_facts["os_family"] == "Alpine"
 
 - name: Install alloy (Debian)
   ansible.builtin.apt:
@@ -20,78 +12,13 @@
     state: present
   when: ansible_facts["os_family"] == "Debian"
 
-# ── Alpine: binary download (musl build) ─────────────────────────────────────
+# ── Alpine ───────────────────────────────────────────────────────────────────
 
-- name: Create alloy directories (Alpine)
-  ansible.builtin.file:
-    path: "{{ item }}"
-    state: directory
-    mode: '0755'
-  loop:
-    - /etc/alloy
-    - /var/lib/alloy/data
+- name: Install alloy (Alpine)
+  community.general.apk:
+    name: alloy
+    state: present
   when: ansible_facts["os_family"] == "Alpine"
-
-- name: Check if alloy binary exists (Alpine)
-  ansible.builtin.stat:
-    path: /usr/local/bin/alloy
-  register: alloy_bin
-  when: ansible_facts["os_family"] == "Alpine"
-
-- name: Get installed alloy version (Alpine)
-  ansible.builtin.command: /usr/local/bin/alloy --version
-  register: alloy_installed_version
-  changed_when: false
-  failed_when: false
-  when:
-    - ansible_facts["os_family"] == "Alpine"
-    - alloy_bin.stat.exists
-
-- name: Download and install alloy binary (Alpine)
-  when:
-    - ansible_facts["os_family"] == "Alpine"
-    - not alloy_bin.stat.exists or
-      alloy_version not in (alloy_installed_version.stdout | default(''))
-  block:
-    - name: Download alloy musl zip
-      ansible.builtin.get_url:
-        url: >-
-          https://github.com/grafana/alloy/releases/download/v{{ alloy_version
-          }}/alloy-linux-{{ alloy_arch }}.zip
-        dest: /tmp/alloy.zip
-        mode: '0644'
-
-    - name: Extract alloy binary
-      ansible.builtin.unarchive:
-        src: /tmp/alloy.zip
-        dest: /tmp
-        remote_src: true
-
-    - name: Install alloy binary
-      ansible.builtin.copy:
-        src: "/tmp/alloy-linux-{{ alloy_arch }}"
-        dest: /usr/local/bin/alloy
-        mode: '0755'
-        owner: root
-        group: root
-        remote_src: true
-      notify: Restart alloy (Alpine)
-
-    - name: Clean up alloy download
-      ansible.builtin.file:
-        path: "{{ item }}"
-        state: absent
-      loop:
-        - /tmp/alloy.zip
-        - "/tmp/alloy-linux-{{ alloy_arch }}"
-
-- name: Deploy alloy OpenRC init script (Alpine)
-  ansible.builtin.template:
-    src: alloy_openrc.j2
-    dest: /etc/init.d/alloy
-    mode: '0755'
-  when: ansible_facts["os_family"] == "Alpine"
-  notify: Restart alloy (Alpine)
 
 # ── FreeBSD: pkgng ────────────────────────────────────────────────────────────
 

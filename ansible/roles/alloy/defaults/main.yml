@@ -1,4 +1,2 @@
 ---
-# Used for Alpine binary download only; Debian uses the Grafana apt repo.
-alloy_version: "1.5.1"
 alloy_loki_url: "http://{{ hostvars['london-a']['ansible_host'] }}:3100/loki/api/v1/push"
