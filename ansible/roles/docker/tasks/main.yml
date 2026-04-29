@@ -91,11 +91,11 @@
 - name: Install Loki Docker logging plugin
   ansible.builtin.command:
     cmd: docker plugin install grafana/loki-docker-driver:latest --alias loki --grant-all-permissions
-  register: loki_plugin_install
-  changed_when: "'Installed plugin' in loki_plugin_install.stdout"
+  register: docker_loki_plugin_install
+  changed_when: "'Installed plugin' in docker_loki_plugin_install.stdout"
   failed_when:
-    - loki_plugin_install.rc != 0
-    - "'already exists' not in loki_plugin_install.stderr"
+    - docker_loki_plugin_install.rc != 0
+    - "'already exists' not in docker_loki_plugin_install.stderr"
 
 - name: Deploy Docker daemon.json
   ansible.builtin.template:
