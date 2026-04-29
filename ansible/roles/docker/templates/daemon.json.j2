@@ -1,0 +1,12 @@
+{{ {
+  "log-driver": "loki",
+  "log-opts": {
+    "loki-url": "http://" ~ hostvars['london-a']['ansible_host'] ~ ":3100/loki/api/v1/push",
+    "loki-external-labels": "host=" ~ inventory_hostname ~ ",job=docker",
+    "loki-retries": "5",
+    "loki-batch-size": "400",
+    "loki-timeout": "10s",
+    "mode": "non-blocking",
+    "max-buffer-size": "5m"
+  }
+} | combine(docker_daemon_extra | default({})) | to_nice_json }}

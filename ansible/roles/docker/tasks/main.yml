@@ -86,6 +86,26 @@
     state: started
     enabled: true
 
+# ── Loki logging driver ───────────────────────────────────────────────────────
+
+- name: Install Loki Docker logging plugin
+  ansible.builtin.command:
+    cmd: docker plugin install grafana/loki-docker-driver:latest --alias loki --grant-all-permissions
+  register: loki_plugin_install
+  changed_when: "'Installed plugin' in loki_plugin_install.stdout"
+  failed_when:
+    - loki_plugin_install.rc != 0
+    - "'already exists' not in loki_plugin_install.stderr"
+
+- name: Deploy Docker daemon.json
+  ansible.builtin.template:
+    src: daemon.json.j2
+    dest: /etc/docker/daemon.json
+    mode: '0644'
+  notify: Restart docker
+
+# ── Compose project directories ───────────────────────────────────────────────
+
 - name: Create docker compose project directories
   ansible.builtin.file:
     path: "/opt/docker/{{ item }}"
