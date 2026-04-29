@@ -3,22 +3,6 @@ resource "hcloud_zone" "pezsh" {
   mode = "primary"
 }
 
-resource "hcloud_zone_rrset" "A_www" {
-  zone = hcloud_zone.pezsh.name
-  name = "www"
-  type = "A"
-
-  ttl = 300
-
-  labels = {
-    key = "value"
-  }
-
-  records = [
-    { value = "201.78.10.45", comment = "web server 1" },
-  ]
-}
-
 # =============================================================================
 # A Records
 # =============================================================================
@@ -287,7 +271,7 @@ resource "hcloud_zone_rrset" "TXT_dkim" {
   name    = "dkim._domainkey"
   type    = "TXT"
   ttl     = 300
-  records = [{ value = "\"v=DKIM1;k=rsa;t=s;s=email;p=MIIBIjANBgkqhkiG9w0BAQEFAAOCAQ8AMIIBCgKCAQEAmT/TGkPkfbjleqRYuQoI67/xvM0J5gGmdlzo2jO5qTABz5+nzOS+PefrXkeEZ0IZrpLPKqLyi7K469Ql+HG5wDFDxQRRG7lHJkWJ4tnZgjZWgeszFPhoME74lT6i+j3x29WyxhyzNg0f3NhSwttOe5knmS4zsOb+JK4jShoF9zZkOUCHAZ/vKvYtJdV+8qpmU8wfgyrzN1OWxjHIjzPP8iMD4g0iCfobbvSvWXHYBveCS7b/Nr3jw3E8twtEAUEGYNGd4h0wKNbNagYUsb5My8tMxQQwZf6imKHgCeYC7buH8TvaJHATReeea4Dzj9UzdPgwdbFLiMB/HXlN0GPhlQIDAQAB\"" }]
+  records = [{ value = "\"v=DKIM1;k=rsa;t=s;s=email;p=MIIBIjANBgkqhkiG9w0BAQEFAAOCAQ8AMIIBCgKCAQEAmT/TGkPkfbjleqRYuQoI67/xvM0J5gGmdlzo2jO5qTABz5+nzOS+PefrXkeEZ0IZrpLPKqLyi7K469Ql+HG5wDFDxQRRG7lHJkWJ4tnZgjZWgeszFPhoME74lT6i+j3x29WyxhyzNg0f3NhSwttOe5knmS4zsOb+JK4jShoF9zZkOUCHAZ/vKvY\" \"tJdV+8qpmU8wfgyrzN1OWxjHIjzPP8iMD4g0iCfobbvSvWXHYBveCS7b/Nr3jw3E8twtEAUEGYNGd4h0wKNbNagYUsb5My8tMxQQwZf6imKHgCeYC7buH8TvaJHATReeea4Dzj9UzdPgwdbFLiMB/HXlN0GPhlQIDAQAB\"" }]
 }
 
 resource "hcloud_zone_rrset" "TXT_dmarc" {
