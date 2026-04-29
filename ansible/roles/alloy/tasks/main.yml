@@ -20,6 +20,15 @@
     state: present
   when: ansible_facts["os_family"] == "Alpine"
 
+- name: Fix alloy storage dir ownership (Alpine)
+  ansible.builtin.file:
+    path: /var/lib/alloy
+    state: directory
+    owner: alloy
+    group: alloy
+    recurse: true
+  when: ansible_facts["os_family"] == "Alpine"
+
 # ── FreeBSD: pkgng ────────────────────────────────────────────────────────────
 
 - name: Install alloy (FreeBSD)
@@ -28,14 +37,13 @@
     state: present
   when: ansible_facts["os_family"] == "FreeBSD"
 
-- name: Create alloy directories (FreeBSD)
+- name: Fix alloy storage dir ownership (FreeBSD)
   ansible.builtin.file:
-    path: "{{ item }}"
+    path: /var/alloy
     state: directory
+    owner: nobody
+    group: nobody
     mode: '0755'
-  loop:
-    - /usr/local/etc/alloy
-    - /var/db/alloy
   when: ansible_facts["os_family"] == "FreeBSD"
 
 # ── Docker socket access ─────────────────────────────────────────────────────
@@ -53,7 +61,7 @@
 - name: Set alloy config path fact
   ansible.builtin.set_fact:
     alloy_config_path: >-
-      {{ '/usr/local/etc/alloy/config.alloy'
+      {{ '/usr/local/etc/alloy.flow'
          if ansible_facts['os_family'] == 'FreeBSD'
          else '/etc/alloy/config.alloy' }}
 
@@ -84,12 +92,6 @@
   community.general.sysrc:
     name: alloy_enable
     value: "YES"
-  when: ansible_facts["os_family"] == "FreeBSD"
-
-- name: Set alloy config in rc.conf (FreeBSD)
-  community.general.sysrc:
-    name: alloy_config
-    value: /usr/local/etc/alloy/config.alloy
   when: ansible_facts["os_family"] == "FreeBSD"
 
 - name: Start alloy (FreeBSD)
