@@ -60,7 +60,6 @@ resource "hcloud_zone_rrset" "MX_root" {
   ttl  = 300
   records = [
     { value = "10 mail.pez.sh." },
-    { value = "20 mail.pez.sh." },
   ]
 }
 
