@@ -2,11 +2,6 @@ terraform {
   required_version = ">= 1.6.0"
 
   required_providers {
-    cloudflare = {
-      source  = "cloudflare/cloudflare"
-      version = "~> 5.19"
-    }
-    
     hcloud = {
       source  = "hetznercloud/hcloud"
       version = "~> 1.45"
@@ -23,11 +18,6 @@ terraform {
     skip_region_validation      = true
     # Credentials read from AWS_ACCESS_KEY_ID / AWS_SECRET_ACCESS_KEY env vars
   }
-}
-
-provider "cloudflare" {
-  email   = local.secrets["cloudflare_email"]
-  api_token = local.secrets["cloudflare_api_key"]
 }
 
 provider "hcloud" {

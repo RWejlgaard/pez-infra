@@ -1,192 +1,45 @@
-resource "hcloud_firewall" "nuremberg-a" {
-  name = "nuremberg-a"
+locals {
+  all_ips = ["0.0.0.0/0", "::/0"]
 
-  rule {
-    direction = "in"
-    protocol  = "tcp"
-    port = "22"
-    source_ips = [
-      "0.0.0.0/0",
-      "::/0"
-    ]
-  }
-
-  # poste.io mail server ports
-  rule {
-    direction = "in"
-    protocol  = "tcp"
-    port      = "25"
-    source_ips = [
-      "0.0.0.0/0",
-      "::/0"
-    ]
-  }
-
-  rule {
-    direction = "in"
-    protocol  = "tcp"
-    port      = "80"
-    source_ips = [
-      "0.0.0.0/0",
-      "::/0"
-    ]
-  }
-
-  rule {
-    direction = "in"
-    protocol  = "tcp"
-    port      = "110"
-    source_ips = [
-      "0.0.0.0/0",
-      "::/0"
-    ]
-  }
-
-  rule {
-    direction = "in"
-    protocol  = "tcp"
-    port      = "143"
-    source_ips = [
-      "0.0.0.0/0",
-      "::/0"
-    ]
-  }
-
-  rule {
-    direction = "in"
-    protocol  = "tcp"
-    port      = "443"
-    source_ips = [
-      "0.0.0.0/0",
-      "::/0"
-    ]
-  }
-
-  rule {
-    direction = "in"
-    protocol  = "tcp"
-    port      = "465"
-    source_ips = [
-      "0.0.0.0/0",
-      "::/0"
-    ]
-  }
-
-  rule {
-    direction = "in"
-    protocol  = "tcp"
-    port      = "587"
-    source_ips = [
-      "0.0.0.0/0",
-      "::/0"
-    ]
-  }
-
-  rule {
-    direction = "in"
-    protocol  = "tcp"
-    port      = "993"
-    source_ips = [
-      "0.0.0.0/0",
-      "::/0"
-    ]
-  }
-
-  rule {
-    direction = "in"
-    protocol  = "tcp"
-    port      = "995"
-    source_ips = [
-      "0.0.0.0/0",
-      "::/0"
-    ]
-  }
-
-  rule {
-    direction = "out"
-    protocol = "tcp"
-    port = "any"
-    destination_ips = [
-        "0.0.0.0/0",
-        "::/0"
-    ]
-  }
-
-  rule {
-    direction = "out"
-    protocol = "udp"
-    port = "any"
-    destination_ips = [
-        "0.0.0.0/0",
-        "::/0"
-    ]
+  machines = {
+    "nuremberg-a" = {
+      tcp_in    = ["22", "25", "80", "110", "143", "443", "465", "587", "993", "995"]
+      server_id = hcloud_server.nuremberg-a.id
+    }
+    "helsinki-a" = {
+      tcp_in    = ["22", "80", "443"]
+      server_id = hcloud_server.helsinki-a.id
+    }
   }
 }
 
-resource "hcloud_firewall_attachment" "nuremberg-a" {
-    firewall_id = hcloud_firewall.nuremberg-a.id
-    server_ids = [
-        hcloud_server.nuremberg-a.id
-    ]  
-}
+resource "hcloud_firewall" "machine" {
+  for_each = local.machines
+  name     = each.key
 
-resource "hcloud_firewall" "helsinki-a" {
-  name = "helsinki-a"
-
-  rule {
-    direction = "in"
-    protocol  = "tcp"
-    port = "22"
-    source_ips = [
-      "0.0.0.0/0",
-      "::/0"
-    ]
+  dynamic "rule" {
+    for_each = each.value.tcp_in
+    content {
+      direction  = "in"
+      protocol   = "tcp"
+      port       = rule.value
+      source_ips = local.all_ips
+    }
   }
 
-  rule {
-    direction = "in"
-    protocol  = "tcp"
-    port      = "80"
-    source_ips = [
-      "0.0.0.0/0",
-      "::/0"
-    ]
-  }
-
-  rule {
-    direction = "in"
-    protocol  = "tcp"
-    port      = "443"
-    source_ips = [
-      "0.0.0.0/0",
-      "::/0"
-    ]
-  }
-
-  rule {
-    direction = "out"
-    protocol = "tcp"
-    port = "any"
-    destination_ips = [
-        "0.0.0.0/0",
-        "::/0"
-    ]
-  }
-
-  rule {
-    direction = "out"
-    protocol = "udp"
-    port = "any"
-    destination_ips = [
-        "0.0.0.0/0",
-        "::/0"
-    ]
+  dynamic "rule" {
+    for_each = ["tcp", "udp"]
+    content {
+      direction       = "out"
+      protocol        = rule.value
+      port            = "any"
+      destination_ips = local.all_ips
+    }
   }
 }
 
-resource "hcloud_firewall_attachment" "helsinki-a" {
-    firewall_id = hcloud_firewall.helsinki-a.id
-    server_ids = [
-        hcloud_server.helsinki-a.id
-    ]  
+resource "hcloud_firewall_attachment" "machine" {
+  for_each    = local.machines
+  firewall_id = hcloud_firewall.machine[each.key].id
+  server_ids  = [each.value.server_id]
 }
