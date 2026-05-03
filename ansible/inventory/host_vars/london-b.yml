@@ -23,13 +23,6 @@ apt_user_services:
 zfs_pools:
   - hdd
 
-node_exporter_extra_collectors:
-  - systemd
-  - processes
-  - sysctl
-  - ethtool
-  - zfs
-
 docker_daemon_extra:
   metrics-addr: "0.0.0.0:9323"
   data-root: "/hdd/docker"
