@@ -7,8 +7,8 @@ Dedicated mail server. One job, does it well.
 | | |
 |---|---|
 | **Location** | Hetzner Cloud (Nuremberg) |
-| **OS** | Alpine Linux |
-| **Tailscale IP** | 100.117.235.28 |
+| **OS** | Debian |
+| **Tailscale IP** | 100.70.180.24 |
 | **Role** | Mail server (poste.io) |
 | **Provider** | Hetzner Cloud VPS |
 
@@ -32,3 +32,7 @@ Mail-related DNS records are managed via Cloudflare (Terraform):
 - **SPF** for sender verification
 - **DKIM** for message signing
 - **DMARC** for policy enforcement
+
+## Firewall
+
+Managed by Hetzner Cloud firewall rules (Terraform). Mail ports are exposed via Docker port mappings in `ansible/services/poste-io/docker-compose.yml`.

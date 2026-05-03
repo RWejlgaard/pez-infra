@@ -11,7 +11,7 @@
 #
 # Prerequisites:
 #   - Target host has SSH access via Tailscale
-#   - Target host has a base OS installed (Debian/Alpine/FreeBSD)
+#   - Target host has a base OS installed (Debian/FreeBSD)
 #   - ansible-galaxy install -r requirements.yml
 
 # ──────────────────────────────────────────────
@@ -34,42 +34,6 @@
     - role: docker
 
 # ──────────────────────────────────────────────
-# Stage 3: Monitoring agent — all hosts
-# ──────────────────────────────────────────────
-- name: "Stage 3: Node exporter"
-  hosts: all
-  tags: [monitoring, node_exporter]
-  roles:
-    - role: node_exporter
-
-# ──────────────────────────────────────────────
-# Stage 3b: systemd_exporter — Linux hosts with systemd metrics
-# ──────────────────────────────────────────────
-- name: "Stage 3b: systemd_exporter"
-  hosts: systemd_exporter_hosts
-  tags: [monitoring, systemd_exporter]
-  roles:
-    - role: systemd_exporter
-
-# ──────────────────────────────────────────────
-# Stage 3c: Alloy — all hosts (log shipping agent)
-# ──────────────────────────────────────────────
-- name: "Stage 3c: Alloy"
-  hosts: alloy_hosts
-  tags: [monitoring, alloy]
-  roles:
-    - role: alloy
-
-# ──────────────────────────────────────────────
-# Stage 3d: Loki — london-a (log aggregation server)
-# ──────────────────────────────────────────────
-- name: "Stage 3d: Loki"
-  hosts: london-a
-  tags: [monitoring, loki]
-  roles:
-    - role: loki
-
-# ──────────────────────────────────────────────
 # Stage 4: Per-host services
 # ──────────────────────────────────────────────
 
@@ -89,12 +53,10 @@
   roles:
     - role: docker_services
 
-# nuremberg-a: Firewall
-- name: "Stage 4c: Firewall (nuremberg-a)"
+# nuremberg-a: Mail server
+- name: "Stage 4c: Mail server (nuremberg-a)"
   hosts: nuremberg-a
   tags: [services, mail]
-  roles:
-    - role: firewall_alpine
 
 # london-b: Media stack + backups
 - name: "Stage 4d: Media stack + backups (london-b)"
@@ -112,99 +74,29 @@
     - role: systemd_services
     - role: mariadb
 
-# london-a: Monitoring stack (FreeBSD — Prometheus, Grafana)
-# Note: london-a uses FreeBSD; monitoring roles handle this via conditionals.
-- name: "Stage 4e: Monitoring stack (london-a)"
+# london-a: Cockpit VM host (Debian)
+- name: "Stage 4f: Cockpit VM host (london-a)"
   hosts: london-a
-  tags: [services, monitoring]
+  tags: [services, cockpit]
   tasks:
-    - name: Check for Prometheus config
-      delegate_to: localhost
-      ansible.builtin.stat:
-        path: "{{ playbook_dir }}/services/prometheus/prometheus.yml"
-      register: prometheus_config
+    - name: Install cockpit and cockpit-machines
+      ansible.builtin.apt:
+        name:
+          - cockpit
+          - cockpit-machines
+        state: present
+        update_cache: true
 
-    - name: Deploy Prometheus config
-      ansible.builtin.copy:
-        src: "{{ playbook_dir }}/services/prometheus/prometheus.yml"
-        dest: /usr/local/etc/prometheus.yml
-        mode: '0644'
-        backup: true
-      when: prometheus_config.stat.exists
-      notify: Restart prometheus
-
-    - name: Deploy Prometheus alerting rules
-      ansible.builtin.copy:
-        src: "{{ playbook_dir }}/services/prometheus/rules/"
-        dest: /usr/local/etc/prometheus/rules/
-        mode: '0644'
-      failed_when: false
-      notify: Restart prometheus
-
-    - name: Ensure unified_alerting section exists in Grafana config
-      ansible.builtin.lineinfile:
-        path: /usr/local/etc/grafana/grafana.ini
-        regexp: '^\[unified_alerting\]'
-        line: '[unified_alerting]'
-      notify: Restart grafana
-
-    - name: Allow provenance status change in Grafana
-      ansible.builtin.lineinfile:
-        path: /usr/local/etc/grafana/grafana.ini
-        regexp: '^allow_prov_status_change'
-        insertafter: '^\[unified_alerting\]'
-        line: 'allow_prov_status_change = true'
-      notify: Restart grafana
-
-    - name: Deploy Grafana dashboards
-      ansible.posix.synchronize:
-        src: "{{ playbook_dir }}/services/grafana/dashboards/"
-        dest: /usr/local/etc/grafana/dashboards/
-      failed_when: false
-
-    - name: Ensure provisioning dir exists
-      ansible.builtin.file:
-        path: "{{ grafana_provisioning_dir }}"
-        state: directory
-        mode: '0755'
-
-    - name: Ensure alerting dir exists
-      ansible.builtin.file:
-        path: "{{ grafana_provisioning_dir }}/alerting"
-        state: directory
-        mode: '0755'
-
-    - name: Deploy Grafana provisioning
-      ansible.posix.synchronize:
-        src: "{{ playbook_dir }}/services/grafana/provisioning/"
-        dest: "{{ grafana_provisioning_dir }}/"
-      failed_when: false
-
-    - name: Template contact points with PagerDuty key
-      ansible.builtin.template:
-        src: "{{ playbook_dir }}/services/grafana/provisioning/alerting/contact-points.yml"
-        dest: "{{ grafana_provisioning_dir }}/alerting/contact-points.yml"
-        mode: '0640'
-        owner: root
-        group: grafana
-      no_log: true
-      notify: Restart grafana
-
-  handlers:
-    - name: Restart prometheus
+    - name: Enable and start cockpit
       ansible.builtin.service:
-        name: prometheus
-        state: restarted
-
-    - name: Restart grafana
-      ansible.builtin.service:
-        name: grafana
-        state: restarted
+        name: cockpit
+        state: started
+        enabled: true
 
 # ──────────────────────────────────────────────
-# Stage 4f: ZFS scrub scheduling — zfs_hosts
+# Stage 4g: ZFS scrub scheduling — zfs_hosts
 # ──────────────────────────────────────────────
-- name: "Stage 4f: ZFS scrub scheduling"
+- name: "Stage 4g: ZFS scrub scheduling"
   hosts: zfs_hosts
   tags: [services, zfs]
   roles:

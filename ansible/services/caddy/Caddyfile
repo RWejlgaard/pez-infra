@@ -14,22 +14,17 @@
 
 ## LONDON-A SERVICES ##
 
-# Grafana
-grafana.pez.solutions, grafana.pez.sh {
+# Cockpit
+london-a.pez.sh {
         forward_auth localhost:9091 {
 		uri /api/authz/forward-auth
 		copy_headers Remote-User Remote-Groups Remote-Name Remote-Email
 	}
-        reverse_proxy 100.122.219.41:3000
-}
-
-# Prometheus
-prometheus.pez.solutions, prometheus.pez.sh {
-	forward_auth localhost:9091 {
-		uri /api/authz/forward-auth
-		copy_headers Remote-User Remote-Groups Remote-Name Remote-Email
-	}
-        reverse_proxy 100.122.219.41:9090
+        reverse_proxy 100.90.111.19:9090 {
+                transport http {
+                        tls_insecure_skip_verify
+                }
+        }
 }
 
 ## LONDON-B SERVICES ##

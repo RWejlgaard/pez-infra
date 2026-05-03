@@ -8,7 +8,6 @@ ansible_python_interpreter: /usr/bin/python3
 docker_services:
   - poste-io
 
-# NOTE: Alpine host — UFW tasks are Debian-only.
-# Firewall: iptables + fail2ban managed by firewall_alpine role.
 # Mail ports (25,80,110,143,443,465,587,993,995) exposed via Docker
 # port mappings in ansible/services/poste-io/docker-compose.yml.
+# Firewall: managed by Hetzner Cloud firewall rules (Terraform).
