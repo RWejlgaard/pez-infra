@@ -6,6 +6,10 @@ terraform {
       source  = "hetznercloud/hcloud"
       version = "~> 1.45"
     }
+    grafana = {
+      source  = "grafana/grafana"
+      version = "~> 4.35"
+    }
   }
 
 
@@ -22,5 +26,15 @@ terraform {
 
 provider "hcloud" {
   token = local.secrets["hetzner_token"]
+}
+
+provider "grafana" {
+  cloud_access_policy_token = local.secrets["grafana_cloud_access_policy"]
+  sm_url                    = "https://synthetic-monitoring-api-gb-south-1.grafana.net"
+  sm_access_token           = local.secrets["grafana_synthetic_monitoring_access_token"]
+  fleet_management_url      = "https://fleet-management-prod-023.grafana.net"
+  fleet_management_auth     = local.secrets["grafana_fleet_management_auth"]
+  url                       = "https://pez.grafana.net"
+  auth                      = local.secrets["grafana_service_account_token"]
 }
 

@@ -1,0 +1,37 @@
+discovery.relabel "metrics_integrations_integrations_caddy" {
+	targets = [{
+		__address__ = "localhost:2019",
+	}]
+
+	rule {
+		target_label = "instance"
+		replacement  = constants.hostname
+	}
+}
+
+prometheus.scrape "metrics_integrations_integrations_caddy" {
+	targets    = discovery.relabel.metrics_integrations_integrations_caddy.output
+	forward_to = [prometheus.relabel.metrics_integrations_integrations_caddy.receiver]
+	job_name   = "integrations/caddy"
+}
+
+prometheus.relabel "metrics_integrations_integrations_caddy" {
+	forward_to = [prometheus.remote_write.metrics_service.receiver]
+
+	rule {
+		source_labels = ["__name__"]
+		regex         = "up|caddy_http_request_duration_seconds_bucket|caddy_http_request_duration_seconds_count|caddy_http_requests_in_flight|caddy_http_requests_total"
+		action        = "keep"
+	}
+}
+
+prometheus.remote_write "metrics_service" {
+	endpoint {
+		url = "https://prometheus-prod-55-prod-gb-south-1.grafana.net/api/prom/push"
+
+		basic_auth {
+			username = "3166394"
+			password = sys.env("GCLOUD_RW_API_KEY")
+		}
+	}
+}

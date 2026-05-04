@@ -1,0 +1,20 @@
+prometheus.remote_write "grafana_cloud" {
+	endpoint {
+		url = "https://prometheus-prod-55-prod-gb-south-1.grafana.net/api/prom/push"
+
+		basic_auth {
+			username = "3166394"
+			password = sys.env("GCLOUD_RW_API_KEY")
+		}
+	}
+}
+
+prometheus.scrape "octopus_exporter" {
+	targets = [
+		{
+			"__address__" = "localhost:9359",
+			"job"         = "octopus_exporter",
+		},
+	]
+	forward_to = [prometheus.remote_write.grafana_cloud.receiver]
+}
