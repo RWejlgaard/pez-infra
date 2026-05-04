@@ -77,7 +77,6 @@ forward_auth localhost:9091 {
 
 | Service | Auth | Reason |
 |---------|------|--------|
-| Grafana, Prometheus | Authelia | Admin dashboards |
 | Radarr, Sonarr, Lidarr, Readarr | Authelia | Media management |
 | Prowlarr, Transmission (download) | Authelia | Download tools |
 | slskd (Soulseek) | Authelia | P2P client |

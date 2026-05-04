@@ -34,19 +34,12 @@ services/
 | Caddy | `caddy.service` | enabled, stock | Installed via package manager. Config at `/etc/caddy/Caddyfile`. |
 | thiswebsitedoesnotexist | `thiswebsitedoesnotexist.service` | enabled, custom | Node.js app. Env vars in `/opt/thiswebsitedoesnotexist/.env`. |
 
-### london-a (FreeBSD)
+### london-a (Linux)
 
 No custom rc.d scripts — all services installed via `pkg`. The `rc.conf` captures all enabled services:
 
-| Service | rc.conf variable | Notes |
+| Service | Unit | Notes |
 |---------|-----------------|-------|
-| Grafana | `grafana_enable="YES"` | Monitoring dashboards |
-| Prometheus | `prometheus_enable="YES"` | Metrics collection |
-| node_exporter | `node_exporter_enable="YES"` | Host metrics exporter |
-| Tailscale | `tailscaled_enable="YES"` | Mesh VPN |
-| InfluxDB | `influxd_enable="YES"` | Time-series database |
-| libvirtd | `libvirtd_enable="YES"` | Virtualisation daemon |
-| Redis | `redis_enable="YES"` | In-memory data store |
-| PostgreSQL | `postgresql_enable="YES"` | Relational database |
+| libvirtd | `libvirtd.service` | Virtualisation daemon |
 
 
