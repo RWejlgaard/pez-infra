@@ -10,6 +10,10 @@ terraform {
       source  = "grafana/grafana"
       version = "~> 4.35"
     }
+    pagerduty = {
+      source  = "pagerduty/pagerduty"
+      version = "~> 2.2"
+    }
   }
 
 
@@ -38,3 +42,6 @@ provider "grafana" {
   auth                      = local.secrets["grafana_service_account_token"]
 }
 
+provider "pagerduty" {
+  token = local.secrets["pagerduty_token"]
+}
