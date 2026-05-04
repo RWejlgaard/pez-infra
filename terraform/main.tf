@@ -12,3 +12,10 @@ module "grafana" {
   }
   plex_token = local.secrets["plex_token"]
 }
+
+module "pagerduty" {
+  source = "./pagerduty"
+  providers = {
+    pagerduty = pagerduty
+  }
+}
