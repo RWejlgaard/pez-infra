@@ -65,9 +65,10 @@ jobs:
           script: |
             const fs = require('fs');
             const raw = fs.readFileSync('terraform/plan_output.txt', 'utf8');
-            const truncated = raw.length > 65000
-              ? raw.slice(0, 65000) + '\n\n...(output truncated)'
-              : raw;
+            const filtered = raw.split('\n').filter(l => !l.includes(': Refreshing state...')).join('\n');
+            const truncated = filtered.length > 65000
+              ? filtered.slice(0, 65000) + '\n\n...(output truncated)'
+              : filtered;
             const outcome = '${{ steps.plan.outcome }}';
             const header = outcome === 'failure' ? '## Terraform Plan — FAILED' : '## Terraform Plan';
             const body = `${header}\n\`\`\`\n${truncated}\n\`\`\``;
