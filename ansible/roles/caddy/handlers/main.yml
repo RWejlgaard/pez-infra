@@ -3,3 +3,7 @@
   ansible.builtin.service:
     name: caddy
     state: reloaded
+  register: caddy_reload_result
+  until: caddy_reload_result is succeeded
+  retries: 3
+  delay: 5
