@@ -6,7 +6,7 @@
 #
 
 {
-        admin 100.67.6.27:2019
+        admin localhost:2019
         metrics {
                 per_host
         }
