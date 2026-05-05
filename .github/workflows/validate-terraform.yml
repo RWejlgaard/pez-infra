@@ -2,6 +2,9 @@ name: Validate Terraform
 
 on:
   pull_request:
+    paths:
+      - "terraform/**"
+      - ".github/workflows/validate-terraform.yml"
 
 permissions:
   contents: read
