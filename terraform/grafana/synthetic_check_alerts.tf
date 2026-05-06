@@ -70,3 +70,14 @@ resource "grafana_synthetic_monitoring_check_alerts" "jellyfin-requests" {
   ]
 }
 
+resource "grafana_synthetic_monitoring_check_alerts" "git" {
+  check_id = grafana_synthetic_monitoring_check.git.id
+  alerts = [
+    {
+      name        = "ProbeFailedExecutionsTooHigh"
+      threshold   = 3
+      period      = "30m"
+      runbook_url = ""
+    }
+  ]
+}

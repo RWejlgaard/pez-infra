@@ -130,3 +130,25 @@ resource "grafana_synthetic_monitoring_check" "jellyfin-requests" {
     ignore_changes = [settings]
   }
 }
+
+resource "grafana_synthetic_monitoring_check" "git" {
+  job     = "git.pez.sh"
+  target  = "https://git.pez.sh"
+  enabled = true
+  probes  = [14] # 14 = London, UK
+  settings {
+    http {
+      method              = "GET"
+      compression         = "none"
+      fail_if_not_ssl     = true
+      ip_version          = "V4"
+      valid_http_versions = ["HTTP/2.0", "HTTP/1.1", "HTTP/1.0"]
+      valid_status_codes  = ["200"]
+    }
+  }
+  frequency = 600000
+  timeout   = 3000
+  lifecycle {
+    ignore_changes = [settings]
+  }
+}
