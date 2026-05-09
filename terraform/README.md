@@ -4,19 +4,34 @@ Infrastructure-as-code for cloud and edge services. Uses [OpenTofu](https://open
 
 ## What's managed
 
-- **Cloudflare DNS** — All `pez.sh` records (A, CNAME, MX, TXT)
+- **Hetzner Cloud** — Two servers (`nuremberg-a`, `helsinki-a`), firewalls, and DNS for `pez.sh`
+- **Grafana Cloud** — Stack, dashboards, synthetic monitoring checks, alert rules, Fleet collectors and pipelines
+- **PagerDuty** — Service, escalation policy, and Grafana integration
 
-## CI/CD
+## Secrets
 
-The original GitHub Actions workflow (`apply.yml`) ran plan on push to master, then applied with manual approval via a `prod` environment gate. This workflow lived in the standalone `pez-terraform` repo and would need adapting for the monorepo structure (e.g., path-filtered triggers).
+Secrets are stored encrypted in `secrets.enc.yaml` via [SOPS](https://github.com/getsops/sops) and decrypted at plan/apply time into `secrets.yaml`. The Makefile handles decryption automatically.
+
+Required secret keys: `hetzner_token`, `grafana_cloud_access_policy`, `grafana_synthetic_monitoring_access_token`, `grafana_fleet_management_auth`, `grafana_service_account_token`, `pagerduty_token`, `plex_token`, `backblaze_key_id`.
+
+## State
+
+State is stored in a Backblaze B2 bucket (`pez-infra-tfstate`) using an S3-compatible backend. Credentials are read from `AWS_ACCESS_KEY_ID` / `AWS_SECRET_ACCESS_KEY` environment variables.
+
+## Usage
+
+```sh
+make init   # initialize providers and backend
+make plan   # preview changes
+make apply  # apply changes
+make fmt    # format all .tf files
+```
 
 ## Provider versions
 
 | Provider | Source | Version |
 |----------|--------|---------|
-| Cloudflare | `cloudflare/cloudflare` | `~> 5.18` |
+| Hetzner Cloud | `hetznercloud/hcloud` | `~> 1.45` |
+| Grafana | `grafana/grafana` | `~> 4.35` |
+| PagerDuty | `pagerduty/pagerduty` | `~> 2.2` |
 | OpenTofu | — | `>= 1.6.0` |
-
-## Migrated from
-
-This directory replaces the standalone [`pez-terraform`](https://github.com/RWejlgaard/pez-terraform) repo.
