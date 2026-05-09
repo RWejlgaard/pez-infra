@@ -74,24 +74,12 @@
     - role: systemd_services
     - role: mariadb
 
-# london-a: Cockpit VM host (Debian)
-- name: "Stage 4f: Cockpit VM host (london-a)"
+# london-a: Proxmox VE hypervisor
+- name: "Stage 4f: Proxmox VE (london-a)"
   hosts: london-a
-  tags: [services, cockpit]
-  tasks:
-    - name: Install cockpit and cockpit-machines
-      ansible.builtin.apt:
-        name:
-          - cockpit
-          - cockpit-machines
-        state: present
-        update_cache: true
-
-    - name: Enable and start cockpit
-      ansible.builtin.service:
-        name: cockpit
-        state: started
-        enabled: true
+  tags: [services, proxmox]
+  roles:
+    - role: proxmox_ve
 
 # ──────────────────────────────────────────────
 # Stage 4g: ZFS scrub scheduling — zfs_hosts

@@ -1,5 +1,5 @@
 ---
-host_role: vm-host
-host_description: "VM host (Cockpit + KVM)"
+host_role: proxmox-ve
+host_description: "Proxmox VE hypervisor"
 host_location: "London"
 ansible_python_interpreter: /usr/bin/python3
