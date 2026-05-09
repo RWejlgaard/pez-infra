@@ -1,4 +1,4 @@
 resource "hcloud_ssh_key" "personal" {
-  name = "personal"
+  name       = "personal"
   public_key = "ssh-rsa AAAAB3NzaC1yc2EAAAADAQABAAABgQDlU2h+JgVMVsHkkcxed9WbrUCKWfuUrY6yErmGIIREP6X2cua2qE4H+329FSJXQs0Yd0OiNwsXzfW88kl0+aMopQXaccY3q8109KR43RNrRrril9od+PidVvT/fvV8eNYVE9M4gyT1c9t8ZLD85vJf9rILFWbLG4DqqFL3z33W2u//Bl8uVLoY3tSgBmukVt45If9g9mxVfSstLmZj7j75rghS0EbE2kzwgUH397mJGMlJJdFhzRtP+/D09hE+zgFxl45V6dszEu9ggawRRGvEcR1dXDB0g6n3/7h6M+pb8/77ZAxk4AwD6CzZi8k7SlVkzCKZQRPpge+C0xLdm9EAY7byj30XdGgpo80eiCJmVImYm4VmPnjh39IumQWkDgpXkYQ9aj9jUDvcSrEmwTBRJOqmaO7BW0sVbP0BDW3UjCyeUQ8zprmWsUscoB0u9r4bMOLnhNldXljjKcDRdX2JciIILiCEfnn781Q3uxLgOoHEnYto0tSxbLQI/o9WB4M="
 }
