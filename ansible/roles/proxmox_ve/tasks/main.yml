@@ -1,0 +1,27 @@
+---
+# Configure Proxmox VE apt sources for the no-subscription tier.
+# Removes the enterprise repo (requires paid subscription) and enables
+# the free no-subscription repo so apt update works without credentials.
+
+- name: Remove PVE enterprise apt source
+  ansible.builtin.file:
+    path: /etc/apt/sources.list.d/pve-enterprise.list
+    state: absent
+
+- name: Remove Ceph enterprise apt source
+  ansible.builtin.file:
+    path: /etc/apt/sources.list.d/ceph.list
+    state: absent
+
+- name: Add PVE no-subscription apt source
+  ansible.builtin.copy:
+    dest: /etc/apt/sources.list.d/pve-no-subscription.list
+    content: "deb http://download.proxmox.com/debian/pve bookworm pve-no-subscription\n"
+    owner: root
+    group: root
+    mode: '0644'
+  notify: Update apt cache
+
+- name: Update apt cache
+  ansible.builtin.apt:
+    update_cache: true
