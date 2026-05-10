@@ -1,0 +1,26 @@
+// Receive OTLP traces from Caddy
+otelcol.receiver.otlp "otlp_receiver" {
+	grpc {
+		endpoint = "0.0.0.0:4317"
+	}
+
+	http {
+		endpoint = "0.0.0.0:4318"
+	}
+
+	output {
+		traces = [otelcol.exporter.otlp.tempo_exporter.input]
+	}
+}
+
+otelcol.exporter.otlp "tempo_exporter" {
+	client {
+		endpoint = "tempo-prod-25-prod-gb-south-1.grafana.net:443"
+		auth     = otelcol.auth.basic.gcloud_auth.handler
+	}
+}
+
+otelcol.auth.basic "gcloud_auth" {
+	username = "1573173"
+	password = sys.env("GCLOUD_RW_API_KEY")
+}

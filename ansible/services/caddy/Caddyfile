@@ -16,6 +16,9 @@
 
 # Proxmox
 london-a.pez.sh {
+        tracing {
+                span proxmox
+        }
         reverse_proxy 100.122.180.98:8006 {
                 transport http {
                         tls_insecure_skip_verify
@@ -27,89 +30,125 @@ london-a.pez.sh {
 
 # Jellyfin
 jellyfin.pez.solutions, jellyfin.pez.sh {
+        tracing {
+                span jellyfin
+        }
         reverse_proxy 100.84.65.101:8096
 }
 
 # Plex
 plex.pez.solutions, plex.pez.sh {
+        tracing {
+                span plex
+        }
         reverse_proxy 100.84.65.101:32400
 }
 
 # Radarr
 radarr.pez.solutions, radarr.pez.sh {
-	forward_auth localhost:9091 {
-		uri /api/authz/forward-auth
-		copy_headers Remote-User Remote-Groups Remote-Name Remote-Email
-	}
+        tracing {
+                span radarr
+        }
+        forward_auth localhost:9091 {
+                uri /api/authz/forward-auth
+                copy_headers Remote-User Remote-Groups Remote-Name Remote-Email
+        }
         reverse_proxy 100.84.65.101:7878
 }
 
 # Sonarr
 sonarr.pez.solutions, sonarr.pez.sh {
-	forward_auth localhost:9091 {
-		uri /api/authz/forward-auth
-		copy_headers Remote-User Remote-Groups Remote-Name Remote-Email
-	}
+        tracing {
+                span sonarr
+        }
+        forward_auth localhost:9091 {
+                uri /api/authz/forward-auth
+                copy_headers Remote-User Remote-Groups Remote-Name Remote-Email
+        }
         reverse_proxy 100.84.65.101:8989
 }
 
 # Lidarr
 lidarr.pez.solutions, lidarr.pez.sh {
-	forward_auth localhost:9091 {
-		uri /api/authz/forward-auth
-		copy_headers Remote-User Remote-Groups Remote-Name Remote-Email
-	}
+        tracing {
+                span lidarr
+        }
+        forward_auth localhost:9091 {
+                uri /api/authz/forward-auth
+                copy_headers Remote-User Remote-Groups Remote-Name Remote-Email
+        }
         reverse_proxy 100.84.65.101:8686
 }
 
 # Readarr
 readarr.pez.solutions, readarr.pez.sh {
-	forward_auth localhost:9091 {
-		uri /api/authz/forward-auth
-		copy_headers Remote-User Remote-Groups Remote-Name Remote-Email
-	}
+        tracing {
+                span readarr
+        }
+        forward_auth localhost:9091 {
+                uri /api/authz/forward-auth
+                copy_headers Remote-User Remote-Groups Remote-Name Remote-Email
+        }
         reverse_proxy 100.84.65.101:8787
 }
 
 # slskd
 soulseek.pez.solutions, soulseek.pez.sh {
-	forward_auth localhost:9091 {
-		uri /api/authz/forward-auth
-		copy_headers Remote-User Remote-Groups Remote-Name Remote-Email
-	}
+        tracing {
+                span soulseek
+        }
+        forward_auth localhost:9091 {
+                uri /api/authz/forward-auth
+                copy_headers Remote-User Remote-Groups Remote-Name Remote-Email
+        }
         reverse_proxy 100.84.65.101:5030
 }
 
 # Prowlarr
 prowlarr.pez.solutions, prowlarr.pez.sh {
-	forward_auth localhost:9091 {
-		uri /api/authz/forward-auth
-		copy_headers Remote-User Remote-Groups Remote-Name Remote-Email
-	}
+        tracing {
+                span prowlarr
+        }
+        forward_auth localhost:9091 {
+                uri /api/authz/forward-auth
+                copy_headers Remote-User Remote-Groups Remote-Name Remote-Email
+        }
         reverse_proxy 100.84.65.101:9696
 }
 
 # Transmission
 download.pez.solutions, download.pez.sh {
-	forward_auth localhost:9091 {
-		uri /api/authz/forward-auth
-		copy_headers Remote-User Remote-Groups Remote-Name Remote-Email
-	}
+        tracing {
+                span transmission
+        }
+        forward_auth localhost:9091 {
+                uri /api/authz/forward-auth
+                copy_headers Remote-User Remote-Groups Remote-Name Remote-Email
+        }
         reverse_proxy 100.84.65.101:9091
 }
 
 # Overseerr
 request.pez.solutions, request.pez.sh {
+        tracing {
+                span overseerr
+        }
         reverse_proxy 100.84.65.101:5055
 }
 
 # Jellyfin Requests
 jellyfin-requests.pez.solutions, jellyfin-requests.pez.sh {
+        tracing {
+                span jellyfin-requests
+        }
         reverse_proxy 100.84.65.101:5056
 }
 
 music.pez.sh {
-	reverse_proxy 100.84.65.101:4533
+        tracing {
+                span navidrome
+        }
+        reverse_proxy 100.84.65.101:4533
 }
 
 ## COPENHAGEN-A SERVICES ##
@@ -120,6 +159,9 @@ music.pez.sh {
 
 # Bitwarden (requires HTTPS tweaking)
 https://bitwarden.pez.sh {
+        tracing {
+                span bitwarden
+        }
         reverse_proxy localhost:8443 {
                 transport http {
                         tls_insecure_skip_verify
@@ -129,64 +171,84 @@ https://bitwarden.pez.sh {
 
 # Authelia (requires HTTPS tweaking)
 auth.pez.solutions, auth.pez.sh {
-	reverse_proxy localhost:9091
+        tracing {
+                span authelia
+        }
+        reverse_proxy localhost:9091
 }
 
 ldap.pez.sh {
-	reverse_proxy 127.0.0.1:17170
+        tracing {
+                span lldap
+        }
+        reverse_proxy 127.0.0.1:17170
 }
-#https://auth.pez.sh {
-#        reverse_proxy 127.0.0.1:9091 {
-#                transport http {
-#                        tls_insecure_skip_verify
-#                }
-#        }
-#}
 
 # Apps dashboard
 apps.pez.solutions, apps.pez.sh {
+        tracing {
+                span apps-dashboard
+        }
         root * /srv/apps
         forward_auth localhost:9091 {
-		uri /api/authz/forward-auth
-		copy_headers Remote-User Remote-Groups Remote-Name Remote-Email
-	}
-	file_server
+                uri /api/authz/forward-auth
+                copy_headers Remote-User Remote-Groups Remote-Name Remote-Email
+        }
+        file_server
 }
 
 # Pez.solutions
 pez.solutions {
+        tracing {
+                span pez-solutions
+        }
         root * /srv/pez.solutions
         file_server
 }
 
 # Pez.sh
 pez.sh {
+        tracing {
+                span pez-sh
+        }
         root * /srv/pez.sh
         file_server
 }
 
 # Pez-signup
 signup.pez.solutions {
+        tracing {
+                span pez-signup
+        }
         root * /srv/pez-signup
         file_server
 }
 
 # Naveen
 naveen.pez.sh {
-	root * /srv/naveen
-	file_server
+        tracing {
+                span naveen
+        }
+        root * /srv/naveen
+        file_server
 }
 
 ## HELSINKI-A SERVICES ##
 
 # Status page
 status.pez.sh {
-    root * /srv/status
-    file_server
+        tracing {
+                span status
+        }
+        root * /srv/status
+        file_server
 }
 
 # Miniflux RSS
 rss.pez.sh {
+        tracing {
+                span miniflux
+        }
         forward_auth localhost:9091 {
                 uri /api/authz/forward-auth
                 copy_headers Remote-User Remote-Groups Remote-Name Remote-Email
@@ -194,9 +256,10 @@ rss.pez.sh {
         reverse_proxy 100.84.65.101:8181
 }
 
-
 # Forgejo Git Server (auth handled by Forgejo itself)
 git.pez.sh {
+        tracing {
+                span forgejo
+        }
         reverse_proxy localhost:3000
 }
-
