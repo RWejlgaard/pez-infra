@@ -1,5 +1,5 @@
 ---
-# Update all hosts (apt for Linux, pkg for FreeBSD, apk for Alpine).
+# Update all hosts (apt upgrade).
 # Usage: ansible-playbook playbooks/update-all.yml
 
 - name: Update Linux hosts (apt)
@@ -28,37 +28,3 @@
       ansible.builtin.debug:
         msg: "WARNING: REBOOT REQUIRED on {{ inventory_hostname }}"
       when: reboot_required.stat.exists
-
-- name: Update Alpine hosts (apk)
-  hosts: alpine
-  ignore_unreachable: true
-  tags: [update, alpine]
-  tasks:
-    - name: Apk update + upgrade
-      community.general.apk:
-        update_cache: true
-        upgrade: true
-      register: apk_result
-
-    - name: Show upgrade summary
-      ansible.builtin.debug:
-        msg: "{{ apk_result.stdout_lines | default(['No output']) }}"
-
-- name: Update FreeBSD hosts (pkg)
-  hosts: freebsd
-  ignore_unreachable: true
-  tags: [update, freebsd]
-  tasks:
-    - name: Pkg update
-      ansible.builtin.command: pkg update -f
-      register: pkg_update_result
-      changed_when: "'Updating' in pkg_update_result.stdout"
-
-    - name: Pkg upgrade
-      ansible.builtin.command: pkg upgrade -y
-      register: pkg_upgrade_result
-      changed_when: "'upgraded' in pkg_upgrade_result.stdout or 'installed' in pkg_upgrade_result.stdout"
-
-    - name: Show upgrade summary
-      ansible.builtin.debug:
-        msg: "{{ pkg_upgrade_result.stdout_lines | default(['No output']) }}"

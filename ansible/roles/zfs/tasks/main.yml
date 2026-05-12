@@ -1,29 +1,13 @@
 ---
-# ZFS management: scrub scheduling, pool monitoring.
-# Supports both Linux (systemd timers / cron) and FreeBSD (crontab).
+# ZFS scrub scheduling.
 
-- name: "ZFS scrub scheduling (Linux)"
-  when: ansible_os_family != "FreeBSD" and zfs_scrub_enabled
-  block:
-    - name: Install ZFS scrub cron jobs (Linux)
-      ansible.builtin.cron:
-        name: "ZFS scrub {{ item }}"
-        minute: "{{ zfs_scrub_minute }}"
-        hour: "{{ zfs_scrub_hour }}"
-        weekday: "{{ zfs_scrub_weekday }}"
-        job: "/sbin/zpool scrub {{ item }}"
-        user: root
-      loop: "{{ zfs_pools }}"
-
-- name: "ZFS scrub scheduling (FreeBSD)"
-  when: ansible_os_family == "FreeBSD" and zfs_scrub_enabled
-  block:
-    - name: Install ZFS scrub cron jobs (FreeBSD)
-      ansible.builtin.cron:
-        name: "ZFS scrub {{ item }}"
-        minute: "{{ zfs_scrub_minute }}"
-        hour: "{{ zfs_scrub_hour }}"
-        weekday: "{{ zfs_scrub_weekday }}"
-        job: "/sbin/zpool scrub {{ item }}"
-        user: root
-      loop: "{{ zfs_pools }}"
+- name: Install ZFS scrub cron jobs
+  ansible.builtin.cron:
+    name: "ZFS scrub {{ item }}"
+    minute: "{{ zfs_scrub_minute }}"
+    hour: "{{ zfs_scrub_hour }}"
+    weekday: "{{ zfs_scrub_weekday }}"
+    job: "/sbin/zpool scrub {{ item }}"
+    user: root
+  loop: "{{ zfs_pools }}"
+  when: zfs_scrub_enabled
