@@ -9,14 +9,12 @@
       - gnupg
     state: present
     update_cache: true
-  when: ansible_facts["os_family"] == "Debian"
 
 - name: Create keyrings directory
   ansible.builtin.file:
     path: /etc/apt/keyrings
     state: directory
     mode: '0755'
-  when: ansible_facts["os_family"] == "Debian"
 
 - name: Set Docker repo variables
   ansible.builtin.set_fact:
@@ -26,7 +24,6 @@
       {{ ansible_facts['architecture']
       | regex_replace('x86_64', 'amd64')
       | regex_replace('aarch64', 'arm64') }}
-  when: ansible_facts["os_family"] == "Debian"
 
 - name: Build Docker repo line
   ansible.builtin.set_fact:
@@ -35,7 +32,6 @@
       signed-by=/etc/apt/keyrings/docker.asc]
       https://download.docker.com/linux/{{ docker_distro }}
       {{ ansible_facts['distribution_release'] }} stable
-  when: ansible_facts["os_family"] == "Debian"
 
 - name: Add Docker GPG key
   ansible.builtin.get_url:
@@ -43,7 +39,6 @@
     dest: /etc/apt/keyrings/docker.asc
     mode: '0644'
     force: false
-  when: ansible_facts["os_family"] == "Debian"
 
 - name: Add Docker apt repository
   ansible.builtin.apt_repository:
@@ -51,7 +46,6 @@
     filename: docker
     state: present
     update_cache: true
-  when: ansible_facts["os_family"] == "Debian"
 
 - name: Remove old docker packages (Debian/Ubuntu)
   ansible.builtin.apt:
@@ -60,7 +54,6 @@
       - docker-compose
       - docker-compose-v2
     state: absent
-  when: ansible_facts["os_family"] == "Debian"
 
 - name: Install Docker (Debian/Ubuntu)
   ansible.builtin.apt:
@@ -70,15 +63,6 @@
       - containerd.io
       - docker-compose-plugin
     state: present
-  when: ansible_facts["os_family"] == "Debian"
-
-- name: Install Docker (Alpine)
-  community.general.apk:
-    name:
-      - docker
-      - docker-cli-compose
-    state: present
-  when: ansible_facts["os_family"] == "Alpine"
 
 - name: Enable and start Docker
   ansible.builtin.service:

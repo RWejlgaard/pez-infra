@@ -11,7 +11,7 @@
 #
 # Prerequisites:
 #   - Target host has SSH access via Tailscale
-#   - Target host has a base OS installed (Debian/FreeBSD)
+#   - Target host has a base OS installed (Debian)
 #   - ansible-galaxy install -r requirements.yml
 
 # ──────────────────────────────────────────────
