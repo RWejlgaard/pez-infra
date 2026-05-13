@@ -1,15 +1,15 @@
 # london-a
 
-VM host. Runs KVM virtual machines via Cockpit.
+Proxmox VE hypervisor.
 
 ## Overview
 
 | | |
 |---|---|
 | **Location** | London (NW9) |
-| **OS** | Debian |
-| **Tailscale IP** | 100.90.111.19 |
-| **Role** | VM host (Cockpit + KVM) |
+| **OS** | Proxmox VE (Debian Bookworm) |
+| **Tailscale IP** | 100.122.180.98 |
+| **Role** | Hypervisor (Proxmox VE) |
 
 ## Hardware
 
@@ -19,14 +19,13 @@ VM host. Runs KVM virtual machines via Cockpit.
 | Memory | 32 GB |
 | Boot disk | 1 TB |
 
-Old gaming PC. Reinstalled with Debian in 2026-05 after moving monitoring to Grafana Cloud.
+Old gaming PC. Runs Proxmox VE on bare metal.
 
 ## Services
 
 | Service | Port | Status | Notes |
 |---------|------|--------|-------|
-| Cockpit | 9090 | Active | Web UI for VM management |
-| cockpit-machines | — | Active | KVM/libvirt VM management via Cockpit |
+| Proxmox VE | 8006 | Active | Web UI — Tailscale only |
 | Tailscale | — | Active | Mesh networking |
 
 ## Networking

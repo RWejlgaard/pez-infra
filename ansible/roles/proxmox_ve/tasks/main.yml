@@ -25,3 +25,22 @@
 - name: Update apt cache
   ansible.builtin.apt:
     update_cache: true
+
+# Patch is re-applied automatically on each Ansible run, which handles pve-manager package updates
+# reverting the file.
+- name: Suppress Proxmox subscription nag dialog
+  ansible.builtin.replace:
+    path: /usr/share/javascript/proxmox-widget-toolkit/proxmoxlib.js
+    regexp: "if \\(res === null \\|\\| res === undefined \\|\\| !res \\|\\| res\\.data\\.status\\.toLowerCase\\(\\) !== 'active'\\)"
+    replace: "if (false)"
+  notify: Restart pveproxy
+
+- name: Allow Proxmox web UI on Tailscale only
+  community.general.ufw:
+    rule: allow
+    port: '8006'
+    proto: tcp
+    interface: tailscale0
+    direction: in
+    comment: "Proxmox web UI - Tailscale only"
+  notify: Reload ufw

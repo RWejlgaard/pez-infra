@@ -2,3 +2,12 @@
 - name: Update apt cache
   ansible.builtin.apt:
     update_cache: true
+
+- name: Restart pveproxy
+  ansible.builtin.service:
+    name: pveproxy
+    state: restarted
+
+- name: Reload ufw
+  community.general.ufw:
+    state: enabled
