@@ -58,8 +58,8 @@
     pvesm add cifs hdd
     --server 100.84.65.101
     --share pve
-    --username {{ proxmox_hdd_user }}
-    --password {{ proxmox_hdd_password }}
+    --username {{ proxmox_ve_smb_user }}
+    --password {{ proxmox_ve_smb_password }}
     --content images,backup,import,snippets,vztmpl,rootdir,iso
   no_log: true
   when: pve_hdd_check.rc != 0
