@@ -19,7 +19,7 @@
     content: "deb http://download.proxmox.com/debian/pve bookworm pve-no-subscription\n"
     owner: root
     group: root
-    mode: '0644'
+    mode: "0644"
   notify: Update apt cache
 
 - name: Update apt cache
@@ -38,9 +38,29 @@
 - name: Allow Proxmox web UI on Tailscale only
   community.general.ufw:
     rule: allow
-    port: '8006'
+    port: "8006"
     proto: tcp
     interface: tailscale0
     direction: in
     comment: "Proxmox web UI - Tailscale only"
   notify: Reload ufw
+
+# --- Storage ---
+
+- name: Check if hdd CIFS storage is configured
+  ansible.builtin.command: pvesh get /storage/hdd
+  register: proxmox_ve_hdd_check
+  changed_when: false
+  failed_when: false
+
+- name: Add hdd CIFS storage (london-b /pve share)
+  ansible.builtin.command: >-
+    pvesm add cifs hdd
+    --server 100.84.65.101
+    --share pve
+    --username {{ proxmox_ve_smb_user }}
+    --password {{ proxmox_ve_smb_password }}
+    --content images,backup,import,snippets,vztmpl,rootdir,iso
+  no_log: true
+  changed_when: true
+  when: proxmox_ve_hdd_check.rc != 0
