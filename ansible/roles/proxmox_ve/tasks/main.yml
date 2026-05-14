@@ -49,7 +49,7 @@
 
 - name: Check if hdd CIFS storage is configured
   ansible.builtin.command: pvesh get /storage/hdd
-  register: pve_hdd_check
+  register: proxmox_ve_hdd_check
   changed_when: false
   failed_when: false
 
@@ -62,4 +62,5 @@
     --password {{ proxmox_ve_smb_password }}
     --content images,backup,import,snippets,vztmpl,rootdir,iso
   no_log: true
-  when: pve_hdd_check.rc != 0
+  changed_when: true
+  when: proxmox_ve_hdd_check.rc != 0
