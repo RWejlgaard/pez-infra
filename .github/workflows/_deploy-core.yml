@@ -1,0 +1,98 @@
+name: Deploy (core)
+
+on:
+  workflow_call:
+    inputs:
+      host:
+        required: true
+        type: string
+      playbook:
+        required: true
+        type: string
+      dry_run:
+        required: false
+        type: boolean
+        default: false
+    secrets:
+      TAILSCALE_CLIENT_ID:
+        required: true
+      TAILSCALE_AUDIENCE:
+        required: true
+      SSH_PRIVATE_KEY:
+        required: true
+      AGE_SECRET_KEY:
+        required: true
+
+jobs:
+  deploy:
+    name: Deploy ${{ inputs.playbook }} → ${{ inputs.host }}
+    runs-on: ubuntu-latest
+    environment: production
+    permissions:
+      id-token: write
+    steps:
+      - uses: actions/checkout@v6
+
+      - name: Cache pip packages
+        uses: actions/cache@v4
+        with:
+          path: ~/.cache/pip
+          key: pip-ansible
+
+      - name: Cache Ansible collections
+        uses: actions/cache@v4
+        with:
+          path: ~/.ansible
+          key: ansible-galaxy-${{ hashFiles('ansible/requirements.yml') }}
+
+      - name: Set up Tailscale
+        uses: tailscale/github-action@v4
+        with:
+          oauth-client-id: ${{ secrets.TAILSCALE_CLIENT_ID }}
+          audience: ${{ secrets.TAILSCALE_AUDIENCE }}
+          tags: tag:ci
+
+      - name: Set up SSH key
+        run: |
+          mkdir -p ~/.ssh
+          echo "${{ secrets.SSH_PRIVATE_KEY }}" > ~/.ssh/id_ed25519
+          chmod 600 ~/.ssh/id_ed25519
+          HOST_IP=$(grep "^${{ inputs.host }}[[:space:]]" ansible/inventory/hosts.ini | grep -o 'ansible_host=[^ ]*' | cut -d= -f2)
+          if [ -n "$HOST_IP" ]; then
+            ssh-keyscan -H "$HOST_IP" >> ~/.ssh/known_hosts 2>/dev/null || true
+          fi
+
+      - name: Install tools
+        run: |
+          pip install ansible
+          wget -qO /tmp/sops.deb https://github.com/getsops/sops/releases/download/v3.9.4/sops_3.9.4_amd64.deb
+          sudo dpkg -i /tmp/sops.deb
+
+      - name: Install Ansible collections
+        run: ansible-galaxy install -r ansible/requirements.yml
+
+      - name: Decrypt secrets
+        env:
+          SOPS_AGE_KEY: ${{ secrets.AGE_SECRET_KEY }}
+        run: |
+          find . -name '*.enc.yml' -o -name '*.enc.yaml' -o -name '*.enc.env' | while read f; do
+            out="${f/.enc/}"
+            sops -d "$f" > "$out"
+          done
+
+      - name: Run playbook
+        working-directory: ansible/
+        env:
+          ANSIBLE_HOST_KEY_CHECKING: "false"
+        run: |
+          PLAYBOOK="${{ inputs.playbook }}"
+          PLAYBOOK="${PLAYBOOK#playbooks/}"
+          PLAYBOOK="${PLAYBOOK%.yml}.yml"
+          if [ "$PLAYBOOK" != "deploy.yml" ]; then
+            PLAYBOOK="playbooks/$PLAYBOOK"
+          fi
+          ARGS="--limit ${{ inputs.host }}"
+          if [ "${{ inputs.dry_run }}" = "true" ]; then
+            ARGS="$ARGS --check --diff"
+          fi
+          ansible-playbook "$PLAYBOOK" $ARGS

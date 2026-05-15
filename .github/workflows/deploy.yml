@@ -17,12 +17,6 @@ on:
         type: boolean
         default: true
 
-# Requires these repository secrets:
-#   TAILSCALE_CLIENT_ID  — Tailscale OAuth client ID (federated identity)
-#   TAILSCALE_AUDIENCE   — Tailscale federated identity audience
-#   SSH_PRIVATE_KEY      — SSH key authorized on target hosts
-#   AGE_SECRET_KEY       — age private key for SOPS decryption
-
 jobs:
   prepare:
     name: Prepare matrix
@@ -46,65 +40,13 @@ jobs:
 
   deploy:
     needs: prepare
-    name: Deploy ${{ inputs.playbook }} → ${{ matrix.host }}
-    runs-on: ubuntu-latest
-    environment: production # requires manual approval in repo settings
-    permissions:
-      id-token: write
     strategy:
       matrix:
         host: ${{ fromJson(needs.prepare.outputs.hosts) }}
       fail-fast: false
-    steps:
-      - uses: actions/checkout@v6
-
-      - name: Set up Tailscale
-        uses: tailscale/github-action@v4
-        with:
-          oauth-client-id: ${{ secrets.TAILSCALE_CLIENT_ID }}
-          audience: ${{ secrets.TAILSCALE_AUDIENCE }}
-          tags: tag:ci
-
-      - name: Set up SSH key
-        run: |
-          mkdir -p ~/.ssh
-          echo "${{ secrets.SSH_PRIVATE_KEY }}" > ~/.ssh/id_ed25519
-          chmod 600 ~/.ssh/id_ed25519
-          IPS=$(grep 'ansible_host=' ansible/inventory/hosts.ini | awk -F'ansible_host=' '{print $2}' | awk '{print $1}' | tr '\n' ' ')
-          ssh-keyscan -H $IPS >> ~/.ssh/known_hosts 2>/dev/null || true
-
-      - name: Install tools
-        run: |
-          pip install ansible
-          wget -qO /tmp/sops.deb https://github.com/getsops/sops/releases/download/v3.9.4/sops_3.9.4_amd64.deb
-          sudo dpkg -i /tmp/sops.deb
-
-      - name: Install Ansible collections
-        run: ansible-galaxy install -r ansible/requirements.yml
-
-      - name: Decrypt secrets
-        env:
-          SOPS_AGE_KEY: ${{ secrets.AGE_SECRET_KEY }}
-        run: |
-          find . -name '*.enc.yml' -o -name '*.enc.yaml' -o -name '*.enc.env' | while read f; do
-            out="${f/.enc/}"
-            sops -d "$f" > "$out"
-          done
-
-      - name: Run playbook
-        working-directory: ansible/
-        env:
-          ANSIBLE_HOST_KEY_CHECKING: "false"
-        run: |
-          PLAYBOOK="${{ inputs.playbook }}"
-          PLAYBOOK="${PLAYBOOK#playbooks/}"
-          PLAYBOOK="${PLAYBOOK%.yml}.yml"
-          if [ "$PLAYBOOK" != "deploy.yml" ]; then
-            PLAYBOOK="playbooks/$PLAYBOOK"
-          fi
-
-          ARGS="--limit ${{ matrix.host }}"
-          if [ "${{ inputs.dry_run }}" = "true" ]; then
-            ARGS="$ARGS --check --diff"
-          fi
-          ansible-playbook "$PLAYBOOK" $ARGS
+    uses: ./.github/workflows/_deploy-core.yml
+    with:
+      host: ${{ matrix.host }}
+      playbook: ${{ inputs.playbook }}
+      dry_run: ${{ inputs.dry_run }}
+    secrets: inherit
