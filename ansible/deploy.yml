@@ -8,37 +8,27 @@
 #   Full fleet:   ansible-playbook deploy.yml
 #   Single host:  ansible-playbook deploy.yml --limit helsinki-a
 #   Dry run:      ansible-playbook deploy.yml --check --diff
+#   Services only (skip baseline):  ansible-playbook deploy.yml --tags services
 #
 # Prerequisites:
 #   - Target host has SSH access via Tailscale
 #   - Target host has a base OS installed (Debian)
 #   - ansible-galaxy install -r requirements.yml
 
-# ──────────────────────────────────────────────
-# Stage 1: Common baseline — all hosts
-# ──────────────────────────────────────────────
-- name: "Stage 1: Common baseline"
+- name: Common baseline
   hosts: all
   tags: [common, baseline]
   roles:
     - role: common
     - role: dotfiles
 
-# ──────────────────────────────────────────────
-# Stage 2: Docker engine — hosts that run containers
-# ──────────────────────────────────────────────
-- name: "Stage 2: Docker engine"
+- name: Docker engine
   hosts: docker_hosts
   tags: [docker]
   roles:
     - role: docker
 
-# ──────────────────────────────────────────────
-# Stage 4: Per-host services
-# ──────────────────────────────────────────────
-
-# helsinki-a: Caddy reverse proxy + status page
-- name: "Stage 4a: Caddy + status page (helsinki-a)"
+- name: Caddy + status page (helsinki-a)
   hosts: helsinki-a
   tags: [services, caddy, status_page]
   roles:
@@ -46,75 +36,40 @@
     - role: status_page
     - role: systemd_services
 
-# All docker hosts: deploy compose services
-- name: "Stage 4b: Docker services"
+- name: Docker services
   hosts: docker_hosts
   tags: [services, docker_services]
   roles:
     - role: docker_services
 
-# nuremberg-a: Mail server
-- name: "Stage 4c: Mail server (nuremberg-a)"
+- name: Mail — poste.io (nuremberg-a)
   hosts: nuremberg-a
   tags: [services, mail]
+  roles:
+    - role: docker_services
 
-# london-b: Media stack + backups
-- name: "Stage 4d: Media stack + backups (london-b)"
+- name: Media stack + backups (london-b)
   hosts: london-b
   tags: [services, london-b]
   roles:
     - role: media_stack
     - role: backup
 
-# copenhagen-a: Gaming servers
-- name: "Stage 4e: Gaming servers (copenhagen-a)"
+- name: Gaming servers (copenhagen-a)
   hosts: copenhagen-a
   tags: [services, gaming]
   roles:
     - role: systemd_services
     - role: mariadb
 
-# london-a: Proxmox VE hypervisor
-- name: "Stage 4f: Proxmox VE (london-a)"
+- name: Proxmox VE (london-a)
   hosts: london-a
   tags: [services, proxmox]
   roles:
     - role: proxmox_ve
 
-# ──────────────────────────────────────────────
-# Stage 4g: ZFS scrub scheduling — zfs_hosts
-# ──────────────────────────────────────────────
-- name: "Stage 4g: ZFS scrub scheduling"
+- name: ZFS scrub scheduling
   hosts: zfs_hosts
   tags: [services, zfs]
   roles:
     - role: zfs
-
-# ──────────────────────────────────────────────
-# Stage 5: Verification
-# ──────────────────────────────────────────────
-- name: "Stage 5: Post-deploy verification"
-  hosts: all
-  tags: [verify]
-  tasks:
-    - name: Check SSH is working
-      ansible.builtin.ping:
-
-    - name: Gather uptime
-      ansible.builtin.command: uptime
-      changed_when: false
-      register: uptime_result
-
-    - name: Check Docker containers (where applicable)
-      ansible.builtin.command: docker ps --format "table {{ '{{' }}.Names{{ '}}' }}\t{{ '{{' }}.Status{{ '}}' }}"
-      changed_when: false
-      register: docker_status
-      when: "'docker_hosts' in group_names"
-      failed_when: false
-
-    - name: Report host status
-      ansible.builtin.debug:
-        msg: |
-          Host: {{ inventory_hostname }} ({{ host_description | default('no description') }})
-          Uptime: {{ uptime_result.stdout }}
-          Docker: {{ docker_status.stdout_lines | default(['N/A']) | join('\n') }}
