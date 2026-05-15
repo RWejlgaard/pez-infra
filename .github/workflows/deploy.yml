@@ -44,6 +44,8 @@ jobs:
       matrix:
         host: ${{ fromJson(needs.prepare.outputs.hosts) }}
       fail-fast: false
+    permissions:
+      id-token: write
     uses: ./.github/workflows/_deploy-core.yml
     with:
       host: ${{ matrix.host }}
