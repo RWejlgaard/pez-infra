@@ -24,31 +24,7 @@ All inter-server communication uses Tailscale IPs:
 - **Ansible deployments:** GitHub Actions runs Ansible over Tailscale SSH connections
 - **Exit nodes:** Servers can act as VPN endpoints — useful for accessing UK content from Copenhagen or vice versa
 
-### Mesh Diagram
-
-```mermaid
-graph TD
-    HEL["helsinki-a"] <--> LB["london-b"]
-    HEL <--> LA["london-a"]
-    HEL <--> LC["london-c"]
-    HEL <--> NA["nuremberg-a"]
-    HEL <--> CA["copenhagen-a"]
-    HEL <--> CC["copenhagen-c"]
-    LA <--> LB
-    LA <--> LC
-    LB <--> LC
-    LB <--> CA
-    LB <--> CC
-    NA <--> CA
-    NA <--> LB
-    NA <--> LA
-    CA <--> CC
-
-    style CC stroke-dasharray: 5 5
-    style LC stroke-dasharray: 5 5
-```
-
-> Every node can reach every other node directly. The mesh is fully connected.
+Every node can reach every other node directly — the Tailscale mesh is fully connected.
 
 ## Physical Networking
 
