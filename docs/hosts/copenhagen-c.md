@@ -1,21 +1,29 @@
 # copenhagen-c
 
-General purpose box. Currently idle.
+Raspberry Pi at the Copenhagen site. General-purpose / off-site utility box.
 
 ## Overview
 
 | | |
 |---|---|
 | **Location** | Copenhagen |
-| **OS** | Debian 12 |
+| **OS** | Debian 12 (Bookworm), aarch64 |
 | **Tailscale IP** | 100.115.45.53 |
-| **Role** | Idle / available |
-| **Disk** | 117 GB (15% used) |
+| **Role** | Idle / cloudflared tunnel |
+| **Form factor** | Raspberry Pi (ARM64) |
 
-## Status
+## Services
 
-No active workloads. Connected to Tailscale and available for future use. Has node_exporter running for monitoring.
+| Service | Deployment | Notes |
+|---------|-----------|-------|
+| cloudflared | Native (systemd) | Cloudflare-managed tunnel for ad-hoc exposure of services from this site |
+| Tailscale | Native | Mesh networking |
+| Alloy | Native | Ships metrics/logs to Grafana Cloud |
+| node_exporter | Native | Host metrics |
+| Docker / containerd | Native | Available, but no compose services currently scheduled here |
+
+The cloudflared token is stored directly in the systemd unit (`/etc/systemd/system/cloudflared.service`); the tunnel itself is configured in the Cloudflare dashboard.
 
 ## Notes
 
-Part of the Copenhagen off-site setup at my dad's place. Available if I need to spin up something that benefits from a Copenhagen location or just need another box.
+Part of the Copenhagen off-site setup at my dad's place. Otherwise idle — available if I need to spin up something that benefits from a Copenhagen location or just need another always-on box.

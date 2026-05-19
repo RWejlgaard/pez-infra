@@ -2,111 +2,82 @@
 
 ## Stack Overview
 
+Observability is a fully managed pipeline today: every host runs **Grafana Alloy** as the local collector, and everything ships to **Grafana Cloud**. Synthetic checks are also driven from Grafana Cloud, and alerts are routed to **PagerDuty**.
+
 ```mermaid
-graph TD
-    subgraph "london-a (FreeBSD)"
-        Prometheus[":9090 Prometheus"] -->|query| Grafana[":3000 Grafana"]
+graph LR
+    subgraph "Fleet (each host)"
+        NE["node_exporter :9100"]
+        SE["systemd_exporter :9558"]
+        XE["host-specific<br/>exporters<br/>(smartctl, plex,<br/>octopus...)"]
+        Alloy["alloy.service<br/>(Grafana Alloy)"]
+        NE --> Alloy
+        SE --> Alloy
+        XE --> Alloy
     end
 
-    Prometheus -->|scrape over Tailscale| NE["node_exporter<br/>(all hosts) :9100"]
-    Prometheus -->|scrape over Tailscale| SE["smartctl_exporter<br/>(london-b) :9633"]
-    Prometheus -->|scrape over Tailscale| PE["plex_exporter<br/>(london-b)"]
+    Alloy -->|metrics, logs, traces| GC["<b>Grafana Cloud</b><br/>pez.grafana.net"]
+    SM["Synthetic Monitoring<br/>probes (London)"] -->|HTTPS GETs| Internet["https://*.pez.sh"]
+    SM --> GC
+    GC -->|alerts| PD["PagerDuty"]
 ```
 
-Both Prometheus and Grafana are accessible via:
-- **grafana.pez.sh** (behind Authelia)
-- **prometheus.pez.sh** (behind Authelia)
+Everything in `terraform/grafana/` is the source of truth for the Grafana Cloud side: stack, Fleet Management collectors, fleet pipelines, dashboards, and synthetic checks. Everything in `terraform/pagerduty/` configures the on-call destination.
 
-## Prometheus
+## Grafana Alloy (per-host collector)
 
-Prometheus runs on london-a and scrapes metrics from exporters across the fleet. All scrape targets are reached over Tailscale — no ports need to be exposed on the public internet.
+Alloy runs as `alloy.service` on every host in the inventory. Each host is registered as a Grafana Fleet Management collector in `terraform/grafana/fleet_collectors.tf`, tagged with a `location` attribute (`london`, `copenhagen`, `cloud`) so pipelines can target subsets of the fleet.
 
-### Scrape Targets
+Pipelines (what to scrape, how to relabel, where to ship) live in `terraform/grafana/fleet_pipelines/` and are pushed to Grafana Cloud as a `grafana_fleet_management_pipeline` resource. The Alloy daemons on each host pull their config from Fleet Management.
 
-| Target | Host | Port | What |
-|--------|------|------|------|
-| node_exporter | All hosts | 9100 | System metrics (CPU, memory, disk, network) |
-| smartctl_exporter | london-b | 9633 | Disk SMART health data |
-| prom-plex-exporter | london-b | (varies) | Plex streaming activity |
+### Local exporters scraped by Alloy
 
-node_exporter is deployed to every host via Ansible. It's one of the first things that gets installed on a new server.
+| Exporter | Hosts | What |
+|---|---|---|
+| node_exporter | All hosts | CPU, memory, disk, network, system uptime |
+| systemd_exporter | All hosts | Per-unit systemd state |
+| smartctl_exporter (Docker) | london-b, copenhagen-a | Disk SMART data |
+| prom-plex-exporter (Docker) | london-b | Plex streaming activity |
+| octopus_exporter (Docker) | london-c | Octopus Energy electricity usage |
+| Caddy `/metrics` | helsinki-a | HTTP request metrics, upstream health (per host) |
 
-### Adding a scrape target
+### Logs
 
-1. Deploy the exporter to the host (via Ansible or Docker)
-2. Add the target to the Prometheus config in `services/prometheus/`
-3. Deploy the updated config (Ansible or manual restart)
-4. Verify it shows up in Prometheus targets page
+Alloy ships systemd journal entries from every host to Grafana Cloud Logs. Log-derived alerts (e.g. SSH brute-force, mail server errors) can be configured directly in Grafana Cloud.
 
-## Grafana
+## Synthetic Monitoring
 
-Grafana reads from Prometheus and provides dashboards for everything worth watching.
+Grafana Cloud's Synthetic Monitoring service runs HTTPS probes from the London region against the public services, every 10 minutes. Configured in `terraform/grafana/synthetic_checks.tf`:
 
-### Dashboards
+| Check | URL |
+|---|---|
+| pez_sh | https://pez.sh |
+| pez_solutions | https://pez.solutions |
+| jellyfin | https://jellyfin.pez.sh |
+| plex | https://plex.pez.sh (auth header) |
+| request | https://request.pez.sh |
+| jellyfin_requests | https://jellyfin-requests.pez.sh |
+| git | https://git.pez.sh |
 
-| Dashboard | What it shows |
-|-----------|--------------|
-| Server Health | CPU, memory, disk usage, network I/O across all hosts |
-| ZFS | Pool status, usage, scrub results for london-b |
-| SMART | Disk health metrics, temperature, error counts |
-| Plex | Active streams, transcoding status, library stats |
+Each check has a `ProbeFailedExecutionsTooHigh` alert wired up (3 failed executions in a 30-minute window).
 
-### Adding a dashboard
+## Alerting → PagerDuty
 
-Dashboards are defined in `services/grafana/`. Export as JSON from Grafana and commit to the repo to keep them in version control.
+PagerDuty is configured in `terraform/pagerduty/`:
 
-## Exporters
-
-### node_exporter
-
-Standard Prometheus node exporter. Deployed on every host. Provides system-level metrics:
-- CPU usage and load averages
-- Memory usage
-- Disk space and I/O
-- Network traffic
-- System uptime
-
-Installed via Ansible as part of the base server setup.
-
-### smartctl_exporter
-
-Runs on london-b (the ZFS storage server with 8 spinning disks). Exposes SMART data from all drives:
-- Temperature
-- Reallocated sectors
-- Read/write error rates
-- Power-on hours
-- Overall health assessment
-
-Critical for catching dying drives before they take out a RAIDZ1 vdev.
-
-### prom-plex-exporter
-
-Runs on london-b. Scrapes the Plex API and exposes metrics about:
-- Active streams
-- Transcode sessions
-- Library size
-- User activity
-
-Mostly for fun — it's satisfying to see the Plex dashboard light up when people are streaming.
+- A single service (`pez-infra`) receives alerts
+- Escalation policy fires to me directly
+- The Grafana Cloud → PagerDuty integration sends every fired alert (synthetic check failures today; can be extended to log/metric alerts)
 
 ## Status Page
 
-**status.pez.sh** is a lightweight public status page that shows service availability.
+**status.pez.sh** is a public status page hosted on helsinki-a at `/srv/status`.
 
-- Pulls availability data from Prometheus
-- Shows 90-day uptime history
-- Hosted on helsinki-a at `/srv/status`
-- Source: [RWejlgaard/pez-status](https://github.com/RWejlgaard/pez-status)
-- Not behind Authelia — it's public by design
+- Cron-driven static JSON (see `ansible/roles/status_page/`) — does not require Grafana Cloud to render
+- Hosted directly by Caddy as a `file_server`
+- Public by design (no Authelia)
+- Source repo for the front-end: [RWejlgaard/pez-status](https://github.com/RWejlgaard/pez-status)
 
-## Alerting
+## History
 
-Prometheus alerting rules can be configured in the Prometheus config. Alert conditions worth monitoring:
-
-- Host down (node_exporter unreachable)
-- Disk space critical (>90% usage)
-- ZFS scrub errors
-- SMART drive failures
-- High memory usage
-
-Grafana can also be configured with alert channels (email, webhooks, etc.) for dashboard-based alerts.
+Monitoring used to run locally on **london-a** (FreeBSD) with a self-hosted Prometheus + Grafana. When london-a was reinstalled as Proxmox VE, the local stack was retired and everything moved to Grafana Cloud + Alloy. Older docs (and a few legacy hard-coded IPs in helper scripts) may still reference `100.122.219.41:9090` — that endpoint no longer exists.

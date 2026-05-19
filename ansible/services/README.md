@@ -1,45 +1,53 @@
 # Services
 
-Version-controlled service definitions across the fleet.
+Version-controlled service definitions across the fleet. Each subdirectory is a single deployable unit — either a Docker Compose stack, a systemd unit, or a static config file set — that the Ansible roles in `ansible/roles/` pick up and deploy.
 
-## Directory Structure
+## Layout
 
 ```
 services/
-├── systemd/              # systemd unit files (Linux hosts)
-│   ├── copenhagen-a/
-│   │   ├── mangos-realmd.service   # MaNGOS Zero realm server
-│   │   └── mangos-world.service    # MaNGOS Zero world server
-│   └── helsinki-a/
-│       ├── caddy.service                    # Caddy reverse proxy (stock unit)
-│       └── thiswebsitedoesnotexist.service  # Node.js app on port 3721
-└── rc.d/                 # FreeBSD rc.conf and rc.d scripts
-    └── london-a/
-        └── rc.conf       # /etc/rc.conf — all enabled services
+├── <service-name>/
+│   ├── docker-compose.yml      # Docker services
+│   ├── <service>.service       # Native systemd unit (when applicable)
+│   ├── config/                 # Mounted/copied config files
+│   ├── *.enc.{yml,yaml,env}    # SOPS-encrypted secrets
+│   └── README.md               # Service-specific notes (where relevant)
 ```
 
-## Notes
+There is **no** per-host subdirectory — services are named by what they are, and the host they land on is decided by `docker_services` / `systemd_services` lists in `ansible/inventory/host_vars/<host>.yml`.
 
-### copenhagen-a (Linux)
+## Service inventory
 
-| Service | Unit | Status | Notes |
-|---------|------|--------|-------|
-| MaNGOS realmd | `mangos-realmd.service` | enabled, custom | Realm server for WoW private server. Depends on MariaDB. |
-| MaNGOS world | `mangos-world.service` | enabled, custom | World server. Depends on MariaDB and realmd. |
+| Service | Type | Host(s) | Notes |
+|---|---|---|---|
+| caddy | Native (apt) | helsinki-a | Reverse proxy. Caddyfile lives here. |
+| authelia | Docker | helsinki-a | SSO, plus MariaDB and LLDAP sidecars |
+| bitwarden | Docker | helsinki-a | Vaultwarden + MariaDB |
+| forgejo | Docker | helsinki-a | Git forge |
+| poste-io | Docker | nuremberg-a | Mail |
+| jellyseerr | Docker | london-b | Plex request manager |
+| navidrome | Docker | london-b | Music streaming |
+| slskd | Docker | london-b | Soulseek client |
+| miniflux | Docker | london-b | RSS reader (with postgres) |
+| smartctl-exporter | Docker | london-b, copenhagen-a | SMART metrics |
+| plex-exporter | Docker | london-b | Plex metrics |
+| octopus-exporter | Docker | london-c | Octopus Energy metrics |
+| minecraft | Docker | copenhagen-a | PaperMC server |
+| radarr / sonarr / lidarr / readarr / prowlarr / whisparr | systemd | london-b | *Arr stack (systemd unit files here) |
+| transmission | systemd | london-b | Config files (the daemon itself is apt) |
+| samba / vsftpd | systemd | london-b | File-sharing config |
+| ollama | systemd | london-b | Custom unit + binary install |
+| mangos-realmd / mangos-world / mangos-zero | systemd | copenhagen-a | MaNGOS WoW server |
+| promtail | systemd | (currently unused; historical) | Log shipper, replaced by Alloy |
+| status-page | Cron script | helsinki-a | `update-status.sh` writes `/srv/status` |
+| rc.d | FreeBSD rc.conf | (historical) | Snapshot of london-a's old FreeBSD setup |
 
-### helsinki-a (Linux)
+## Conventions
 
-| Service | Unit | Status | Notes |
-|---------|------|--------|-------|
-| Caddy | `caddy.service` | enabled, stock | Installed via package manager. Config at `/etc/caddy/Caddyfile`. |
-| thiswebsitedoesnotexist | `thiswebsitedoesnotexist.service` | enabled, custom | Node.js app. Env vars in `/opt/thiswebsitedoesnotexist/.env`. |
+- **Compose stacks** live at `<service>/docker-compose.yml` and are deployed to `/opt/docker/<service>/` on the target host.
+- **Systemd units** are copied to `/etc/systemd/system/<service>.service` by the `media_stack` or `systemd_services` role.
+- **Secrets** are SOPS-encrypted (`*.enc.yml`) and decrypted into place at deploy time.
 
-### london-a (Linux)
+## Adding a new service
 
-No custom rc.d scripts — all services installed via `pkg`. The `rc.conf` captures all enabled services:
-
-| Service | Unit | Notes |
-|---------|-----------------|-------|
-| libvirtd | `libvirtd.service` | Virtualisation daemon |
-
-
+See [docs/getting-started.md](../../docs/getting-started.md#adding-a-new-service) for the end-to-end flow (compose → host_vars → Caddy → DNS → docs).

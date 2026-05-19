@@ -2,20 +2,25 @@
 
 Complete map of every service in the fleet — what it does, where it runs, how it's deployed, and whether it's behind auth.
 
-## helsinki-a — Gateway & Auth
+## helsinki-a — Gateway, Auth, Git
 
 | Service | Port | Deployment | Auth | URL |
 |---------|------|-----------|------|-----|
-| Caddy | 80, 443 | Native (apt) | — | (reverse proxy, no direct URL) |
+| Caddy | 80, 443 | Native (apt + systemd) | — | (reverse proxy, no direct URL) |
 | Authelia | 9091 | Docker | — | auth.pez.sh |
-| Bitwarden (Vaultwarden) | 8443 | Docker | Own auth | bitwarden.pez.sh |
-| LLDAP | 3890/17170 | Docker | — | (internal, used by Authelia) |
+| Authelia MariaDB | 3306 (internal) | Docker | — | (Authelia session/state) |
+| LLDAP | 3890, 17170 | Docker | — | ldap.pez.sh (UI) — used by Authelia |
+| Bitwarden (Vaultwarden) | 8443, 8080 | Docker | Own auth | bitwarden.pez.sh |
+| Bitwarden MariaDB | 3306 (internal) | Docker | — | (Vaultwarden backing DB) |
+| Forgejo | 3000 (HTTP), 2222 (SSH) | Docker | Own auth | git.pez.sh |
 
-Caddy is the single entry point for all public traffic. Authelia and LLDAP provide SSO. Bitwarden is on helsinki-a for availability — it needs to be reachable even if the London servers are down.
+Caddy is the single entry point for all public traffic and runs as a native apt-managed systemd service so it can bind 80/443 directly. Everything else on this host runs in Docker.
+
+Authelia provides SSO via Caddy `forward_auth`. LLDAP is Authelia's user backend — it is **not** wired into Forgejo or Bitwarden, both of which keep their own user databases. Bitwarden lives on helsinki-a so password management stays reachable even if the London servers are down. Forgejo hosts internal Git repositories and exposes SSH on port 2222 (the SSH service itself uses `git.pez.sh:2222`).
 
 ## london-b — Storage & Media
 
-The workhorse. Threadripper 3970X, 64GB RAM, 64TB ZFS storage. Everything media-related lives here.
+The workhorse. Threadripper 3970X, 64GB RAM. Everything media-related lives here.
 
 ### Media Servers
 
@@ -31,35 +36,51 @@ I run both Plex and Jellyfin — some clients work better with one than the othe
 
 | Service | Port | Deployment | Auth | URL |
 |---------|------|-----------|------|-----|
-| Radarr | 7878 | Native (systemd) | Authelia | radarr.pez.sh |
-| Sonarr | 8989 | Native (apt/systemd) | Authelia | sonarr.pez.sh |
-| Lidarr | 8686 | Native (systemd) | Authelia | lidarr.pez.sh |
-| Readarr | 8787 | Native (systemd) | Authelia | readarr.pez.sh |
-| Prowlarr | 9696 | Native (systemd) | Authelia | prowlarr.pez.sh |
+| Radarr | 7878 | Custom systemd unit (`/opt/Radarr`) | Authelia | radarr.pez.sh |
+| Sonarr | 8989 | Native (apt/systemd, mono) | Authelia | sonarr.pez.sh |
+| Lidarr | 8686 | Custom systemd unit (`/opt/Lidarr`) | Authelia | lidarr.pez.sh |
+| Readarr | 8787 | Custom systemd unit (`/opt/Readarr`) | Authelia | readarr.pez.sh |
+| Prowlarr | 9696 | Custom systemd unit (`/opt/Prowlarr`) | Authelia | prowlarr.pez.sh |
+| Whisparr | — | Custom systemd unit (disabled) | — | — |
 | Transmission | 9091 | Native (apt/systemd) | Authelia | download.pez.sh |
 | Jellyseerr | 5055 | Docker | Own auth | request.pez.sh |
+| Overseerr | 5056 | Snap (`overseerr` from `latest/beta`) | Own auth | jellyfin-requests.pez.sh |
 
-The arr stack pipeline: Jellyseerr accepts requests → Radarr/Sonarr/Lidarr/Readarr search via Prowlarr → sends to Transmission → downloaded content is moved to the library → Plex and Jellyfin pick it up automatically.
+The arr stack pipeline: Jellyseerr/Overseerr accept requests → Radarr/Sonarr/Lidarr/Readarr search via Prowlarr → send to Transmission → downloaded content is moved to the library → Plex and Jellyfin pick it up automatically. Two requesters because Overseerr is hooked into Jellyfin and Jellyseerr into Plex.
 
 ### Other
 
 | Service | Port | Deployment | Auth | URL |
 |---------|------|-----------|------|-----|
-| Nextcloud AIO | 11000 | Docker | Own auth | cloud.pez.sh |
+| Nextcloud AIO | 11000 | Docker | Own auth | cloud.pez.sh (internal/Tailscale) |
+| Miniflux | 8181 | Docker (with postgres sidecar) | Authelia | rss.pez.sh |
 | slskd (Soulseek) | 5030 | Docker | Authelia | soulseek.pez.sh |
-| smartctl exporter | 9633 | Docker | — | (scraped by Prometheus) |
-| prom-plex-exporter | — | Docker | — | (scraped by Prometheus) |
+| Syncthing (`syncthing@pez`) | 8384 | Native (apt) | Own auth | (LAN/Tailscale only) |
+| Samba (`smbd`) | 445 | Native (apt) | Local users | (LAN/Tailscale only) |
+| vsftpd | 21 | Native (apt) | Local users | (LAN/Tailscale only) |
+| Ollama | 11434 | Native (`/usr/local/bin`) | — | (Tailscale only) |
+| smartctl_exporter | 9633 | Docker | — | (scraped by Alloy → Grafana Cloud) |
+| prom-plex-exporter | 9594 | Docker | — | (scraped by Alloy → Grafana Cloud) |
 
-## london-a — Monitoring
+## london-a — Proxmox VE Hypervisor
 
-Dedicated monitoring host running FreeBSD. Very lightly loaded.
+Repurposed gaming PC (i7-4790K, 32 GB) running Proxmox VE on bare metal. Currently hosts a single Mac VM and is the landing zone for future virtual machines.
 
 | Service | Port | Deployment | Auth | URL |
 |---------|------|-----------|------|-----|
-| Prometheus | 9090 | Native | Authelia | prometheus.pez.sh |
-| Grafana | 3000 | Native | Authelia | grafana.pez.sh |
+| Proxmox VE | 8006 | Native (Debian Bookworm-based PVE) | Proxmox login | london-a.pez.sh |
 
-See [monitoring.md](monitoring.md) for details on scrape targets, dashboards, and exporters.
+The web UI is exposed via Caddy at `london-a.pez.sh` but is also reachable directly over Tailscale at `https://100.122.180.98:8006`. Proxmox storage is augmented with a CIFS share mounted from london-b's `/hdd/pve` for ISO/template/backup storage (configured by the `proxmox_ve` Ansible role).
+
+## london-c — Edge Utility (Raspberry Pi)
+
+Raspberry Pi running Debian 13. Houses helper services that don't need a beefy box.
+
+| Service | Port | Deployment | Auth | URL |
+|---------|------|-----------|------|-----|
+| octopus_exporter | 9359 | Docker | — | (scraped by Alloy → Grafana Cloud) |
+
+The `octopus_exporter` pulls electricity consumption data from the Octopus Energy API and exposes it as Prometheus-formatted metrics, which Alloy then ships to Grafana Cloud.
 
 ## nuremberg-a — Mail
 
@@ -67,43 +88,48 @@ Dedicated mail server on Hetzner Cloud. Isolated to protect IP reputation.
 
 | Service | Port | Deployment | Auth | URL |
 |---------|------|-----------|------|-----|
-| poste.io | 25, 587, 993, 443 | Docker | Own auth | (webmail via direct access) |
+| poste.io | 25, 80, 110, 143, 443, 465, 587, 993, 995 | Docker | Own auth | (webmail via direct host access) |
 
 poste.io bundles everything — postfix, dovecot, rspamd, webmail — into a single container. Makes updates straightforward.
 
 ## copenhagen-a — Gaming
 
-Game servers. Not publicly exposed via Caddy — accessed directly or over Tailscale.
+Game servers. Not publicly exposed via Caddy — accessed directly over the public IP/Tailscale.
 
 | Service | Port | Deployment | Auth | URL |
 |---------|------|-----------|------|-----|
-| Minecraft (PaperMC) | 25565 | Docker | — | (direct connection) |
+| Minecraft (`itzg/minecraft-server`) | 25565 | Docker | — | (direct connection) |
 | MaNGOS realmd | 3724 | Native (systemd) | — | (direct connection) |
 | MaNGOS world | 8085 | Native (systemd) | — | (direct connection) |
-| MariaDB | 3306 | Native | — | (local, used by MaNGOS) |
+| MariaDB | 3306 | Native (apt) | — | (local, used by MaNGOS) |
+| smartctl_exporter | 9633 | Docker | — | (scraped by Alloy → Grafana Cloud) |
 
 MaNGOS Zero is a WoW 1.12 (Vanilla) private server. Runs natively under systemd as the `mangos` user from `/home/mangos/mangos/zero/`. Not containerised — it predates the Docker setup on this host.
 
-## copenhagen-c — Idle
+## copenhagen-c — Idle (Raspberry Pi)
 
-No active services. Available for future use.
+Raspberry Pi running Debian 12 at the Copenhagen site. Mostly idle, but runs a cloudflared tunnel for one-off use.
 
-## Exporters (Monitoring)
+| Service | Port | Deployment | Auth | URL |
+|---------|------|-----------|------|-----|
+| cloudflared | — | Native (systemd) | — | (Cloudflare-managed tunnel) |
 
-These run on various hosts and are scraped by Prometheus:
+## Observability Agents
 
-| Exporter | Host | What it monitors |
-|----------|------|-----------------|
-| node_exporter | All hosts | CPU, memory, disk, network |
-| smartctl_exporter | london-b | Disk SMART health data |
-| prom-plex-exporter | london-b | Plex activity metrics |
+Every host runs:
+
+- **Grafana Alloy** (`alloy.service`) — collects metrics/logs/traces and ships them to Grafana Cloud
+- **node_exporter** (`prometheus-node-exporter.service`) — host metrics (CPU/memory/disk/network)
+- **systemd_exporter** (`systemd_exporter.service`) — per-unit systemd metrics
+
+Plus host-specific exporters (smartctl, plex, octopus) called out above. See [monitoring.md](monitoring.md) for details on what gets shipped and where.
 
 ## Auth Summary
 
 Services fall into two categories:
 
-**Behind Authelia** (SSO via Caddy forward_auth):
-- Grafana, Prometheus, Radarr, Sonarr, Lidarr, Readarr, Prowlarr, Transmission, Soulseek, apps.pez.sh
+**Behind Authelia** (SSO via Caddy `forward_auth`):
+- Radarr, Sonarr, Lidarr, Readarr, Prowlarr, Transmission, Soulseek, Miniflux, apps.pez.sh
 
 **Own auth** (handle login themselves):
-- Bitwarden, Plex, Jellyfin, Nextcloud, Navidrome, Jellyseerr, poste.io
+- Bitwarden, Forgejo, Plex, Jellyfin, Navidrome, Jellyseerr, Overseerr, Proxmox, poste.io
