@@ -7,7 +7,7 @@ Dedicated mail server. One job, does it well.
 | | |
 |---|---|
 | **Location** | Hetzner Cloud (Nuremberg) |
-| **OS** | Debian |
+| **OS** | Debian 13 (Trixie) |
 | **Tailscale IP** | 100.70.180.24 |
 | **Role** | Mail server (poste.io) |
 | **Provider** | Hetzner Cloud VPS |
@@ -16,9 +16,11 @@ Dedicated mail server. One job, does it well.
 
 | Service | Ports | Deployment |
 |---------|-------|-----------|
-| poste.io | 25, 587, 993, 443 | Docker |
+| poste.io | 25, 80, 110, 143, 443, 465, 587, 993, 995 | Docker |
 
 poste.io is a batteries-included mail server that bundles postfix, dovecot, rspamd, and webmail into a single Docker container. No juggling separate containers for each mail component.
+
+The compose definition lives at `ansible/services/poste-io/docker-compose.yml` and is deployed via the `docker_services` Ansible role (see `ansible/inventory/host_vars/nuremberg-a.yml`).
 
 ## Why a separate server
 
@@ -35,4 +37,4 @@ Mail-related DNS records are managed via Cloudflare (Terraform):
 
 ## Firewall
 
-Managed by Hetzner Cloud firewall rules (Terraform). Mail ports are exposed via Docker port mappings in `ansible/services/poste-io/docker-compose.yml`.
+Managed by Hetzner Cloud firewall rules (Terraform, `terraform/hetzner/firewall.tf`). Mail ports are exposed via Docker port mappings in `ansible/services/poste-io/docker-compose.yml`.

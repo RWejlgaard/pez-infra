@@ -7,7 +7,7 @@ Game servers. Located at my dad's place in Copenhagen as an off-site location.
 | | |
 |---|---|
 | **Location** | Copenhagen |
-| **OS** | Ubuntu 22.04 |
+| **OS** | Ubuntu 22.04 LTS |
 | **Tailscale IP** | 100.89.206.60 |
 | **Role** | Gaming servers (Minecraft, WoW) |
 | **Form factor** | Lenovo "tiny" desktop (lunchbox-sized) |
@@ -18,7 +18,7 @@ Game servers. Located at my dad's place in Copenhagen as an off-site location.
 |---|---|
 | CPU | Intel i5-4570T (4 threads) |
 | Memory | 16 GB |
-| Boot disk | 500 GB (26% used) |
+| Boot disk | 500 GB |
 
 Compact Lenovo desktop — powered by a standard ThinkPad charging brick. Small, quiet, and draws minimal power.
 
@@ -28,11 +28,11 @@ Compact Lenovo desktop — powered by a standard ThinkPad charging brick. Small,
 
 | | |
 |---|---|
-| Image | `marctv/minecraft-papermc-server` |
+| Image | `itzg/minecraft-server` |
 | Port | 25565 |
 | Deployment | Docker |
 
-PaperMC for better performance than vanilla. Not proxied through Caddy — accessed directly via Tailscale or the host's IP.
+Not proxied through Caddy — accessed directly via Tailscale or the host's public IP.
 
 ### World of Warcraft (MaNGOS Zero)
 
@@ -47,29 +47,18 @@ WoW 1.12 (Vanilla) private server using the MaNGOS Zero emulator. Runs natively 
 - Runs as the `mangos` user
 - Install path: `/home/mangos/mangos/zero/`
 - MariaDB hosts the character, world, and auth databases locally
+- Both `mangos-realmd` and `mangos-world` start automatically on boot via systemd
+- The `mariadb` Ansible role manages package + secrets; the `systemd_services` role drops the unit files (`ansible/services/mangos-realmd/`, `ansible/services/mangos-world/`)
 
-Both `mangos-realmd` and `mangos-world` start automatically on boot via systemd.
+### Other
 
-### Monitoring
-
-| Service | Port | Managed by |
-|---------|------|-----------|
-| node_exporter | 9100 | systemd (Ansible-managed) |
-
-Prometheus Node Exporter for host metrics. Installed and managed via the Ansible `node_exporter` role. Scraped by Prometheus on london-a via Tailscale.
-
-> **Note:** Stale Docker images for `prom/node-exporter` and `quay.io/prometheus/node-exporter` exist on the host from a previous Docker-based deployment. These should be cleaned up — the systemd service is the active one.
-
-### Potentially Unused Services
-
-The following services are running but have no known active consumers:
-
-| Service | Notes |
-|---------|-------|
-| PostgreSQL 14 | Only default databases (template0, template1, postgres). Likely leftover. |
-| Redis 6.0 | Running but no known application depends on it. |
-
-These are candidates for removal or investigation.
+| Service | Port | Deployment | Notes |
+|---------|------|-----------|-------|
+| smartctl_exporter | 9633 | Docker | Disk SMART metrics scraped by Alloy |
+| node_exporter | 9100 | Native | Host metrics |
+| systemd_exporter | — | Native | systemd unit metrics |
+| Alloy | — | Native | Ships everything to Grafana Cloud |
+| Tailscale | — | Native | Mesh networking |
 
 ## Networking
 
@@ -77,4 +66,4 @@ Connected directly to the ISP router's built-in switch. Symmetrical 500 Mbit con
 
 ## Notes
 
-Copenhagen-a has a static IP, which is needed for game servers that require direct client connections (WoW realm list, Minecraft server list).
+copenhagen-a has a static public IP, which is needed for game servers that require direct client connections (WoW realm list, Minecraft server list). The reboot playbook (`ansible/playbooks/reboot.yml`) does a netplan pre-flight check before rebooting to make sure the static IP config will come back up cleanly.
