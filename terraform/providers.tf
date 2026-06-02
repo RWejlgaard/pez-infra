@@ -24,6 +24,10 @@ terraform {
     region                      = "eu-central-003"
     skip_credentials_validation = true
     skip_region_validation      = true
+    # NOTE: no state locking — Backblaze B2's S3 API doesn't implement the
+    # conditional PutObject that OpenTofu's use_lockfile needs (returns 501
+    # NotImplemented). Concurrent applies are instead prevented by the
+    # `concurrency` guard in .github/workflows/terraform.yml.
     # Credentials read from AWS_ACCESS_KEY_ID / AWS_SECRET_ACCESS_KEY env vars
   }
 }
