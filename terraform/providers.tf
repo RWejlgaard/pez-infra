@@ -1,5 +1,5 @@
 terraform {
-  required_version = ">= 1.6.0"
+  required_version = ">= 1.10.0"
 
   required_providers {
     hcloud = {
@@ -24,6 +24,7 @@ terraform {
     region                      = "eu-central-003"
     skip_credentials_validation = true
     skip_region_validation      = true
+    use_lockfile                = true
     # Credentials read from AWS_ACCESS_KEY_ID / AWS_SECRET_ACCESS_KEY env vars
   }
 }

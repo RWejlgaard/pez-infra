@@ -10,6 +10,13 @@ on:
 # Requires these repository secrets:
 #   AGE_SECRET_KEY     — age private key for SOPS decryption
 
+# Serialize Terraform runs so two merges can't apply against the state
+# concurrently. Never cancel an in-flight run (an interrupted apply can
+# corrupt state) — queue instead.
+concurrency:
+  group: terraform-state
+  cancel-in-progress: false
+
 jobs:
   plan:
     name: Plan
@@ -20,7 +27,7 @@ jobs:
       - name: Install OpenTofu
         uses: opentofu/setup-opentofu@v2
         with:
-          tofu_version: 1.9.0
+          tofu_version: 1.10.10
 
       - name: Install SOPS
         run: |
@@ -71,7 +78,7 @@ jobs:
       - name: Install OpenTofu
         uses: opentofu/setup-opentofu@v2
         with:
-          tofu_version: 1.9.0
+          tofu_version: 1.10.10
 
       - name: Install SOPS
         run: |
