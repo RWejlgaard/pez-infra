@@ -12,6 +12,10 @@ permissions:
 
 # Requires these repository secrets:
 #   AGE_SECRET_KEY     — age private key for SOPS decryption
+#
+# Dependabot PRs run with no access to these secrets and a read-only token,
+# so they take a lightweight, secret-free path (init + validate, no plan/
+# comment). Provider-version bumps are still resolved and validated.
 
 jobs:
   plan:
@@ -25,12 +29,29 @@ jobs:
         with:
           tofu_version: 1.9.0
 
+      # --- Dependabot: secret-free validation -------------------------------
+      - name: Validate (no secrets)
+        if: github.actor == 'dependabot[bot]'
+        working-directory: terraform/
+        run: |
+          # secrets.yaml is decrypted from SOPS at plan time and can't be
+          # produced here, so stub the keys the config reads (kept in sync by
+          # deriving them from the actual secrets["..."] references).
+          grep -rhoE 'secrets\["[^"]+"\]' . \
+            | sed -E 's/.*secrets\["([^"]+)"\].*/\1: "stub"/' \
+            | sort -u > secrets.yaml
+          tofu init -backend=false
+          tofu validate
+
+      # --- Human PRs: full plan against real backend ------------------------
       - name: Install SOPS
+        if: github.actor != 'dependabot[bot]'
         run: |
           wget -qO /tmp/sops.deb https://github.com/getsops/sops/releases/download/v3.9.4/sops_3.9.4_amd64.deb
           sudo dpkg -i /tmp/sops.deb
 
       - name: Decrypt secrets
+        if: github.actor != 'dependabot[bot]'
         env:
           SOPS_AGE_KEY: ${{ secrets.AGE_SECRET_KEY }}
         run: |
@@ -41,21 +62,25 @@ jobs:
           done
 
       - name: Set backend credentials
+        if: github.actor != 'dependabot[bot]'
         working-directory: terraform/
         run: |
           echo "AWS_ACCESS_KEY_ID=$(yq '.backblaze_keyID' secrets.yaml)" >> "$GITHUB_ENV"
           echo "AWS_SECRET_ACCESS_KEY=$(yq '.backblaze_applicationKey' secrets.yaml)" >> "$GITHUB_ENV"
 
       - name: tofu init
+        if: github.actor != 'dependabot[bot]'
         working-directory: terraform/
         run: tofu init
 
       - name: tofu validate
+        if: github.actor != 'dependabot[bot]'
         working-directory: terraform/
         run: tofu validate
 
       - name: tofu plan
         id: plan
+        if: github.actor != 'dependabot[bot]'
         working-directory: terraform/
         continue-on-error: true
         run: |
@@ -63,6 +88,7 @@ jobs:
           tofu plan -no-color 2>&1 | tee plan_output.txt
 
       - name: Post plan as PR comment
+        if: github.actor != 'dependabot[bot]'
         uses: actions/github-script@v7
         with:
           script: |
@@ -99,5 +125,5 @@ jobs:
             }
 
       - name: Fail if plan failed
-        if: steps.plan.outcome == 'failure'
+        if: github.actor != 'dependabot[bot]' && steps.plan.outcome == 'failure'
         run: exit 1
