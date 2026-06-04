@@ -6,6 +6,9 @@ on:
       - main
     paths-ignore:
       - "terraform/**"
+      - "docs/**"
+      - "**/*.md"
+      - ".github/**"
 
 # Serialize fleet deploys so two quick merges can't run Ansible against the
 # same hosts at once. Don't cancel an in-flight deploy mid-run — queue it.

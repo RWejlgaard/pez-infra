@@ -19,4 +19,3 @@
     enabled: true
   loop: "{{ systemd_services_unit_files.results | default([]) }}"
   when: item is not failed
-  failed_when: false
