@@ -1,4 +1,4 @@
-.PHONY: deploy deploy-check deploy-host update-all update-linux update-freebsd docker-status reboot ping deps
+.PHONY: deploy deploy-check deploy-host update-all update-linux docker-status reboot ping deps
 
 # Full fleet deploy
 deploy:
@@ -19,10 +19,6 @@ update-all:
 # Update Linux hosts only (apt + apk)
 update-linux:
 	ansible-playbook playbooks/update-linux.yml
-
-# Update FreeBSD hosts only (pkg)
-update-freebsd:
-	ansible-playbook playbooks/update-freebsd.yml
 
 # Show Docker container status
 docker-status:

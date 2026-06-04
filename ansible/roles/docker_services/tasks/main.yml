@@ -17,7 +17,6 @@
   loop: "{{ docker_services | default([]) }}"
   when: lookup('ansible.builtin.fileglob', (docker_services_dir | default(playbook_dir + '/services')) + '/' + item + '/.env.j2') | length > 0
   no_log: true
-  failed_when: false
   register: docker_services_env_files
 
 - name: Copy docker-compose files
@@ -41,16 +40,6 @@
   loop: "{{ docker_services | default([]) }}"
   failed_when: false
 
-- name: Template service .env files
-  ansible.builtin.template:
-    src: "{{ playbook_dir }}/services/{{ item }}/.env.j2"
-    dest: "/opt/docker/{{ item }}/.env"
-    mode: '0600'
-  loop: "{{ docker_services | default([]) }}"
-  when: lookup('ansible.builtin.fileglob', playbook_dir + '/services/' + item + '/.env.j2') | length > 0
-  no_log: true
-  failed_when: false
-
 - name: Start/update docker compose services
   community.docker.docker_compose_v2:
     project_src: "/opt/docker/{{ item.item }}"
@@ -62,4 +51,3 @@
     (docker_services_env_files.results | default([]) |
      selectattr('item', 'equalto', item.item) |
      selectattr('changed', 'equalto', true) | list | length > 0)
-  failed_when: false
