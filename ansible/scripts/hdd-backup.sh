@@ -7,6 +7,15 @@ DIRS=(archive backups stash syncthing ftp)
 EMAIL="pez@pez.sh"
 SUBJECT="HDD Backup Report - $(date '+%Y-%m-%d %H:%M')"
 
+# Versioning: a plain `rclone sync` permanently deletes/overwrites objects at
+# the destination, so a deletion or ransomware encryption on /hdd would
+# propagate to the backup on the next run. Instead, move every superseded
+# version into a dated folder under $VERSIONS so it can be recovered, then
+# prune anything older than $RETENTION_DAYS to cap storage.
+STAMP="$(date '+%Y-%m-%d_%H%M%S')"
+VERSIONS="$BUCKET/_versions"
+RETENTION_DAYS=30
+
 failures=()
 report=""
 size_error=""
@@ -16,7 +25,7 @@ for dir in "${DIRS[@]}"; do
     dst="$BUCKET/$dir"
     echo "Syncing $src -> $dst"
 
-    if output=$(rclone sync "$src" "$dst" -v 2>&1); then
+    if output=$(rclone sync "$src" "$dst" --backup-dir "$VERSIONS/$STAMP/$dir" -v 2>&1); then
         rc=0
     else
         rc=$?
@@ -27,6 +36,14 @@ for dir in "${DIRS[@]}"; do
 
     report+="=== $dir ===\n$output\n\n"
 done
+
+# Prune versioned copies older than the retention window.
+if prune_output=$(rclone delete "$VERSIONS" --min-age "${RETENTION_DAYS}d" -v 2>&1); then
+    :
+else
+    failures+=("version-prune")
+    report+="=== Version Prune Error ===\n$prune_output\n\n"
+fi
 
 # Get bucket storage usage
 if bucket_usage=$(rclone size "$BUCKET" 2>&1); then
