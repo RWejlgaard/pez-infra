@@ -1,0 +1,18 @@
+---
+# Bookshelf - Ebook/audiobook collection manager (Readarr revival)
+# Host: london-b (100.84.65.101)
+# Data: /root/bookshelf (config), /hdd/books (library)
+# Image: ghcr.io/pennydreadful/bookshelf (hardcover = Hardcover metadata)
+
+services:
+  bookshelf:
+    image: ghcr.io/pennydreadful/bookshelf:hardcover
+    container_name: bookshelf
+    restart: unless-stopped
+    ports:
+      - "8787:8787"
+    environment:
+      TZ: Europe/London
+    volumes:
+      - /root/bookshelf:/config
+      - /hdd/books:/hdd/books

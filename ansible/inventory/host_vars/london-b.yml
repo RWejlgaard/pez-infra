@@ -11,6 +11,7 @@ docker_services:
   - miniflux
   - smartctl-exporter
   - plex-exporter
+  - bookshelf
 
 # Snap-managed services (deployed by media_stack role)
 snap_services:
