@@ -27,6 +27,7 @@ There is **no** per-host subdirectory — services are named by what they are, a
 | poste-io | Docker | nuremberg-a | Mail |
 | jellyseerr | Docker | london-b | Plex request manager |
 | navidrome | Docker | london-b | Music streaming |
+| bookshelf | Docker | london-b | Ebook/audiobook manager (Readarr revival) |
 | slskd | Docker | london-b | Soulseek client |
 | miniflux | Docker | london-b | RSS reader (with postgres) |
 | smartctl-exporter | Docker | london-b, copenhagen-a | SMART metrics |
