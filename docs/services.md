@@ -39,14 +39,14 @@ I run both Plex and Jellyfin — some clients work better with one than the othe
 | Radarr | 7878 | Custom systemd unit (`/opt/Radarr`) | Authelia | radarr.pez.sh |
 | Sonarr | 8989 | Native (apt/systemd, mono) | Authelia | sonarr.pez.sh |
 | Lidarr | 8686 | Custom systemd unit (`/opt/Lidarr`) | Authelia | lidarr.pez.sh |
-| Readarr | 8787 | Custom systemd unit (`/opt/Readarr`) | Authelia | readarr.pez.sh |
+| Bookshelf | 8787 | Docker (`ghcr.io/pennydreadful/bookshelf`, Readarr revival) | Authelia | readarr.pez.sh |
 | Prowlarr | 9696 | Custom systemd unit (`/opt/Prowlarr`) | Authelia | prowlarr.pez.sh |
 | Whisparr | — | Custom systemd unit (disabled) | — | — |
 | Transmission | 9091 | Native (apt/systemd) | Authelia | download.pez.sh |
 | Jellyseerr | 5055 | Docker | Own auth | request.pez.sh |
 | Overseerr | 5056 | Snap (`overseerr` from `latest/beta`) | Own auth | jellyfin-requests.pez.sh |
 
-The arr stack pipeline: Jellyseerr/Overseerr accept requests → Radarr/Sonarr/Lidarr/Readarr search via Prowlarr → send to Transmission → downloaded content is moved to the library → Plex and Jellyfin pick it up automatically. Two requesters because Overseerr is hooked into Jellyfin and Jellyseerr into Plex.
+The arr stack pipeline: Jellyseerr/Overseerr accept requests → Radarr/Sonarr/Lidarr/Bookshelf search via Prowlarr → send to Transmission → downloaded content is moved to the library → Plex and Jellyfin pick it up automatically. Two requesters because Overseerr is hooked into Jellyfin and Jellyseerr into Plex.
 
 ### Other
 
@@ -129,7 +129,7 @@ Plus host-specific exporters (smartctl, plex, octopus) called out above. See [mo
 Services fall into two categories:
 
 **Behind Authelia** (SSO via Caddy `forward_auth`):
-- Radarr, Sonarr, Lidarr, Readarr, Prowlarr, Transmission, Soulseek, Miniflux, apps.pez.sh
+- Radarr, Sonarr, Lidarr, Bookshelf, Prowlarr, Transmission, Soulseek, Miniflux, apps.pez.sh
 
 **Own auth** (handle login themselves):
 - Bitwarden, Forgejo, Plex, Jellyfin, Navidrome, Jellyseerr, Overseerr, Proxmox, poste.io

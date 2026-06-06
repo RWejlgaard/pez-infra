@@ -77,7 +77,7 @@ forward_auth localhost:9091 {
 
 | Service | Auth | Reason |
 |---------|------|--------|
-| Radarr, Sonarr, Lidarr, Readarr | Authelia | Media management |
+| Radarr, Sonarr, Lidarr, Bookshelf | Authelia | Media management |
 | Prowlarr, Transmission (download) | Authelia | Download tools |
 | slskd (Soulseek) | Authelia | P2P client |
 | Miniflux (RSS) | Authelia | RSS reader |

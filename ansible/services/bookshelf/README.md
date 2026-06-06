@@ -9,5 +9,7 @@ feeds, downloads, sorts and renames books via Usenet/BitTorrent.
 - **Config:** `/root/bookshelf/` (`:/config`)
 - **Book library:** `/hdd/books` (mounted at the same path in the container, on the ZFS pool)
 
-Reachable over Tailscale at `http://london-b:8787`. Not exposed publicly
-(no Caddy/DNS entry).
+Exposed at **https://readarr.pez.sh** (and `.solutions`) behind Authelia —
+the hostname is retained from the retired Readarr service it replaces, with
+Caddy reverse-proxying to `london-b:8787`. Authelia gates access via the
+`pez_readarr_users` group.

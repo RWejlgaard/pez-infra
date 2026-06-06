@@ -56,7 +56,7 @@ RAIDZ1 tolerates one drive failure per vdev. With this many drives and this much
 | Radarr | 7878 | radarr.pez.sh |
 | Sonarr | 8989 | sonarr.pez.sh |
 | Lidarr | 8686 | lidarr.pez.sh |
-| Readarr | 8787 | readarr.pez.sh |
+| Bookshelf (Readarr revival, Docker) | 8787 | readarr.pez.sh |
 | Prowlarr | 9696 | prowlarr.pez.sh |
 | Transmission | 9091 | download.pez.sh |
 | Jellyseerr | 5055 | request.pez.sh |
@@ -84,7 +84,6 @@ The media automation suite and several supporting services run as native systemd
 | Radarr | radarr | /opt/Radarr, custom unit |
 | Prowlarr | prowlarr | /opt/Prowlarr, custom unit |
 | Lidarr | lidarr | /opt/Lidarr, custom unit |
-| Readarr | readarr | /opt/Readarr, custom unit |
 | Whisparr | whisparr | /opt/Whisparr, custom unit (disabled) |
 | Plex | plexmediaserver | Package-managed |
 | Jellyfin | jellyfin | Package-managed |
