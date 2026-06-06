@@ -14,7 +14,6 @@
     - radarr
     - prowlarr
     - lidarr
-    - readarr
     - whisparr
     - ollama
   notify: Reload systemd daemon
@@ -28,7 +27,6 @@
     - radarr
     - prowlarr
     - lidarr
-    - readarr
     - ollama
 
 # Whisparr is installed but disabled (kept as-is)
@@ -36,6 +34,22 @@
   ansible.builtin.systemd:
     name: whisparr
     enabled: false
+
+# Readarr was retired in favour of the bookshelf Docker service (a Readarr
+# revival). Decommission the old custom unit so the host stops it and frees
+# port 8787, which bookshelf now binds.
+- name: Stop and disable retired readarr unit
+  ansible.builtin.systemd:
+    name: readarr
+    state: stopped
+    enabled: false
+  failed_when: false
+
+- name: Remove retired readarr unit file
+  ansible.builtin.file:
+    path: /etc/systemd/system/readarr.service
+    state: absent
+  notify: Reload systemd daemon
 
 # ── Package-managed services (ensure enabled) ──
 

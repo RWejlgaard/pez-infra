@@ -80,7 +80,7 @@ lidarr.pez.solutions, lidarr.pez.sh {
         reverse_proxy 100.84.65.101:8686
 }
 
-# Readarr
+# Readarr hostname, now serving the bookshelf service (Readarr revival)
 readarr.pez.solutions, readarr.pez.sh {
         tracing {
                 span readarr

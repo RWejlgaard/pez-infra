@@ -34,7 +34,7 @@ There is **no** per-host subdirectory — services are named by what they are, a
 | plex-exporter | Docker | london-b | Plex metrics |
 | octopus-exporter | Docker | london-c | Octopus Energy metrics |
 | minecraft | Docker | copenhagen-a | PaperMC server |
-| radarr / sonarr / lidarr / readarr / prowlarr / whisparr | systemd | london-b | *Arr stack (systemd unit files here) |
+| radarr / sonarr / lidarr / prowlarr / whisparr | systemd | london-b | *Arr stack (systemd unit files here) |
 | transmission | systemd | london-b | Config files (the daemon itself is apt) |
 | samba / vsftpd | systemd | london-b | File-sharing config |
 | ollama | systemd | london-b | Custom unit + binary install |
