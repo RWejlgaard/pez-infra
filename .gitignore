@@ -3,7 +3,8 @@
 *.tfstate.backup
 *.tfstate.*.backup
 .terraform/
-.terraform.lock.hcl
+# .terraform.lock.hcl is intentionally committed to pin provider versions
+# and checksums for reproducible init across machines and CI.
 crash.log
 override.tf
 override.tf.json
