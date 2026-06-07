@@ -126,3 +126,39 @@
   community.general.ufw:
     state: enabled
   when: common_ufw_enabled | bool
+
+# --- Cleanup: orphaned cloudflared (PESO-138) ---
+# Cloudflare Tunnels were retired in favour of Caddy + Authelia (PESO-134, #56),
+# which removed cloudflared from ansible config. copenhagen-a was unreachable at
+# the time, so its cloudflared.service was never actually stopped and is still
+# running. Remove it wherever the unit lingers. copenhagen-c legitimately runs a
+# hand-configured cloudflared tunnel — never touch it.
+- name: Detect lingering cloudflared unit
+  ansible.builtin.stat:
+    path: /etc/systemd/system/cloudflared.service
+  register: common_cloudflared_unit
+  when: inventory_hostname != 'copenhagen-c'
+
+- name: Remove orphaned cloudflared
+  when:
+    - inventory_hostname != 'copenhagen-c'
+    - common_cloudflared_unit.stat.exists | default(false)
+  block:
+    - name: Stop and disable cloudflared
+      ansible.builtin.systemd:
+        name: cloudflared
+        state: stopped
+        enabled: false
+      failed_when: false
+
+    - name: Remove cloudflared systemd unit
+      ansible.builtin.file:
+        path: /etc/systemd/system/cloudflared.service
+        state: absent
+      notify: Reload systemd daemon
+
+    - name: Uninstall cloudflared package
+      ansible.builtin.apt:
+        name: cloudflared
+        state: absent
+        purge: true
