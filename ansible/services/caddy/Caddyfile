@@ -244,18 +244,6 @@ status.pez.sh {
         file_server
 }
 
-# Miniflux RSS
-rss.pez.sh {
-        tracing {
-                span miniflux
-        }
-        forward_auth localhost:9091 {
-                uri /api/authz/forward-auth
-                copy_headers Remote-User Remote-Groups Remote-Name Remote-Email
-        }
-        reverse_proxy 100.84.65.101:8181
-}
-
 # Forgejo Git Server (auth handled by Forgejo itself)
 git.pez.sh {
         tracing {

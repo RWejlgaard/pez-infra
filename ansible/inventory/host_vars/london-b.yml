@@ -8,7 +8,6 @@ docker_services:
   - jellyseerr
   - navidrome
   - slskd
-  - miniflux
   - smartctl-exporter
   - plex-exporter
   - bookshelf
