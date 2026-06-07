@@ -162,3 +162,58 @@
         name: cloudflared
         state: absent
         purge: true
+
+# --- Grafana Alloy: restart resilience (PESO-149) ---
+# Every host runs alloy.service to ship metrics/logs to Grafana Cloud. On
+# 2026-05-20 a transient TLS failure to Grafana fleet-management tripped
+# systemd's default start rate-limit on copenhagen-c; systemd then gave up and
+# the host went silently unmonitored for ~2.5 weeks. Disable the rate limit so
+# Alloy keeps retrying indefinitely, backing off 30s between attempts, instead
+# of dying permanently on a momentary blip.
+- name: Check for Alloy unit
+  ansible.builtin.stat:
+    path: /lib/systemd/system/alloy.service
+  register: common_alloy_unit
+
+- name: Install Alloy systemd resilience drop-in
+  ansible.builtin.copy:
+    dest: /etc/systemd/system/alloy.service.d/10-resilience.conf
+    mode: '0644'
+    content: |
+      # Managed by Ansible (pez-infra) — common role, PESO-149.
+      # Keep Alloy retrying through transient upstream/TLS failures instead of
+      # hitting systemd's start rate-limit and giving up.
+      [Unit]
+      StartLimitIntervalSec=0
+
+      [Service]
+      Restart=always
+      RestartSec=30
+  when: common_alloy_unit.stat.exists | default(false)
+  notify: Restart alloy
+
+# --- Cleanup: leftover self-hosted Grafana (PESO-149) ---
+# Monitoring moved fully to Grafana Cloud, but the old Grafana OSS package was
+# never removed from copenhagen-c, where grafana-server.service sits enabled
+# and failing. Remove it wherever it lingers (no-op on every other host).
+- name: Detect leftover grafana-server unit
+  ansible.builtin.stat:
+    path: /lib/systemd/system/grafana-server.service
+  register: common_grafana_unit
+
+- name: Remove leftover self-hosted Grafana
+  when: common_grafana_unit.stat.exists | default(false)
+  block:
+    - name: Stop and disable grafana-server
+      ansible.builtin.systemd:
+        name: grafana-server
+        state: stopped
+        enabled: false
+      failed_when: false
+
+    - name: Uninstall grafana package
+      ansible.builtin.apt:
+        name: grafana
+        state: absent
+        purge: true
+      notify: Reload systemd daemon

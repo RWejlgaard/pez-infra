@@ -30,6 +30,8 @@ Alloy runs as `alloy.service` on every host in the inventory. Each host is regis
 
 Pipelines (what to scrape, how to relabel, where to ship) live in `terraform/grafana/fleet_pipelines/` and are pushed to Grafana Cloud as a `grafana_fleet_management_pipeline` resource. The Alloy daemons on each host pull their config from Fleet Management.
 
+The `common` role drops a `10-resilience.conf` systemd override onto every host (`StartLimitIntervalSec=0`, `Restart=always`, `RestartSec=30`) so a transient upstream/TLS failure can't trip systemd's start rate-limit and permanently kill the collector — it keeps retrying until Grafana Cloud is reachable again. (Added after copenhagen-c sat unmonitored for ~2.5 weeks following one such blip — PESO-149.)
+
 ### Local exporters scraped by Alloy
 
 | Exporter | Hosts | What |
