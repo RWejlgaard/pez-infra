@@ -1,7 +1,12 @@
 #!/bin/bash
-# Truncate large Docker container log files
-# Deployed on: nuremberg-a
-# Cron: 0 3 1 * * /usr/local/bin/docker-log-cleanup.sh
+# Truncate large Docker container log files.
+#
+# Managed by Ansible (docker role) — deployed to /usr/local/bin/ on all
+# docker_hosts and run monthly via cron. Do not edit on the host.
+#
+# Safety net for containers using the json-file log driver; most containers
+# ship logs via the Loki driver and never write *-json.log, so on a healthy
+# host this is usually a no-op.
 
 LOG_DIR=/var/lib/docker/containers
 MAX_SIZE_MB=100

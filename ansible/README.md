@@ -56,7 +56,7 @@ Run a single stage: `ansible-playbook deploy.yml --tags docker`
 |------|-------------|
 | `common` | Base packages, SSH hardening, fish shell, exporters, Alloy |
 | `dotfiles` | Shell config from `dotfiles/` |
-| `docker` | Docker engine install and setup |
+| `docker` | Docker engine install and setup + monthly log-cleanup cron |
 | `docker_services` | Deploy compose files from `services/` |
 | `caddy` | Caddy reverse proxy (helsinki-a) |
 | `status_page` | status.pez.sh generator script + cron |
