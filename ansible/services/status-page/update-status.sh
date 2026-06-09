@@ -25,7 +25,6 @@ SERVICE_MAP["100.84.65.101:8989"]="Sonarr"
 SERVICE_MAP["100.84.65.101:9091"]="Transmission"
 SERVICE_MAP["100.84.65.101:9696"]="Prowlarr"
 SERVICE_MAP["localhost:9091"]="Authelia"
-SERVICE_MAP["100.84.65.101:8181"]="Miniflux"
 SERVICE_MAP["localhost:3000"]="Forgejo"
 
 # Desired display order
@@ -46,7 +45,6 @@ DISPLAY_ORDER=(
   "100.84.65.101:8787"
   "100.84.65.101:9696"
   "100.84.65.101:9091"
-  "100.84.65.101:8181"
   "localhost:3000"
 )
 

@@ -67,7 +67,6 @@ RAIDZ1 tolerates one drive failure per vdev. With this many drives and this much
 | Service | Port | URL |
 |---------|------|-----|
 | Nextcloud AIO | 11000 | cloud.pez.sh (internal) |
-| Miniflux | 8181 | rss.pez.sh |
 | slskd (Soulseek) | 5030 | soulseek.pez.sh |
 | Syncthing (`syncthing@pez`) | 8384 | (LAN / Tailscale) |
 | Ollama | 11434 | (Tailscale) |
@@ -96,7 +95,7 @@ The media automation suite and several supporting services run as native systemd
 | node_exporter | prometheus-node-exporter | apt-managed |
 | Alloy | alloy | Grafana Alloy, fleet-managed config |
 
-Docker services: Nextcloud AIO, Jellyseerr, Navidrome, slskd, Miniflux (with postgres sidecar), smartctl-exporter, plex-exporter.
+Docker services: Nextcloud AIO (manually managed via AIO mastercontainer, not in this repo), Jellyseerr, Navidrome, slskd, smartctl-exporter, plex-exporter.
 
 Snap: Overseerr (`latest/beta` channel).
 

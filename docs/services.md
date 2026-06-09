@@ -13,6 +13,7 @@ Complete map of every service in the fleet — what it does, where it runs, how 
 | Bitwarden (Vaultwarden) | 8443, 8080 | Docker | Own auth | bitwarden.pez.sh |
 | Bitwarden MariaDB | 3306 (internal) | Docker | — | (Vaultwarden backing DB) |
 | Forgejo | 3000 (HTTP), 2222 (SSH) | Docker | Own auth | git.pez.sh |
+| Apps dashboard | — | Static (`/srv/apps`, Caddy) | Authelia | apps.pez.sh |
 
 Caddy is the single entry point for all public traffic and runs as a native apt-managed systemd service so it can bind 80/443 directly. Everything else on this host runs in Docker.
 
@@ -52,8 +53,7 @@ The arr stack pipeline: Jellyseerr/Overseerr accept requests → Radarr/Sonarr/L
 
 | Service | Port | Deployment | Auth | URL |
 |---------|------|-----------|------|-----|
-| Nextcloud AIO | 11000 | Docker | Own auth | cloud.pez.sh (internal/Tailscale) |
-| Miniflux | 8181 | Docker (with postgres sidecar) | Authelia | rss.pez.sh |
+| Nextcloud AIO | 11000 | Docker (manually managed via AIO mastercontainer — not in this repo) | Own auth | cloud.pez.sh (internal/Tailscale) |
 | slskd (Soulseek) | 5030 | Docker | Authelia | soulseek.pez.sh |
 | Syncthing (`syncthing@pez`) | 8384 | Native (apt) | Own auth | (LAN/Tailscale only) |
 | Samba (`smbd`) | 445 | Native (apt) | Local users | (LAN/Tailscale only) |
@@ -129,7 +129,7 @@ Plus host-specific exporters (smartctl, plex, octopus) called out above. See [mo
 Services fall into two categories:
 
 **Behind Authelia** (SSO via Caddy `forward_auth`):
-- Radarr, Sonarr, Lidarr, Bookshelf, Prowlarr, Transmission, Soulseek, Miniflux, apps.pez.sh
+- Radarr, Sonarr, Lidarr, Bookshelf, Prowlarr, Transmission, Soulseek, apps.pez.sh
 
 **Own auth** (handle login themselves):
 - Bitwarden, Forgejo, Plex, Jellyfin, Navidrome, Jellyseerr, Overseerr, Proxmox, poste.io

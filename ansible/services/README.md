@@ -29,7 +29,6 @@ There is **no** per-host subdirectory — services are named by what they are, a
 | navidrome | Docker | london-b | Music streaming |
 | bookshelf | Docker | london-b | Ebook/audiobook manager (Readarr revival) |
 | slskd | Docker | london-b | Soulseek client |
-| miniflux | Docker | london-b | RSS reader (with postgres) |
 | smartctl-exporter | Docker | london-b, copenhagen-a | SMART metrics |
 | plex-exporter | Docker | london-b | Plex metrics |
 | octopus-exporter | Docker | london-c | Octopus Energy metrics |

@@ -80,7 +80,6 @@ forward_auth localhost:9091 {
 | Radarr, Sonarr, Lidarr, Bookshelf | Authelia | Media management |
 | Prowlarr, Transmission (download) | Authelia | Download tools |
 | slskd (Soulseek) | Authelia | P2P client |
-| Miniflux (RSS) | Authelia | RSS reader |
 | Apps dashboard | Authelia | Internal apps page |
 | Jellyfin, Plex | Own auth | Have built-in user management |
 | Overseerr, Jellyseerr | Own auth | Have built-in user management |

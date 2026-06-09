@@ -98,7 +98,6 @@ All subdomains are Cloudflare-proxied and terminate at helsinki-a. Hosts marked 
 | jellyfin.pez.sh / .solutions | london-b:8096 | Own auth |
 | plex.pez.sh / .solutions | london-b:32400 | Own auth |
 | music.pez.sh | london-b:4533 (Navidrome) | Own auth |
-| rss.pez.sh | london-b:8181 (Miniflux) | Authelia |
 | request.pez.sh / .solutions | london-b:5055 (Jellyseerr) | Own auth |
 | jellyfin-requests.pez.sh / .solutions | london-b:5056 (Overseerr) | Own auth |
 | radarr.pez.sh / .solutions | london-b:7878 | Authelia |

@@ -14,7 +14,7 @@ Encrypted files use `.enc.` in their extension:
 
 ```
 services/authelia/config.enc.yml     # encrypted YAML
-services/miniflux/miniflux.enc.env   # encrypted env file
+services/<service>/<file>.enc.env    # encrypted env file (convention)
 terraform/secrets.enc.yaml           # encrypted Terraform vars
 ansible/group_vars/all/secrets.enc.yml
 ```
@@ -80,7 +80,7 @@ sops -d services/authelia/config.enc.yml
 
 ```bash
 # If you have a plaintext file you want to encrypt in-place:
-sops -e -i services/miniflux/miniflux.enc.env
+sops -e -i services/<service>/<file>.enc.env
 ```
 
 ### Add a new recipient
