@@ -16,7 +16,7 @@ Encrypted files use `.enc.` in their extension:
 services/authelia/config.enc.yml     # encrypted YAML
 services/<service>/<file>.enc.env    # encrypted env file (convention)
 terraform/secrets.enc.yaml           # encrypted Terraform vars
-ansible/group_vars/all/secrets.enc.yml
+ansible/group_vars/all/secrets.enc.yaml
 ```
 
 Plaintext files MUST NOT contain secrets. The `.gitignore` blocks common secret filenames (`secrets.yml`, `vault.yml`, `secret.env`, etc.) as a safety net.
@@ -34,9 +34,6 @@ apt install age
 # SOPS: download from https://github.com/getsops/sops/releases
 wget https://github.com/getsops/sops/releases/download/v3.9.4/sops_3.9.4_amd64.deb
 dpkg -i sops_3.9.4_amd64.deb
-
-# FreeBSD
-pkg install age sops
 ```
 
 ### Generate your age key
@@ -52,7 +49,7 @@ SOPS automatically looks for keys in `~/.config/sops/age/keys.txt` (Linux/macOS)
 
 ### Add your public key to `.sops.yaml`
 
-Replace the `age1TODO_PEZ_PUBLIC_KEY` placeholder in `.sops.yaml` with your actual public key. Commit the updated `.sops.yaml`.
+Add your public key to the `creation_rules` in `.sops.yaml`, re-encrypt the affected files (see "Add a new recipient" below), and commit the updated `.sops.yaml`.
 
 ## Day-to-day usage
 
@@ -111,10 +108,8 @@ In the workflow:
   env:
     SOPS_AGE_KEY: ${{ secrets.AGE_SECRET_KEY }}
   run: |
-    sops -d ansible/group_vars/all/secrets.enc.yml > ansible/group_vars/all/secrets.yml
+    sops -d ansible/group_vars/all/secrets.enc.yaml > ansible/group_vars/all/secrets.yml
 ```
-
-The existing `ANSIBLE_VAULT_PASS` secret can be retired once migration to SOPS is complete.
 
 ## Terraform integration
 
@@ -128,8 +123,8 @@ data "sops_file" "secrets" {
 }
 
 # Use decrypted values
-resource "cloudflare_record" "example" {
-  value = data.sops_file.secrets.data["cloudflare_api_token"]
+provider "hcloud" {
+  token = data.sops_file.secrets.data["hetzner_token"]
 }
 ```
 
@@ -139,9 +134,9 @@ These are the types of secrets expected in this repo:
 
 | Category | Example | Location |
 |----------|---------|----------|
-| Ansible vault vars | SSH keys, API tokens, passwords | `ansible/group_vars/*/secrets.enc.yml` |
+| Ansible group vars | SSH keys, API tokens, passwords | `ansible/group_vars/all/secrets.enc.yaml` |
 | Docker env files | DB passwords, app secrets | `services/*/service.enc.env` |
-| Terraform vars | Cloudflare API token, Azure creds | `terraform/secrets.enc.yaml` |
+| Terraform vars | Hetzner token, Grafana Cloud tokens, B2 keys | `terraform/secrets.enc.yaml` |
 | Service configs | Authelia JWT secret, LLDAP admin pass | `services/*/config.enc.yml` |
 
 ## Security notes

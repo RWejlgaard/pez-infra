@@ -54,34 +54,33 @@ A stack of servers at my dad's place — acts as an off-site location.
 
 ## DNS Flow
 
-All DNS is managed by Cloudflare, provisioned via Terraform.
+DNS for `pez.sh` is managed by **Hetzner DNS**, provisioned via Terraform (`terraform/hetzner/dns.tf`). Cloudflare was dropped as DNS provider / CDN in April 2026 (PR #90) — records now point directly at the origin, with no proxying in front.
 
 ### Domains
 
-- **pez.sh** — primary domain. Registered on Hover.com with nameservers pointed to Cloudflare.
-- **pez.solutions** — alternate domain. Most services that have a `*.pez.sh` host also accept the matching `*.pez.solutions` host, so apps remain reachable if one TLD has trouble.
+- **pez.sh** — primary domain. Registered on Hover.com with nameservers pointed to Hetzner DNS. All records in Terraform.
+- **pez.solutions** — alternate domain. Still resolves via Cloudflare nameservers (dashboard-managed, not in Terraform). Most services that have a `*.pez.sh` host also accept the matching `*.pez.solutions` host, so apps remain reachable if one TLD has trouble.
 
 ### How a request reaches a service
 
 ```mermaid
 graph TD
-    Browser["1. Browser requests radarr.pez.sh"] --> CF
-    CF["2. Cloudflare resolves DNS<br/>(proxied record)"] --> TLS
-    TLS["3. Cloudflare terminates TLS,<br/>forwards to helsinki-a"] --> Caddy
-    Caddy["4. Caddy receives request"] --> AuthCheck{"5. Requires auth?"}
+    Browser["1. Browser requests radarr.pez.sh"] --> DNS
+    DNS["2. Hetzner DNS resolves<br/>to helsinki-a's public IP"] --> Caddy
+    Caddy["3. Caddy terminates TLS,<br/>receives request"] --> AuthCheck{"4. Requires auth?"}
 
     AuthCheck -->|YES| Authelia["forward_auth → Authelia<br/>(localhost:9091)"]
     AuthCheck -->|NO| Proxy
 
-    Authelia -->|Authenticated| Proxy["6. Reverse-proxy to backend<br/>over Tailscale<br/>(e.g. london-b:7878)"]
+    Authelia -->|Authenticated| Proxy["5. Reverse-proxy to backend<br/>over Tailscale<br/>(e.g. london-b:7878)"]
     Authelia -->|Not authenticated| Redirect["Redirect to auth.pez.sh"]
 
-    Proxy --> Response["7. Response flows back:<br/>backend → Caddy → Cloudflare → browser"]
+    Proxy --> Response["6. Response flows back:<br/>backend → Caddy → browser"]
 ```
 
 ### Public Subdomains
 
-All subdomains are Cloudflare-proxied and terminate at helsinki-a. Hosts marked with both `pez.sh` and `pez.solutions` are reachable on either TLD.
+All subdomains resolve directly to helsinki-a, where Caddy terminates TLS. Hosts marked with both `pez.sh` and `pez.solutions` are reachable on either TLD.
 
 | Subdomain | Backend | Auth |
 |---|---|---|
@@ -94,6 +93,7 @@ All subdomains are Cloudflare-proxied and terminate at helsinki-a. Hosts marked 
 | pez.sh | helsinki-a:/srv/pez.sh (static) | — |
 | pez.solutions | helsinki-a:/srv/pez.solutions (static) | — |
 | signup.pez.solutions | helsinki-a:/srv/pez-signup (static) | — |
+| naveen.pez.sh | helsinki-a:/srv/naveen (static) | — |
 | london-a.pez.sh | london-a:8006 (Proxmox UI) | Proxmox login |
 | jellyfin.pez.sh / .solutions | london-b:8096 | Own auth |
 | plex.pez.sh / .solutions | london-b:32400 | Own auth |
@@ -108,9 +108,11 @@ All subdomains are Cloudflare-proxied and terminate at helsinki-a. Hosts marked 
 | soulseek.pez.sh / .solutions | london-b:5030 (slskd) | Authelia |
 | download.pez.sh / .solutions | london-b:9091 (Transmission) | Authelia |
 
+A few `pez.sh` records bypass Caddy entirely: `mail` points at nuremberg-a, `minecraft` and `wow` point at copenhagen-a's public IP (game clients connect directly), and `public` is a CNAME to a Cloudflare R2 public bucket (`public.r2.dev`).
+
 ### Mail DNS
 
-nuremberg-a handles mail for pez.sh. DNS records managed via Cloudflare:
+nuremberg-a handles mail for pez.sh. DNS records managed in Hetzner DNS (Terraform):
 
 - **MX** record pointing to nuremberg-a
 - **SPF** record for sender verification
@@ -119,7 +121,7 @@ nuremberg-a handles mail for pez.sh. DNS records managed via Cloudflare:
 
 ### Caddy TLS
 
-Caddy handles TLS termination for the Cloudflare-to-origin connection. Certificates are obtained and renewed automatically via ACME (Let's Encrypt). No manual cert management, no cron jobs, no renewals to think about.
+Caddy terminates TLS for all public traffic. Certificates are obtained and renewed automatically via ACME (Let's Encrypt). No manual cert management, no cron jobs, no renewals to think about.
 
 Example Caddyfile block for a protected service:
 

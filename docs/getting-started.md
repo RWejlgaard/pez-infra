@@ -9,9 +9,9 @@ You'll need:
 - **Tailscale** — installed and connected to the tailnet. All SSH access goes through Tailscale. No servers have SSH exposed on the public internet.
 - **SSH keys** — set up for each host you need to access
 - **Ansible** — for configuration management and deployments (`make deps` from `ansible/` installs collections)
-- **OpenTofu** (or Terraform) — for Hetzner, Cloudflare, Grafana Cloud, and PagerDuty
+- **OpenTofu** (or Terraform) — for Hetzner (servers + DNS), Grafana Cloud, and PagerDuty
 - **Docker** — helpful to understand, since most services are containerised
-- **SOPS + age** — for secrets encryption/decryption (run `./ansible/scripts/sops-setup.sh`)
+- **SOPS + age** — for secrets encryption/decryption (see [Secrets](secrets.md) for setup)
 - **Git** — obviously
 - **gh CLI** — for GitHub operations (PRs, issues, etc.)
 
@@ -33,7 +33,7 @@ pez-infra/
 │   ├── dotfiles/   # Shell config (fish, nvim, tmux, git, etc.)
 │   ├── playbooks/  # One-off playbooks (updates, reboots, status)
 │   └── scripts/    # Utility and maintenance scripts
-└── terraform/      # Terraform/OpenTofu for Hetzner, Cloudflare, Grafana Cloud, PagerDuty
+└── terraform/      # Terraform/OpenTofu for Hetzner (servers + DNS), Grafana Cloud, PagerDuty
 ```
 
 ## Connecting to hosts
@@ -89,7 +89,7 @@ Other playbooks live under `ansible/playbooks/`:
 
 ### Managing cloud + DNS + observability
 
-Terraform manages Hetzner servers, Cloudflare DNS, Grafana Cloud (stack, fleet, dashboards, synthetic checks), and PagerDuty:
+Terraform manages Hetzner servers + DNS, Grafana Cloud (stack, fleet, dashboards, synthetic checks), and PagerDuty:
 
 ```bash
 cd terraform
@@ -98,7 +98,7 @@ make plan   # preview changes
 make apply  # apply the changes
 ```
 
-State lives in a Backblaze B2 bucket (`pez-infra-tfstate`) via the S3-compatible backend. Don't click around in the Cloudflare or Grafana Cloud dashboards — if it's not in Terraform, it doesn't exist.
+State lives in a Backblaze B2 bucket (`pez-infra-tfstate`) via the S3-compatible backend. Don't click around in the Hetzner or Grafana Cloud dashboards — if it's not in Terraform, it doesn't exist.
 
 ### Adding a new service
 
@@ -147,12 +147,9 @@ Alpine has been tried and rejected — the missing GNU binaries / systemd caused
 
 ## Secrets
 
-Secrets are encrypted in-repo using **SOPS + age**. Encrypted files have `.enc.` in their extension (e.g. `secrets.enc.yml`).
+Secrets are encrypted in-repo using **SOPS + age**. Encrypted files have `.enc.` in their extension (e.g. `secrets.enc.yaml`).
 
 ```bash
-# First-time setup
-./ansible/scripts/sops-setup.sh
-
 # Edit an encrypted file
 sops ansible/services/authelia/config.enc.yml
 

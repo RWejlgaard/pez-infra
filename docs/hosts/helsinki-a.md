@@ -45,6 +45,7 @@ Caddy also serves static content from `/srv/`:
 | `/srv/pez.sh` | pez.sh | — |
 | `/srv/pez.solutions` | pez.solutions | — |
 | `/srv/pez-signup` | signup.pez.solutions | — |
+| `/srv/naveen` | naveen.pez.sh | — |
 
 ## Why Hetzner Cloud
 
