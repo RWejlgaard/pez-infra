@@ -4,14 +4,14 @@
 
 The infrastructure spans three physical locations (London, Copenhagen, Hetzner Cloud) connected by a Tailscale mesh network. All public traffic enters through a single Hetzner Cloud VPS (helsinki-a) running Caddy as a reverse proxy, which forwards requests over Tailscale to backend services running on physical servers in London and Copenhagen.
 
-The setup is entirely self-hosted (with the exception of Hetzner Cloud VPSs, Cloudflare for DNS/CDN, and Grafana Cloud for observability). Most physical servers are old personal computers repurposed into server duty — cheaper than cloud, and I get a rack cabinet that doubles as a bedroom white noise machine.
+The setup is entirely self-hosted (with the exception of Hetzner Cloud VPSs, Hetzner DNS, and Grafana Cloud for observability). Most physical servers are old personal computers repurposed into server duty — cheaper than cloud, and I get a rack cabinet that doubles as a bedroom white noise machine.
 
 ## Network Topology
 
 ```mermaid
 graph TD
-    CF["<b>Cloudflare</b><br/>DNS + CDN<br/>*.pez.sh, *.pez.solutions"]
-    CF -->|HTTPS| HEL
+    DNS["<b>DNS</b><br/>Hetzner DNS: *.pez.sh<br/>Cloudflare: *.pez.solutions"]
+    DNS -->|HTTPS| HEL
 
     HEL["<b>helsinki-a</b><br/>Hetzner Cloud VPS<br/><br/>Caddy (reverse proxy)<br/>Authelia (SSO)<br/>LLDAP (Authelia backend)<br/>Bitwarden (Vaultwarden)<br/>Forgejo"]
 
@@ -34,12 +34,12 @@ graph TD
 All public-facing services follow the same pattern:
 
 ```
-User → Cloudflare (DNS + TLS) → helsinki-a (Caddy) → Backend (over Tailscale)
+User → DNS (Hetzner DNS) → helsinki-a (Caddy, TLS) → Backend (over Tailscale)
 ```
 
-1. DNS for `pez.sh` and `pez.solutions` is managed by Cloudflare (provisioned via Terraform)
-2. Cloudflare proxies traffic to helsinki-a
-3. Caddy on helsinki-a terminates TLS and routes to the correct backend
+1. DNS for `pez.sh` is managed by Hetzner DNS (provisioned via Terraform, `terraform/hetzner/dns.tf`); `pez.solutions` still resolves via Cloudflare (dashboard-managed)
+2. Records point directly at helsinki-a's public IP — no CDN or proxying in front
+3. Caddy on helsinki-a terminates TLS (Let's Encrypt) and routes to the correct backend
 4. For protected services, Caddy calls Authelia first (`forward_auth`)
 5. If authenticated (or no auth required), traffic is proxied over Tailscale to the backend
 
@@ -80,5 +80,5 @@ Metrics, logs, and traces ship to **Grafana Cloud** from every host via **Grafan
 - **Self-hosted first.** Cloud VPSs only where it makes sense (public gateway, mail with clean IP reputation). Everything else runs on physical hardware I own.
 - **Tailscale as the backbone.** No ports exposed on residential IPs. All inter-server communication goes over the mesh.
 - **Ansible for everything.** If a server dies, reinstall the OS, install Tailscale, run `make deploy`. Roughly 30 minutes to full recovery.
-- **Terraform for cloud + DNS.** Hetzner servers, Cloudflare records, Grafana Cloud configuration, and PagerDuty are all in code. No clicking around in dashboards.
+- **Terraform for cloud + DNS.** Hetzner servers, DNS records, Grafana Cloud configuration, and PagerDuty are all in code. No clicking around in dashboards.
 - **Cattle, not pets (as much as possible).** The servers are technically pets — old hardware in specific locations — but the configs are cattle. Everything is reproducible from this repo.

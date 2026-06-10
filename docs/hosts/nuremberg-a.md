@@ -28,7 +28,7 @@ Mail lives on its own VPS to isolate its IP reputation. If the IP gets flagged f
 
 ## DNS
 
-Mail-related DNS records are managed via Cloudflare (Terraform):
+Mail-related DNS records are managed in Hetzner DNS (Terraform, `terraform/hetzner/dns.tf`):
 
 - **MX** record for inbound mail routing
 - **SPF** for sender verification
