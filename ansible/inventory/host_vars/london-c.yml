@@ -1,6 +1,6 @@
 ---
-host_role: idle
-host_description: "Idle/available"
+host_role: utility
+host_description: "Octopus Energy exporter, edge utility box"
 host_location: "London"
 prometheus_location: london
 
