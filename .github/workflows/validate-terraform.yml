@@ -37,9 +37,19 @@ jobs:
           # secrets.yaml is decrypted from SOPS at plan time and can't be
           # produced here, so stub the keys the config reads (kept in sync by
           # deriving them from the actual secrets["..."] references).
+          # Stub values must satisfy provider config validators: hcloud
+          # requires a 64-char token, and Grafana's fleet_management_auth
+          # must look like `username:password`.
+          stub64=$(printf 'stub%.0s' {1..16})
           grep -rhoE 'secrets\["[^"]+"\]' . \
-            | sed -E 's/.*secrets\["([^"]+)"\].*/\1: "stub"/' \
-            | sort -u > secrets.yaml
+            | sed -E 's/.*secrets\["([^"]+)"\].*/\1/' \
+            | sort -u \
+            | while read -r key; do
+                case "$key" in
+                  *_auth) echo "$key: \"stub:stub\"" ;;
+                  *)      echo "$key: \"$stub64\"" ;;
+                esac
+              done > secrets.yaml
           tofu init -backend=false
           tofu validate
 
