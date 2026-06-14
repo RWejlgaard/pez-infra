@@ -12,6 +12,7 @@
     mode: '0644'
   loop:
     - radarr
+    - sonarr
     - prowlarr
     - lidarr
     - whisparr
@@ -25,6 +26,7 @@
     enabled: true
   loop:
     - radarr
+    - sonarr
     - prowlarr
     - lidarr
     - ollama
@@ -59,7 +61,6 @@
     state: started
     enabled: true
   loop:
-    - sonarr
     - jellyfin
     - plexmediaserver
     - transmission-daemon
