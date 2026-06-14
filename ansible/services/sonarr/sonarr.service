@@ -1,0 +1,23 @@
+# Managed by the pez-infra media_stack Ansible role.
+# Captured from the running sonarr v3 (APT/mono) unit on london-b.
+# Unlike radarr/lidarr/prowlarr (manually installed /opt binaries), Sonarr is
+# the APT package, so ExecStart runs the mono-based Sonarr.exe. Deploying this
+# to /etc/systemd/system overrides the package-owned unit in
+# /usr/lib/systemd/system so the unit is captured in IaC.
+[Unit]
+Description=Sonarr Daemon
+After=network.target
+
+[Service]
+User=root
+Group=root
+UMask=0002
+
+Type=simple
+ExecStart=/usr/bin/mono --debug /usr/lib/sonarr/bin/Sonarr.exe -nobrowser -data=/var/lib/sonarr
+TimeoutStopSec=20
+KillMode=process
+Restart=on-failure
+
+[Install]
+WantedBy=multi-user.target
