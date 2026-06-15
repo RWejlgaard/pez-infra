@@ -23,6 +23,10 @@ jobs:
       - name: Validate Caddyfile
         if: steps.check.outputs.has_file == 'true'
         run: |
-          curl -sL "https://github.com/caddyserver/caddy/releases/latest/download/caddy_$(curl -sL https://api.github.com/repos/caddyserver/caddy/releases/latest | jq -r .tag_name | tr -d v)_linux_amd64.tar.gz" | tar xz caddy
+          # Official download API serves the latest binary directly — no
+          # unauthenticated api.github.com call (which is rate-limited to
+          # 60/hr per IP across shared runners and would 403). -f makes curl
+          # fail loudly on an HTTP error instead of saving an error page.
+          curl -fsSL "https://caddyserver.com/api/download?os=linux&arch=amd64" -o caddy
           chmod +x caddy
           ./caddy validate --config ansible/services/caddy/Caddyfile --adapter caddyfile
