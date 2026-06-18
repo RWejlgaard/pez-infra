@@ -1,0 +1,18 @@
+name: Set Terraform backend credentials
+description: Export the Backblaze S3 backend credentials from a decrypted secrets.yaml into GITHUB_ENV.
+
+inputs:
+  working-directory:
+    description: Directory containing the decrypted secrets.yaml
+    required: false
+    default: terraform
+
+runs:
+  using: composite
+  steps:
+    - name: Set backend credentials
+      shell: bash
+      working-directory: ${{ inputs.working-directory }}
+      run: |
+        echo "AWS_ACCESS_KEY_ID=$(yq '.backblaze_keyID' secrets.yaml)" >> "$GITHUB_ENV"
+        echo "AWS_SECRET_ACCESS_KEY=$(yq '.backblaze_applicationKey' secrets.yaml)" >> "$GITHUB_ENV"

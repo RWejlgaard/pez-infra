@@ -1,0 +1,31 @@
+name: SOPS decrypt
+description: Install SOPS and decrypt all in-repo *.enc.* files in place (single source of truth for the SOPS version).
+
+inputs:
+  age-key:
+    description: age private key for SOPS decryption (sets SOPS_AGE_KEY)
+    required: true
+  sops-version:
+    description: SOPS version to install
+    required: false
+    default: "3.9.4"
+
+runs:
+  using: composite
+  steps:
+    - name: Install SOPS
+      shell: bash
+      run: |
+        wget -qO /tmp/sops.deb "https://github.com/getsops/sops/releases/download/v${{ inputs.sops-version }}/sops_${{ inputs.sops-version }}_amd64.deb"
+        sudo dpkg -i /tmp/sops.deb
+
+    - name: Decrypt secrets
+      shell: bash
+      env:
+        SOPS_AGE_KEY: ${{ inputs.age-key }}
+      run: |
+        find . -name '*.enc.yml' -o -name '*.enc.yaml' -o -name '*.enc.env' | while read f; do
+          out="${f/.enc/}"
+          sops -d "$f" > "$out"
+          echo "Decrypted: $f -> $out"
+        done

@@ -24,10 +24,7 @@ jobs:
     steps:
       - uses: actions/checkout@v6
 
-      - name: Install OpenTofu
-        uses: opentofu/setup-opentofu@v2
-        with:
-          tofu_version: 1.9.0
+      - uses: ./.github/actions/setup-tofu
 
       # --- Dependabot: secret-free validation -------------------------------
       - name: Validate (no secrets)
@@ -54,29 +51,15 @@ jobs:
           tofu validate
 
       # --- Human PRs: full plan against real backend ------------------------
-      - name: Install SOPS
-        if: github.actor != 'dependabot[bot]'
-        run: |
-          wget -qO /tmp/sops.deb https://github.com/getsops/sops/releases/download/v3.9.4/sops_3.9.4_amd64.deb
-          sudo dpkg -i /tmp/sops.deb
-
       - name: Decrypt secrets
         if: github.actor != 'dependabot[bot]'
-        env:
-          SOPS_AGE_KEY: ${{ secrets.AGE_SECRET_KEY }}
-        run: |
-          find . -name '*.enc.yml' -o -name '*.enc.yaml' | while read f; do
-            out="${f/.enc/}"
-            sops -d "$f" > "$out"
-            echo "Decrypted: $f -> $out"
-          done
+        uses: ./.github/actions/sops-decrypt
+        with:
+          age-key: ${{ secrets.AGE_SECRET_KEY }}
 
       - name: Set backend credentials
         if: github.actor != 'dependabot[bot]'
-        working-directory: terraform/
-        run: |
-          echo "AWS_ACCESS_KEY_ID=$(yq '.backblaze_keyID' secrets.yaml)" >> "$GITHUB_ENV"
-          echo "AWS_SECRET_ACCESS_KEY=$(yq '.backblaze_applicationKey' secrets.yaml)" >> "$GITHUB_ENV"
+        uses: ./.github/actions/tofu-backend-creds
 
       - name: tofu init
         if: github.actor != 'dependabot[bot]'
