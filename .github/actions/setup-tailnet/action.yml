@@ -1,0 +1,35 @@
+name: Set up tailnet + SSH
+description: >-
+  Join Tailscale and load the deploy SSH key into an agent, so tofu's Proxmox
+  (bpg) provider can reach london-a's API and node over the tailnet.
+
+inputs:
+  tailscale-client-id:
+    required: true
+  tailscale-audience:
+    required: true
+  ssh-private-key:
+    required: true
+
+runs:
+  using: composite
+  steps:
+    - name: Set up Tailscale
+      uses: tailscale/github-action@v4
+      with:
+        oauth-client-id: ${{ inputs.tailscale-client-id }}
+        audience: ${{ inputs.tailscale-audience }}
+        tags: tag:ci
+
+    - name: Load SSH key into agent
+      shell: bash
+      run: |
+        mkdir -p ~/.ssh
+        echo "${{ inputs.ssh-private-key }}" > ~/.ssh/id_ed25519
+        chmod 600 ~/.ssh/id_ed25519
+        eval "$(ssh-agent -s)"
+        ssh-add ~/.ssh/id_ed25519
+        # Persist the agent for later steps (bpg uses SSH_AUTH_SOCK).
+        echo "SSH_AUTH_SOCK=$SSH_AUTH_SOCK" >> "$GITHUB_ENV"
+        echo "SSH_AGENT_PID=$SSH_AGENT_PID" >> "$GITHUB_ENV"
+        ssh-keyscan -H 100.122.180.98 >> ~/.ssh/known_hosts 2>/dev/null || true

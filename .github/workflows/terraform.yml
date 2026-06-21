@@ -34,6 +34,14 @@ jobs:
       - name: Set backend credentials
         uses: ./.github/actions/tofu-backend-creds
 
+      # Proxmox (bpg) provider reaches london-a over the tailnet.
+      - name: Set up tailnet + SSH
+        uses: ./.github/actions/setup-tailnet
+        with:
+          tailscale-client-id: ${{ secrets.TAILSCALE_CLIENT_ID }}
+          tailscale-audience: ${{ secrets.TAILSCALE_AUDIENCE }}
+          ssh-private-key: ${{ secrets.SSH_PRIVATE_KEY }}
+
       - name: tofu init
         working-directory: terraform/
         run: tofu init
@@ -68,6 +76,14 @@ jobs:
 
       - name: Set backend credentials
         uses: ./.github/actions/tofu-backend-creds
+
+      # Proxmox (bpg) provider reaches london-a over the tailnet.
+      - name: Set up tailnet + SSH
+        uses: ./.github/actions/setup-tailnet
+        with:
+          tailscale-client-id: ${{ secrets.TAILSCALE_CLIENT_ID }}
+          tailscale-audience: ${{ secrets.TAILSCALE_AUDIENCE }}
+          ssh-private-key: ${{ secrets.SSH_PRIVATE_KEY }}
 
       - name: tofu init
         working-directory: terraform/

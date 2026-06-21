@@ -60,8 +60,14 @@ provider "proxmox" {
   insecure  = true # self-signed PVE cert
 
   # Uploading the cloud-init snippet needs node-level access; SSH to root@london-a.
+  # Pin the node's SSH address to its Tailscale IP (the API-reported LAN IP isn't
+  # reachable from CI runners on the tailnet).
   ssh {
     agent    = true
     username = "root"
+    node {
+      name    = "london-a"
+      address = "100.122.180.98"
+    }
   }
 }
