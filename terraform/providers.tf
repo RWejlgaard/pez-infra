@@ -14,6 +14,10 @@ terraform {
       source  = "pagerduty/pagerduty"
       version = "~> 3.32"
     }
+    proxmox = {
+      source  = "bpg/proxmox"
+      version = "~> 0.66"
+    }
   }
 
 
@@ -48,4 +52,16 @@ provider "grafana" {
 
 provider "pagerduty" {
   token = local.secrets["pagerduty_token"]
+}
+
+provider "proxmox" {
+  endpoint  = "https://100.122.180.98:8006/" # london-a over Tailscale
+  api_token = local.secrets["proxmox_api_token"]
+  insecure  = true # self-signed PVE cert
+
+  # Uploading the cloud-init snippet needs node-level access; SSH to root@london-a.
+  ssh {
+    agent    = true
+    username = "root"
+  }
 }
