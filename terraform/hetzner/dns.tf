@@ -15,7 +15,7 @@ resource "hcloud_zone_rrset" "A_helsinki_a" {
   for_each = toset([
     "@", "apps", "auth", "bitwarden", "download", "git", "helsinki-a",
     "jellyfin", "jellyfin-requests", "ldap", "lidarr", "london-a", "music", "naveen",
-    "plex", "prowlarr", "radarr", "readarr", "request",
+    "n8n", "plex", "prowlarr", "radarr", "readarr", "request",
     "sonarr", "soulseek", "status",
   ])
   zone    = hcloud_zone.pezsh.name

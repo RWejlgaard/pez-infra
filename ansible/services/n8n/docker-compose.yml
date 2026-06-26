@@ -1,0 +1,28 @@
+---
+# n8n - Workflow automation
+# Host: nuremberg-a (100.70.180.24)
+# Port bound to the Tailscale IP only; public access is via Caddy on helsinki-a.
+# n8n manages its own auth (user management / login).
+
+services:
+  n8n:
+    image: docker.n8n.io/n8nio/n8n
+    container_name: n8n
+    restart: always
+    ports:
+      - "100.70.180.24:5678:5678"
+    environment:
+      - N8N_ENFORCE_SETTINGS_FILE_PERMISSIONS=true
+      - N8N_HOST=n8n.pez.sh
+      - N8N_PORT=5678
+      - N8N_PROTOCOL=http
+      - NODE_ENV=production
+      - WEBHOOK_URL=https://n8n.pez.sh/
+      - GENERIC_TIMEZONE=Europe/London
+      - TZ=Europe/London
+    volumes:
+      - n8n_data:/home/node/.n8n
+      - ./local-files:/files
+
+volumes:
+  n8n_data:

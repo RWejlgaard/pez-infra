@@ -89,8 +89,11 @@ Dedicated mail server on Hetzner Cloud. Isolated to protect IP reputation.
 | Service | Port | Deployment | Auth | URL |
 |---------|------|-----------|------|-----|
 | poste.io | 25, 80, 110, 143, 443, 465, 587, 993, 995 | Docker | Own auth | (webmail via direct host access) |
+| n8n | 5678 | Docker | Own auth | https://n8n.pez.sh |
 
 poste.io bundles everything — postfix, dovecot, rspamd, webmail — into a single container. Makes updates straightforward.
+
+n8n (workflow automation) binds 5678 to the Tailscale IP only; public access is proxied by Caddy on helsinki-a. It manages its own user auth.
 
 ## copenhagen-a — Gaming
 
