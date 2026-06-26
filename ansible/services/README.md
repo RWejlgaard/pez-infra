@@ -25,6 +25,7 @@ There is **no** per-host subdirectory — services are named by what they are, a
 | bitwarden | Docker | helsinki-a | Vaultwarden + MariaDB |
 | forgejo | Docker | helsinki-a | Git forge |
 | poste-io | Docker | nuremberg-a | Mail |
+| n8n | Docker | nuremberg-a | Workflow automation |
 | jellyseerr | Docker | london-b | Plex request manager |
 | navidrome | Docker | london-b | Music streaming |
 | bookshelf | Docker | london-b | Ebook/audiobook manager (Readarr revival) |
