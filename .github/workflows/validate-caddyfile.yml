@@ -29,4 +29,5 @@ jobs:
           # fail loudly on an HTTP error instead of saving an error page.
           curl -fsSL "https://caddyserver.com/api/download?os=linux&arch=amd64" -o caddy
           chmod +x caddy
+          ./caddy add-package github.com/caddy-dns/hetzner@v2.0.0
           ./caddy validate --config ansible/services/caddy/Caddyfile --adapter caddyfile

@@ -26,6 +26,16 @@ london-a.pez.sh {
         }
 }
 
+*.k8s.pez.sh {
+        tls {
+            dns hetzner {env.HETZNER_DNS_API_TOKEN}
+        }
+        tracing {
+                span k8s
+        }
+        reverse_proxy 100.123.97.26:80
+}
+
 ## LONDON-B SERVICES ##
 
 # Jellyfin
