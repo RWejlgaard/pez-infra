@@ -12,6 +12,17 @@
         }
 }
 
+## LONDON UNIFI ROUTER ##
+
+ui.pez.sh {
+      reverse_proxy 100.102.71.50:443 {
+           transport http {
+               tls_insecure_skip_verify
+           }
+           header_up Host {hostport} 
+      }
+}
+
 ## LONDON-A SERVICES ##
 
 # Proxmox
@@ -26,14 +37,37 @@ london-a.pez.sh {
         }
 }
 
-*.k8s.pez.sh {
+*.lon.pez.sh {
         tls {
             dns hetzner {env.HETZNER_DNS_API_TOKEN}
+            propagation_delay 30s
+            propagation_timeout 3m
         }
         tracing {
                 span k8s
         }
         reverse_proxy 100.123.97.26:80
+}
+
+copenhagen-a.pez.sh {
+        tracing {
+                span proxmox
+        }
+        reverse_proxy 100.91.240.29:8006 {
+                transport http {
+                        tls_insecure_skip_verify
+                }
+        }
+}
+
+*.cph.pez.sh {
+        tls {
+            dns hetzner {env.HETZNER_DNS_API_TOKEN}
+        }
+        tracing {
+                span cph-k8s
+        }
+        reverse_proxy 100.109.200.2:80
 }
 
 ## LONDON-B SERVICES ##
