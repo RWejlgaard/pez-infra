@@ -19,20 +19,6 @@ resource "grafana_fleet_management_collector" "london_c" {
   }
 }
 
-resource "grafana_fleet_management_collector" "copenhagen_a" {
-  id = "copenhagen-a"
-  remote_attributes = {
-    location = "copenhagen"
-  }
-}
-
-resource "grafana_fleet_management_collector" "copenhagen_c" {
-  id = "copenhagen-c"
-  remote_attributes = {
-    location = "copenhagen"
-  }
-}
-
 resource "grafana_fleet_management_collector" "helsinki_a" {
   id = "helsinki-a"
   remote_attributes = {
