@@ -24,7 +24,7 @@ jobs:
     outputs:
       hosts: ${{ steps.prepare.outputs.hosts }}
     steps:
-      - uses: actions/checkout@v6
+      - uses: actions/checkout@v7
 
       - name: Build host matrix
         id: prepare
