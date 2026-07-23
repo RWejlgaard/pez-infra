@@ -12,8 +12,6 @@ Infrastructure-as-code for cloud and edge services. Uses [OpenTofu](https://open
 
 Secrets are stored encrypted in `secrets.enc.yaml` via [SOPS](https://github.com/getsops/sops) and decrypted at plan/apply time into `secrets.yaml`. The Makefile handles decryption automatically.
 
-Required secret keys: `hetzner_token`, `grafana_cloud_access_policy`, `grafana_synthetic_monitoring_access_token`, `grafana_fleet_management_auth`, `grafana_service_account_token`, `pagerduty_token`, `plex_token`, `backblaze_keyID`, `backblaze_applicationKey`.
-
 ## State
 
 State is stored in a Backblaze B2 bucket (`pez-infra-tfstate`) using an S3-compatible backend. Credentials are read from `AWS_ACCESS_KEY_ID` / `AWS_SECRET_ACCESS_KEY` environment variables — the Makefile exports them from the `backblaze_keyID` / `backblaze_applicationKey` secrets automatically.
