@@ -46,6 +46,14 @@ resource "hcloud_zone_rrset" "A_copenhagen" {
   records  = [{ value = local.copenhagen }]
 }
 
+resource "hcloud_zone_rrset" "CNAME_forms" {
+  zone    = hcloud_zone.pezsh.name
+  name    = "forms"
+  type    = "CNAME"
+  ttl     = local.dns_ttl
+  records = [{ value = "forms.cph.pez.sh" }]
+}
+
 resource "hcloud_zone_rrset" "CNAME_public" {
   zone    = hcloud_zone.pezsh.name
   name    = "public"
