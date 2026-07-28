@@ -1,15 +1,15 @@
 # copenhagen-a
 
-Game servers. Located at my dad's place in Copenhagen as an off-site location.
+Proxmox VE hypervisor. Located at my dad's place in Copenhagen as an off-site location — the Copenhagen counterpart to london-a.
 
 ## Overview
 
 | | |
 |---|---|
 | **Location** | Copenhagen |
-| **OS** | Ubuntu 22.04 LTS |
-| **Tailscale IP** | 100.89.206.60 |
-| **Role** | Gaming servers (Minecraft, WoW) |
+| **OS** | Debian 12 (Bookworm) with Proxmox VE |
+| **Tailscale IP** | 100.91.240.29 |
+| **Role** | Hypervisor (Proxmox VE) |
 | **Form factor** | Lenovo "tiny" desktop (lunchbox-sized) |
 
 ## Hardware
@@ -20,50 +20,42 @@ Game servers. Located at my dad's place in Copenhagen as an off-site location.
 | Memory | 16 GB |
 | Boot disk | 500 GB |
 
-Compact Lenovo desktop — powered by a standard ThinkPad charging brick. Small, quiet, and draws minimal power.
+Compact Lenovo desktop — powered by a standard ThinkPad charging brick. Small, quiet, and draws minimal power. Previously ran the gaming servers directly on bare metal; now repaved as a Proxmox VE host.
 
 ## Services
 
-### Minecraft
+| Service | Port | Status | Notes |
+|---------|------|--------|-------|
+| Proxmox VE | 8006 | Active | Web UI — reachable via `copenhagen-a.pez.sh` (Caddy) or Tailscale IP |
+| Tailscale | — | Active | Mesh networking |
+| node_exporter, systemd_exporter, Alloy | — | Active | Observability baseline (Ansible-managed) |
 
-| | |
-|---|---|
-| Image | `itzg/minecraft-server` |
-| Port | 25565 |
-| Deployment | Docker |
+### Storage
 
-Not proxied through Caddy — accessed directly via Tailscale or the host's public IP.
+Proxmox is connected to the same CIFS share on **london-b** (`100.84.65.101 /pve`) used by london-a, for ISO/template/backup storage. The mount is configured by the `proxmox_ve` Ansible role.
 
-### World of Warcraft (MaNGOS Zero)
+| Storage ID | Type | Backing |
+|---|---|---|
+| `local-lvm` | LVM-Thin | Local boot disk |
+| `hdd` | CIFS | london-b `/pve` share |
 
-WoW 1.12 (Vanilla) private server using the MaNGOS Zero emulator. Runs natively — not in Docker.
+### VMs
 
-| Service | Port | Managed by |
-|---------|------|-----------|
-| mangos-realmd | 3724 | systemd |
-| mangos-world | 8085 | systemd |
-| MariaDB | 3306 | systemd (apt-managed) |
+No VMs provisioned yet — this is the landing zone for future workloads at the Copenhagen site.
 
-- Runs as the `mangos` user
-- Install path: `/home/mangos/mangos/zero/`
-- MariaDB hosts the character, world, and auth databases locally
-- Both `mangos-realmd` and `mangos-world` start automatically on boot via systemd
-- The `mariadb` Ansible role manages package + secrets; the `systemd_services` role drops the unit files (`ansible/services/mangos-realmd/`, `ansible/services/mangos-world/`)
+## Ansible
 
-### Other
+Part of the `proxmox_hosts` group alongside london-a, sharing the `proxmox_ve` role:
 
-| Service | Port | Deployment | Notes |
-|---------|------|-----------|-------|
-| smartctl_exporter | 9633 | Docker | Disk SMART metrics scraped by Alloy |
-| node_exporter | 9100 | Native | Host metrics |
-| systemd_exporter | — | Native | systemd unit metrics |
-| Alloy | — | Native | Ships everything to Grafana Cloud |
-| Tailscale | — | Native | Mesh networking |
+- Swaps the enterprise apt repo for `pve-no-subscription` so updates work without a paid subscription
+- Patches `proxmoxlib.js` to suppress the subscription nag dialog
+- Restricts the web UI to the `tailscale0` interface via UFW
+- Mounts the london-b CIFS storage
 
 ## Networking
 
-Connected directly to the ISP router's built-in switch. Symmetrical 500 Mbit connection — more than enough for game servers.
+Connected directly to the ISP router's built-in switch. Symmetrical 500 Mbit connection.
 
-## Notes
+## History
 
-copenhagen-a has a static public IP, which is needed for game servers that require direct client connections (WoW realm list, Minecraft server list). The reboot playbook (`ansible/playbooks/reboot.yml`) does a netplan pre-flight check before rebooting to make sure the static IP config will come back up cleanly.
+copenhagen-a used to run gaming servers directly on bare metal: a Minecraft server (`itzg/minecraft-server`, Docker) and a WoW 1.12 (Vanilla) MaNGOS Zero private server (native systemd + local MariaDB). Both were decommissioned and the host was repaved as Proxmox VE — the Tailscale identity (and IP) changed as part of the reinstall. The old static public IP used for direct game-client connections (Minecraft server list, WoW realm list) is no longer needed since nothing here accepts direct client connections anymore.

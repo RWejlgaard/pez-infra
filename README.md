@@ -18,9 +18,8 @@ graph TD
     TS --> LB[london-b<br/>Storage, media<br/>Docker + systemd]
     TS --> LA[london-a<br/>Proxmox VE hypervisor]
     TS --> LC[london-c<br/>Raspberry Pi<br/>Octopus Energy exporter]
-    TS --> CA[copenhagen-a<br/>Gaming<br/>Minecraft, WoW MaNGOS]
+    TS --> CA[copenhagen-a<br/>Proxmox VE hypervisor]
     TS --> NUR[nuremberg-a<br/>Mail, poste.io]
-    TS --> CC[copenhagen-c<br/>Raspberry Pi<br/>cloudflared, idle]
     TS -.-> GC[Grafana Cloud<br/>metrics, logs, traces]
 ```
 
@@ -35,8 +34,7 @@ DNS (Hetzner DNS for `pez.sh`, managed via Terraform) points directly at a Caddy
 | london-a | London | Debian 13 / Proxmox VE | Hypervisor (currently runs a Mac VM; platform for future VMs) |
 | london-c | London | Debian 13 (Raspberry Pi) | Octopus Energy exporter, edge utility box |
 | nuremberg-a | Hetzner Cloud (Nuremberg) | Debian 13 | Mail server (poste.io) |
-| copenhagen-a | Copenhagen | Ubuntu 22.04 | Gaming servers (Minecraft, WoW/MaNGOS) |
-| copenhagen-c | Copenhagen | Debian 12 (Raspberry Pi) | cloudflared tunnel, idle/available |
+| copenhagen-a | Copenhagen | Debian 12 (Bookworm) / Proxmox VE | Hypervisor (platform for future VMs) |
 
 ## Directory Structure
 

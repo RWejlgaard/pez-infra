@@ -1,9 +1,0 @@
----
-- name: Deploy MariaDB bind-address config
-  ansible.builtin.copy:
-    src: bind-local.cnf
-    dest: /etc/mysql/mariadb.conf.d/99-bind-local.cnf
-    owner: root
-    group: root
-    mode: '0644'
-  notify: Restart mariadb

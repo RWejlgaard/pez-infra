@@ -13,8 +13,7 @@ All inter-server communication uses Tailscale IPs:
 | london-b | 100.84.65.101 |
 | london-c | 100.123.72.87 |
 | nuremberg-a | 100.70.180.24 |
-| copenhagen-a | 100.89.206.60 |
-| copenhagen-c | 100.115.45.53 |
+| copenhagen-a | 100.91.240.29 |
 
 ### What Tailscale is used for
 
@@ -43,7 +42,7 @@ A stack of servers at my dad's place — acts as an off-site location.
 
 - **Router:** ISP-provided (not my house, can't exactly install a Ubiquiti rack)
 - **ISP:** Symmetrical 500 Mbit — plenty for what's running there
-- **Servers:** copenhagen-a (Lenovo tiny desktop) and copenhagen-c (Raspberry Pi) connected directly to the ISP router's built-in switch
+- **Servers:** copenhagen-a (Lenovo tiny desktop, now running Proxmox VE) connected directly to the ISP router's built-in switch
 
 ### Helsinki / Nuremberg (Hetzner Cloud)
 
@@ -95,6 +94,7 @@ All subdomains resolve directly to helsinki-a, where Caddy terminates TLS. Hosts
 | signup.pez.solutions | helsinki-a:/srv/pez-signup (static) | — |
 | naveen.pez.sh | helsinki-a:/srv/naveen (static) | — |
 | london-a.pez.sh | london-a:8006 (Proxmox UI) | Proxmox login |
+| copenhagen-a.pez.sh | copenhagen-a:8006 (Proxmox UI) | Proxmox login |
 | jellyfin.pez.sh / .solutions | london-b:8096 | Own auth |
 | plex.pez.sh / .solutions | london-b:32400 | Own auth |
 | music.pez.sh | london-b:4533 (Navidrome) | Own auth |
@@ -108,7 +108,7 @@ All subdomains resolve directly to helsinki-a, where Caddy terminates TLS. Hosts
 | soulseek.pez.sh / .solutions | london-b:5030 (slskd) | Authelia |
 | download.pez.sh / .solutions | london-b:9091 (Transmission) | Authelia |
 
-A few `pez.sh` records bypass Caddy entirely: `mail` points at nuremberg-a, `minecraft` and `wow` point at copenhagen-a's public IP (game clients connect directly), and `public` is a CNAME to a Cloudflare R2 public bucket (`public.r2.dev`).
+A few `pez.sh` records bypass Caddy entirely: `mail` points at nuremberg-a, and `public` is a CNAME to a Cloudflare R2 public bucket (`public.r2.dev`).
 
 ### Mail DNS
 

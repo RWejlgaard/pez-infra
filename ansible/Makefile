@@ -24,7 +24,7 @@ update-linux:
 docker-status:
 	ansible-playbook playbooks/docker-status.yml
 
-# Reboot a specific host: make reboot HOST=copenhagen-c
+# Reboot a specific host: make reboot HOST=london-c
 reboot:
 	ansible-playbook playbooks/reboot.yml --limit $(HOST)
 

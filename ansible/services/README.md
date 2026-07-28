@@ -30,15 +30,13 @@ There is **no** per-host subdirectory — services are named by what they are, a
 | navidrome | Docker | london-b | Music streaming |
 | bookshelf | Docker | london-b | Ebook/audiobook manager (Readarr revival) |
 | slskd | Docker | london-b | Soulseek client |
-| smartctl-exporter | Docker | london-b, copenhagen-a | SMART metrics |
+| smartctl-exporter | Docker | london-b | SMART metrics |
 | plex-exporter | Docker | london-b | Plex metrics |
 | octopus-exporter | Docker | london-c | Octopus Energy metrics |
-| minecraft | Docker | copenhagen-a | PaperMC server |
 | radarr / sonarr / lidarr / prowlarr / whisparr | systemd | london-b | *Arr stack (systemd unit files here) |
 | transmission | systemd | london-b | Config files (the daemon itself is apt) |
 | samba / vsftpd | systemd | london-b | File-sharing config |
 | ollama | systemd | london-b | Custom unit + binary install |
-| mangos-realmd / mangos-world / mangos-zero | systemd | copenhagen-a | MaNGOS WoW server |
 | promtail | systemd | (currently unused; historical) | Log shipper, replaced by Alloy |
 | status-page | Cron script | helsinki-a | `update-status.sh` writes `/srv/status` |
 | rc.d | FreeBSD rc.conf | (historical) | Snapshot of london-a's old FreeBSD setup |

@@ -38,7 +38,7 @@ The `common` role drops a `10-resilience.conf` systemd override onto every host 
 |---|---|---|
 | node_exporter | All hosts | CPU, memory, disk, network, system uptime |
 | systemd_exporter | All hosts | Per-unit systemd state |
-| smartctl_exporter (Docker) | london-b, copenhagen-a | Disk SMART data |
+| smartctl_exporter (Docker) | london-b | Disk SMART data |
 | prom-plex-exporter (Docker) | london-b | Plex streaming activity |
 | octopus_exporter (Docker) | london-c | Octopus Energy electricity usage |
 | Caddy `/metrics` | helsinki-a | HTTP request metrics, upstream health (per host) |

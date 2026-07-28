@@ -21,12 +21,9 @@ graph TD
     TS --> LA["<b>london-a</b><br/>Proxmox VE hypervisor<br/>(Debian 13)"]
     TS --> LC["<b>london-c</b><br/>Raspberry Pi<br/>Octopus Energy exporter"]
     TS --> NA["<b>nuremberg-a</b><br/>Mail<br/>poste.io"]
-    TS --> CA["<b>copenhagen-a</b><br/>Gaming<br/>Minecraft / WoW (MaNGOS)"]
-    TS --> CC["<b>copenhagen-c</b><br/>Raspberry Pi<br/>cloudflared, idle"]
+    TS --> CA["<b>copenhagen-a</b><br/>Proxmox VE hypervisor<br/>(Debian 12)"]
 
     TS -.->|Alloy| GC["<b>Grafana Cloud</b><br/>metrics, logs, traces<br/>synthetic checks"]
-
-    style CC stroke-dasharray: 5 5
 ```
 
 ## Traffic Flow

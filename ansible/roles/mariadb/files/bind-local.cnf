@@ -1,5 +1,0 @@
-[mysqld]
-# Restrict MariaDB to loopback only.
-# UFW blocks port 3306 externally, but binding to 127.0.0.1 provides
-# defense in depth — the socket never reaches the network stack at all.
-bind-address = 127.0.0.1

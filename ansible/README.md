@@ -42,8 +42,7 @@ The deploy playbook runs in stages, each independently taggable (see `deploy.yml
    - `docker_hosts`: Docker Compose stacks from `services/`
    - `nuremberg-a`: poste.io mail (Docker)
    - `london-b`: `media_stack` + `backup` (rclone to B2)
-   - `copenhagen-a`: MaNGOS systemd units + MariaDB
-   - `london-a`: `proxmox_ve` (apt repo, nag patch, CIFS storage)
+   - `proxmox_hosts` (`london-a`, `copenhagen-a`): `proxmox_ve` (apt repo, nag patch, CIFS storage)
    - `zfs_hosts`: ZFS scrub scheduling
 
 Observability (node_exporter, systemd_exporter, Grafana Alloy) is part of the `common` baseline — every host gets it.
@@ -63,7 +62,6 @@ Run a single stage: `ansible-playbook deploy.yml --tags docker`
 | `systemd_services` | Custom systemd units from `services/` |
 | `media_stack` | *Arr stack, Plex/Jellyfin, Samba, Syncthing on london-b |
 | `backup` | rclone-to-B2 cron job on london-b |
-| `mariadb` | Native MariaDB (used by MaNGOS on copenhagen-a) |
 | `proxmox_ve` | PVE no-subscription repo, UI lockdown, CIFS storage |
 | `zfs` | Weekly scrub cron on ZFS hosts |
 
@@ -75,6 +73,5 @@ Per-host variables in `inventory/host_vars/<hostname>.yml`.
 ## Safety Notes
 
 - **london-b**: Reboot playbook requires interactive confirmation (critical storage)
-- **copenhagen-a**: Reboot includes netplan pre-flight check (static IP verification)
 - All playbooks use `ignore_unreachable: true` for fleet operations
 - `--check --diff` is your friend — always dry-run first on production
