@@ -3,3 +3,7 @@ host_role: proxmox-ve
 host_description: "Proxmox VE hypervisor"
 host_location: "Copenhagen"
 ansible_python_interpreter: /usr/bin/python3
+
+# Don't mount london-b's CIFS share here — it's on the London LAN, not worth
+# the WAN/Tailscale hop for VM storage from Copenhagen.
+proxmox_ve_mount_cifs_storage: false

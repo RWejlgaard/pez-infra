@@ -32,12 +32,11 @@ Compact Lenovo desktop — powered by a standard ThinkPad charging brick. Small,
 
 ### Storage
 
-Proxmox is connected to the same CIFS share on **london-b** (`100.84.65.101 /pve`) used by london-a, for ISO/template/backup storage. The mount is configured by the `proxmox_ve` Ansible role.
+Unlike london-a, this host does **not** mount london-b's CIFS share — it's not worth the WAN/Tailscale hop from Copenhagen for VM storage. Only local storage is configured (`proxmox_ve_mount_cifs_storage: false` in `host_vars/copenhagen-a.yml`).
 
 | Storage ID | Type | Backing |
 |---|---|---|
 | `local-lvm` | LVM-Thin | Local boot disk |
-| `hdd` | CIFS | london-b `/pve` share |
 
 ### VMs
 
@@ -50,7 +49,7 @@ Part of the `proxmox_hosts` group alongside london-a, sharing the `proxmox_ve` r
 - Swaps the enterprise apt repo for `pve-no-subscription` so updates work without a paid subscription
 - Patches `proxmoxlib.js` to suppress the subscription nag dialog
 - Restricts the web UI to the `tailscale0` interface via UFW
-- Mounts the london-b CIFS storage
+- Skips the london-b CIFS mount (`proxmox_ve_mount_cifs_storage: false`) — local storage only
 
 ## Networking
 

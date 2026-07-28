@@ -103,7 +103,7 @@ Repurposed gaming PC (previously ran Minecraft and a WoW/MaNGOS private server) 
 |---------|------|-----------|------|-----|
 | Proxmox VE | 8006 | Native (Debian Bookworm-based PVE) | Proxmox login | copenhagen-a.pez.sh |
 
-The web UI is exposed via Caddy at `copenhagen-a.pez.sh` but is also reachable directly over Tailscale. Proxmox storage is augmented with the same london-b CIFS share used by london-a (configured by the `proxmox_ve` Ansible role).
+The web UI is exposed via Caddy at `copenhagen-a.pez.sh` but is also reachable directly over Tailscale. Unlike london-a, this host doesn't mount london-b's CIFS share — not worth the WAN/Tailscale hop for VM storage from Copenhagen — so it runs local storage only.
 
 ## Observability Agents
 

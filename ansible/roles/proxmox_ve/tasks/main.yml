@@ -46,12 +46,15 @@
   notify: Reload ufw
 
 # --- Storage ---
+# london-b's CIFS share is only mounted for hosts on the same LAN (london-a) —
+# it's not worth mounting over the WAN/Tailscale for a Copenhagen host.
 
 - name: Check if hdd CIFS storage is configured
   ansible.builtin.command: pvesh get /storage/hdd
   register: proxmox_ve_hdd_check
   changed_when: false
   failed_when: false
+  when: proxmox_ve_mount_cifs_storage | default(true)
 
 - name: Add hdd CIFS storage (london-b /pve share)
   ansible.builtin.command: >-
@@ -63,4 +66,6 @@
     --content images,backup,import,snippets,vztmpl,rootdir,iso
   no_log: true
   changed_when: true
-  when: proxmox_ve_hdd_check.rc != 0
+  when:
+    - proxmox_ve_mount_cifs_storage | default(true)
+    - proxmox_ve_hdd_check.rc != 0
