@@ -55,15 +55,8 @@
     - role: media_stack
     - role: backup
 
-- name: Gaming servers (copenhagen-a)
-  hosts: copenhagen-a
-  tags: [services, gaming]
-  roles:
-    - role: systemd_services
-    - role: mariadb
-
-- name: Proxmox VE (london-a)
-  hosts: london-a
+- name: Proxmox VE (london-a, copenhagen-a)
+  hosts: proxmox_hosts
   tags: [services, proxmox]
   roles:
     - role: proxmox_ve

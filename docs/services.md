@@ -95,27 +95,15 @@ poste.io bundles everything — postfix, dovecot, rspamd, webmail — into a sin
 
 n8n (workflow automation) binds 5678 to the Tailscale IP only; public access is proxied by Caddy on helsinki-a. It manages its own user auth.
 
-## copenhagen-a — Gaming
+## copenhagen-a — Proxmox VE Hypervisor
 
-Game servers. Not publicly exposed via Caddy — accessed directly over the public IP/Tailscale.
-
-| Service | Port | Deployment | Auth | URL |
-|---------|------|-----------|------|-----|
-| Minecraft (`itzg/minecraft-server`) | 25565 | Docker | — | (direct connection) |
-| MaNGOS realmd | 3724 | Native (systemd) | — | (direct connection) |
-| MaNGOS world | 8085 | Native (systemd) | — | (direct connection) |
-| MariaDB | 3306 | Native (apt) | — | (local, used by MaNGOS) |
-| smartctl_exporter | 9633 | Docker | — | (scraped by Alloy → Grafana Cloud) |
-
-MaNGOS Zero is a WoW 1.12 (Vanilla) private server. Runs natively under systemd as the `mangos` user from `/home/mangos/mangos/zero/`. Not containerised — it predates the Docker setup on this host.
-
-## copenhagen-c — Idle (Raspberry Pi)
-
-Raspberry Pi running Debian 12 at the Copenhagen site. Mostly idle, but runs a cloudflared tunnel for one-off use.
+Repurposed gaming PC (previously ran Minecraft and a WoW/MaNGOS private server) at the Copenhagen off-site location, now reinstalled as a Proxmox VE hypervisor — the Copenhagen counterpart to london-a.
 
 | Service | Port | Deployment | Auth | URL |
 |---------|------|-----------|------|-----|
-| cloudflared | — | Native (systemd) | — | (Cloudflare-managed tunnel) |
+| Proxmox VE | 8006 | Native (Debian Bookworm-based PVE) | Proxmox login | copenhagen-a.pez.sh |
+
+The web UI is exposed via Caddy at `copenhagen-a.pez.sh` but is also reachable directly over Tailscale. Proxmox storage is augmented with the same london-b CIFS share used by london-a (configured by the `proxmox_ve` Ansible role).
 
 ## Observability Agents
 

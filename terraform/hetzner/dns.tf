@@ -7,7 +7,6 @@ locals {
   helsinki_a     = hcloud_server.helsinki-a.ipv4_address
   nuremberg_a    = hcloud_server.nuremberg-a.ipv4_address
   nuremberg_aaaa = hcloud_server.nuremberg-a.ipv6_address
-  copenhagen     = "83.94.248.182"
   dns_ttl        = 300
 }
 
@@ -35,15 +34,6 @@ resource "hcloud_zone_rrset" "nuremberg_mail" {
   type    = each.key
   ttl     = local.dns_ttl
   records = [{ value = each.value }]
-}
-
-resource "hcloud_zone_rrset" "A_copenhagen" {
-  for_each = toset(["minecraft", "wow"])
-  zone     = hcloud_zone.pezsh.name
-  name     = each.value
-  type     = "A"
-  ttl      = local.dns_ttl
-  records  = [{ value = local.copenhagen }]
 }
 
 resource "hcloud_zone_rrset" "CNAME_forms" {

@@ -62,8 +62,7 @@ Most servers run Fish as root shell. Current state captured from live fleet (202
 | london-b | fish | Yes (pez@pez.sh) | Partial (fish default, tmux custom) |
 | nuremberg-a | fish | No | No |
 | london-a | sh (FreeBSD) | No | No |
-| copenhagen-a | fish | No (SpigotMC default) | No |
-| copenhagen-c | fish | No | No |
+| copenhagen-a | bash (fresh PVE install) | No | No |
 
 ## Relationship to upstream
 

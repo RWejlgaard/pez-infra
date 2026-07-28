@@ -131,17 +131,15 @@
 # Cloudflare Tunnels were retired in favour of Caddy + Authelia (PESO-134, #56),
 # which removed cloudflared from ansible config. copenhagen-a was unreachable at
 # the time, so its cloudflared.service was never actually stopped and is still
-# running. Remove it wherever the unit lingers. copenhagen-c legitimately runs a
-# hand-configured cloudflared tunnel — never touch it.
+# running (it has since been repaved as Proxmox VE, so this is now historical).
+# Remove it wherever the unit lingers.
 - name: Detect lingering cloudflared unit
   ansible.builtin.stat:
     path: /etc/systemd/system/cloudflared.service
   register: common_cloudflared_unit
-  when: inventory_hostname != 'copenhagen-c'
 
 - name: Remove orphaned cloudflared
   when:
-    - inventory_hostname != 'copenhagen-c'
     - common_cloudflared_unit.stat.exists | default(false)
   block:
     - name: Stop and disable cloudflared

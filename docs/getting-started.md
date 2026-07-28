@@ -45,8 +45,7 @@ ssh root@helsinki-a        # or ssh root@100.67.6.27
 ssh root@london-a          # Proxmox VE host
 ssh root@london-b          # storage / media
 ssh root@london-c          # Raspberry Pi
-ssh root@copenhagen-a
-ssh root@copenhagen-c      # Raspberry Pi
+ssh root@copenhagen-a      # Proxmox VE host
 ssh root@nuremberg-a
 ```
 
@@ -139,8 +138,8 @@ ZFS is set up with 3× RAIDZ1 vdevs of 4 drives each (12 drives total) on the `h
 ## OS Choice
 
 - **Debian (12 or 13)** is the default for new hosts — including the Raspberry Pis. Stable, well-supported by Ansible, predictable.
-- **Ubuntu LTS** is on london-b and copenhagen-a (historical — both came up before the Debian standard).
-- **Proxmox VE** (Debian Bookworm under the hood) on london-a.
+- **Ubuntu LTS** is on london-b (historical — came up before the Debian standard).
+- **Proxmox VE** (Debian Bookworm under the hood) on london-a and copenhagen-a.
 - **No more FreeBSD.** london-a used to run FreeBSD for Prometheus/Grafana; that's all on Grafana Cloud now and london-a is Linux/Proxmox.
 
 Alpine has been tried and rejected — the missing GNU binaries / systemd caused enough Ansible headaches to not be worth the size savings.

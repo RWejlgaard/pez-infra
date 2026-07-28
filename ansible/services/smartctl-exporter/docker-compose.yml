@@ -1,6 +1,6 @@
 ---
 # smartctl-exporter - SMART disk metrics for Prometheus
-# Hosts: london-b (100.84.65.101), copenhagen-a (100.89.206.60)
+# Hosts: london-b (100.84.65.101)
 # Access: http://<host>:9633/metrics
 
 services:

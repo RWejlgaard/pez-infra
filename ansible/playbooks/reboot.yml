@@ -2,8 +2,7 @@
 # Reboot a specific host and wait for it to come back.
 # Usage: ansible-playbook playbooks/reboot.yml --limit <hostname>
 #
-# Safety: copenhagen-a has netplan pre-flight check.
-#         london-b should NOT be rebooted without manual approval.
+# Safety: london-b should NOT be rebooted without manual approval.
 
 - name: Reboot host safely
   hosts: all
@@ -28,23 +27,6 @@
       ansible.builtin.fail:
         msg: "Reboot of london-b was not confirmed."
       when: inventory_hostname == 'london-b' and london_b_confirm.user_input != 'yes'
-
-    - name: Check netplan config (copenhagen-a)
-      ansible.builtin.command: netplan get all
-      register: netplan_config
-      failed_when: false
-      changed_when: false
-      when: inventory_hostname == 'copenhagen-a'
-
-    - name: Verify copenhagen-a static IP
-      ansible.builtin.assert:
-        that:
-          - "'192.168.0.251' in netplan_config.stdout"
-        fail_msg: >
-          ABORT: copenhagen-a netplan doesn't show expected static IP
-          192.168.0.251. Check netplan config before rebooting.
-        success_msg: "copenhagen-a netplan OK — static IP present."
-      when: inventory_hostname == 'copenhagen-a'
 
     - name: Reboot
       ansible.builtin.reboot:

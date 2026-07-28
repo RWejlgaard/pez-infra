@@ -1,24 +1,5 @@
 ---
-host_role: gaming
-host_description: "Gaming servers (Minecraft, WoW/MaNGOS)"
+host_role: proxmox-ve
+host_description: "Proxmox VE hypervisor"
 host_location: "Copenhagen"
-prometheus_location: copenhagen
-
-# MaNGOS runs as systemd services, not Docker
-# MariaDB is the MaNGOS database backend (character, world, auth DBs)
-systemd_services:
-  - mangos-realmd
-  - mangos-world
-
-# Docker Compose services deployed by docker_services role
-docker_services:
-  - minecraft
-  - smartctl-exporter
-
-# MaNGOS database backend — installed by apt; config managed by mariadb role
-system_packages_services:
-  - mariadb
-
-common_ufw_allowed_ports:
-  - {port: 3724, proto: tcp, comment: "MaNGOS Realmd"}
-  - {port: 8085, proto: tcp, comment: "MaNGOS World Server"}
+ansible_python_interpreter: /usr/bin/python3

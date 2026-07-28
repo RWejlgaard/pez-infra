@@ -21,5 +21,4 @@ Everything you need to understand how this infrastructure works.
 | london-b | 100.84.65.101 | London | Storage, media, Docker services |
 | london-c | 100.123.72.87 | London | Raspberry Pi, Octopus Energy exporter |
 | nuremberg-a | 100.70.180.24 | Hetzner Cloud (Nuremberg) | Mail (poste.io) |
-| copenhagen-a | 100.89.206.60 | Copenhagen | Minecraft, WoW/MaNGOS |
-| copenhagen-c | 100.115.45.53 | Copenhagen | Raspberry Pi, cloudflared, idle |
+| copenhagen-a | 100.91.240.29 | Copenhagen | Proxmox VE hypervisor |
