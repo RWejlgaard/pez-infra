@@ -42,7 +42,7 @@ The deploy playbook runs in stages, each independently taggable (see `deploy.yml
    - `docker_hosts`: Docker Compose stacks from `services/`
    - `nuremberg-a`: poste.io mail (Docker)
    - `london-b`: `media_stack` + `backup` (rclone to B2)
-   - `proxmox_hosts` (`london-a`, `copenhagen-a`): `proxmox_ve` (apt repo, nag patch, CIFS storage)
+   - `proxmox_hosts` (`london-a`, `copenhagen-a`): `proxmox_ve` (apt repo, nag patch, CIFS storage on london-a only)
    - `zfs_hosts`: ZFS scrub scheduling
 
 Observability (node_exporter, systemd_exporter, Grafana Alloy) is part of the `common` baseline — every host gets it.
@@ -62,7 +62,7 @@ Run a single stage: `ansible-playbook deploy.yml --tags docker`
 | `systemd_services` | Custom systemd units from `services/` |
 | `media_stack` | *Arr stack, Plex/Jellyfin, Samba, Syncthing on london-b |
 | `backup` | rclone-to-B2 cron job on london-b |
-| `proxmox_ve` | PVE no-subscription repo, UI lockdown, CIFS storage |
+| `proxmox_ve` | PVE no-subscription repo, UI lockdown, CIFS storage (opt-in via `proxmox_ve_mount_cifs_storage`) |
 | `zfs` | Weekly scrub cron on ZFS hosts |
 
 ## Inventory
