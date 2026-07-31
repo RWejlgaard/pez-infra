@@ -303,3 +303,11 @@ git.pez.sh {
         }
         reverse_proxy localhost:3000
 }
+
+crabitalontap.com {
+	tracing {
+		span crabs
+	}
+	root * /srv/crabitalontap.com
+	file_server
+}
