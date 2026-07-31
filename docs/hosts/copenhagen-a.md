@@ -7,20 +7,20 @@ Proxmox VE hypervisor. Located at my dad's place in Copenhagen as an off-site lo
 | | |
 |---|---|
 | **Location** | Copenhagen |
-| **OS** | Debian 12 (Bookworm) with Proxmox VE |
+| **OS** | Debian 13 (Trixie) with Proxmox VE |
 | **Tailscale IP** | 100.91.240.29 |
 | **Role** | Hypervisor (Proxmox VE) |
-| **Form factor** | Lenovo "tiny" desktop (lunchbox-sized) |
+| **Form factor** | Minisforum MS-A2 mini PC |
 
 ## Hardware
 
 | Component | Spec |
 |---|---|
-| CPU | Intel i5-4570T (4 threads) |
-| Memory | 16 GB |
-| Boot disk | 500 GB |
+| CPU | AMD Ryzen 9 9955HX (16 cores / 32 threads) |
+| Memory | 64 GB |
+| Boot disk | 1 TB NVMe (Kingston OM8TAP41024K1-A00) |
 
-Compact Lenovo desktop — powered by a standard ThinkPad charging brick. Small, quiet, and draws minimal power. Previously ran the gaming servers directly on bare metal; now repaved as a Proxmox VE host.
+Minisforum MS-A2 mini PC. Small, quiet, and draws minimal power relative to its performance. This replaced the original Lenovo "tiny" desktop (Intel i5-4570T / 16 GB / 500 GB) that used to run the gaming servers directly on bare metal; the host was repaved as Proxmox VE on the new hardware.
 
 ## Services
 
@@ -37,10 +37,11 @@ Unlike london-a, this host does **not** mount london-b's CIFS share — it's not
 | Storage ID | Type | Backing |
 |---|---|---|
 | `local-lvm` | LVM-Thin | Local boot disk |
+| `local` | Directory | ISO/template/backup storage |
 
 ### VMs
 
-No VMs provisioned yet — this is the landing zone for future workloads at the Copenhagen site.
+Runs a mix of always-on VMs (Kubernetes control plane, a general-purpose workspace, Minecraft) plus Karpenter-managed Kubernetes worker nodes that scale up/down on demand.
 
 ## Ansible
 
