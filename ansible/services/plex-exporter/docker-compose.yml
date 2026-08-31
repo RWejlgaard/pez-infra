@@ -5,7 +5,7 @@
 
 services:
   plex-exporter:
-    image: ghcr.io/jsclayton/prometheus-plex-exporter
+    image: rwejlgaard/plex_exporter:2.0.0
     container_name: prom-plex-exporter
     restart: unless-stopped
     ports:
