@@ -1,4 +1,4 @@
-name: Deploy (on merge)
+name: Deploy (on merge + daily)
 
 on:
   push:
@@ -9,6 +9,8 @@ on:
       - "docs/**"
       - "**/*.md"
       - ".github/**"
+  schedule:
+    - cron: "0 11 * * *"
 
 # Serialize fleet deploys so two quick merges can't run Ansible against the
 # same hosts at once. Don't cancel an in-flight deploy mid-run — queue it.

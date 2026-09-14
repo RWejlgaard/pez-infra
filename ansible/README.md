@@ -20,6 +20,17 @@ make deploy
 make deploy-host HOST=helsinki-a
 ```
 
+## CI deploys
+
+`.github/workflows/deploy-on-merge.yml` runs `deploy.yml` over the whole fleet:
+
+- on every merge to `main` (except terraform/docs/workflow-only changes)
+- every day at 11:00 UTC (midday London time during BST), to pull hosts back in line with the repo
+
+Ad-hoc runs against a single host or playbook go through the manual `deploy.yml` workflow.
+
+`.github/workflows/terraform.yml` runs plan + apply on the same daily schedule, as well as on merges touching `terraform/`.
+
 ## Playbooks
 
 | Playbook | Purpose | Usage |
