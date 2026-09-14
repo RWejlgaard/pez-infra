@@ -29,6 +29,8 @@ make deploy-host HOST=helsinki-a
 
 Ad-hoc runs against a single host or playbook go through the manual `deploy.yml` workflow.
 
+`.github/workflows/terraform.yml` runs plan + apply on the same daily schedule, as well as on merges touching `terraform/`.
+
 ## Playbooks
 
 | Playbook | Purpose | Usage |

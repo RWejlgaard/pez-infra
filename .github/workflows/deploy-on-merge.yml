@@ -9,14 +9,11 @@ on:
       - "docs/**"
       - "**/*.md"
       - ".github/**"
-  # Daily fleet deploy at midday to catch drift from anything changed by hand.
-  # Cron is UTC: 11:00 UTC is 12:00 in London during BST, 11:00 during GMT.
   schedule:
     - cron: "0 11 * * *"
 
-# Serialize fleet deploys so two quick merges (or a merge and the daily run)
-# can't run Ansible against the same hosts at once. Don't cancel an in-flight
-# deploy mid-run — queue it.
+# Serialize fleet deploys so two quick merges can't run Ansible against the
+# same hosts at once. Don't cancel an in-flight deploy mid-run — queue it.
 concurrency:
   group: deploy-on-merge
   cancel-in-progress: false
