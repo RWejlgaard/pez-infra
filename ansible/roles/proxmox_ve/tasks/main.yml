@@ -1,22 +1,33 @@
 ---
 # Configure Proxmox VE apt sources for the no-subscription tier.
-# Removes the enterprise repo (requires paid subscription) and enables
+# Removes the enterprise repos (require a paid subscription) and enables
 # the free no-subscription repo so apt update works without credentials.
 
-- name: Remove PVE enterprise apt source
+# PVE 9 (trixie) uses deb822 .sources files. Clear out the enterprise repos in
+# both formats, plus the old one-line no-subscription .list this role used to
+# write with a hardcoded bookworm suite (mixing suites on a trixie host).
+- name: Remove enterprise and legacy Proxmox apt sources
   ansible.builtin.file:
-    path: /etc/apt/sources.list.d/pve-enterprise.list
+    path: "/etc/apt/sources.list.d/{{ item }}"
     state: absent
-
-- name: Remove Ceph enterprise apt source
-  ansible.builtin.file:
-    path: /etc/apt/sources.list.d/ceph.list
-    state: absent
+  loop:
+    - pve-enterprise.list
+    - pve-enterprise.sources
+    - ceph.list
+    - ceph.sources
+    - pve.sources
+    - pve-no-subscription.list
+  notify: Update apt cache
 
 - name: Add PVE no-subscription apt source
   ansible.builtin.copy:
-    dest: /etc/apt/sources.list.d/pve-no-subscription.list
-    content: "deb http://download.proxmox.com/debian/pve bookworm pve-no-subscription\n"
+    dest: /etc/apt/sources.list.d/proxmox.sources
+    content: |
+      Types: deb
+      URIs: http://download.proxmox.com/debian/pve
+      Suites: {{ ansible_facts['distribution_release'] }}
+      Components: pve-no-subscription
+      Signed-By: /usr/share/keyrings/proxmox-archive-keyring.gpg
     owner: root
     group: root
     mode: "0644"

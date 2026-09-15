@@ -2,6 +2,24 @@
 # Common baseline for all Linux hosts.
 # Installs core packages, configures SSH, sets up the shell environment.
 
+# GitHub's gh apt signing key expired on 2026-09-05 and was replaced upstream.
+# Hosts with the repo configured kept the stale keyring, so apt update failed
+# (NO_PUBKEY) and took the whole deploy down. Keep the keyring in sync with
+# upstream wherever the repo exists; get_url only reports a change when the
+# key actually differs.
+- name: Detect GitHub CLI apt source
+  ansible.builtin.stat:
+    path: /etc/apt/sources.list.d/github-cli.list
+  register: common_github_cli_source
+
+- name: Refresh GitHub CLI apt keyring
+  ansible.builtin.get_url:
+    url: https://cli.github.com/packages/githubcli-archive-keyring.gpg
+    dest: /usr/share/keyrings/githubcli-archive-keyring.gpg
+    mode: '0644'
+    force: true
+  when: common_github_cli_source.stat.exists
+
 - name: Update apt cache
   ansible.builtin.apt:
     update_cache: true
