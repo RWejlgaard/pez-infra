@@ -80,3 +80,111 @@
   when:
     - proxmox_ve_mount_cifs_storage | default(true)
     - proxmox_ve_hdd_check.rc != 0
+
+# --- VM backups (vzdump) ---
+# Proxmox has nowhere local to keep backups (copenhagen-a's `local` is the root
+# LV, and LVM-thin can't hold archives), so each host backs up to its own
+# directory on london-b. Job definitions live in host_vars.
+
+- name: Configure VM backups
+  when: proxmox_ve_backup_jobs | length > 0
+  block:
+    - name: Check if backup storage is configured
+      ansible.builtin.command: pvesh get /storage/{{ proxmox_ve_backup_storage }}
+      register: proxmox_ve_backup_storage_check
+      changed_when: false
+      failed_when: false
+      check_mode: false
+
+    - name: Add backup storage (london-b pve-backups share)
+      ansible.builtin.command: >-
+        pvesm add cifs {{ proxmox_ve_backup_storage }}
+        --server {{ proxmox_ve_backup_server }}
+        --share {{ proxmox_ve_backup_share }}
+        --subdir /{{ inventory_hostname }}
+        --username {{ proxmox_ve_backup_smb_user }}
+        --password {{ proxmox_ve_backup_smb_password }}
+        --content backup
+        --prune-backups keep-all=1
+      no_log: true
+      changed_when: true
+      when: proxmox_ve_backup_storage_check.rc != 0
+
+    - name: Check backup storage is active
+      ansible.builtin.command: pvesm status --storage {{ proxmox_ve_backup_storage }}
+      register: proxmox_ve_backup_storage_status
+      changed_when: false
+      failed_when: false
+      check_mode: false
+
+    # The add above only runs once, so re-push the credentials whenever the
+    # storage can't log in — e.g. after the password is rotated in SOPS.
+    - name: Refresh backup storage credentials
+      ansible.builtin.command: >-
+        pvesm set {{ proxmox_ve_backup_storage }}
+        --username {{ proxmox_ve_backup_smb_user }}
+        --password {{ proxmox_ve_backup_smb_password }}
+      no_log: true
+      changed_when: true
+      when:
+        - proxmox_ve_backup_storage_check.rc == 0
+        - "'active' not in proxmox_ve_backup_storage_status.stdout.split()"
+
+    - name: Verify backup storage is active
+      ansible.builtin.command: pvesm status --storage {{ proxmox_ve_backup_storage }}
+      register: proxmox_ve_backup_storage_verify
+      changed_when: false
+      failed_when: "'active' not in proxmox_ve_backup_storage_verify.stdout.split()"
+      when: not ansible_check_mode
+
+    - name: List existing backup jobs
+      ansible.builtin.command: pvesh get /cluster/backup --output-format json
+      register: proxmox_ve_backup_jobs_current
+      changed_when: false
+      check_mode: false
+
+    # Each managed job carries a hash of its desired settings in its comment,
+    # so drift is detected without having to normalise the API's output.
+    - name: Work out backup job changes
+      ansible.builtin.set_fact:
+        proxmox_ve_backup_jobs_existing: >-
+          {{ dict(proxmox_ve_backup_jobs_current.stdout | from_json | map(attribute='id')
+             | zip(proxmox_ve_backup_jobs_current.stdout | from_json | map(attribute='comment', default=''))) }}
+        proxmox_ve_backup_comment_prefix: "Managed by Ansible (pez-infra)"
+
+    - name: Create or update backup jobs
+      ansible.builtin.command: >-
+        pvesh {{ 'set /cluster/backup/' ~ item.id if item.id in proxmox_ve_backup_jobs_existing
+                 else 'create /cluster/backup --id ' ~ item.id }}
+        --schedule {{ item.schedule | quote }}
+        --storage {{ proxmox_ve_backup_storage }}
+        --vmid {{ item.vmids | join(',') }}
+        --mode snapshot
+        --compress zstd
+        --enabled 1
+        --prune-backups {{ item.prune_backups | quote }}
+        --comment {{ (proxmox_ve_backup_comment_prefix ~ ' ' ~ proxmox_ve_backup_job_hash) | quote }}
+      vars:
+        # Include everything passed to pvesh, so changing a fixed flag here also
+        # re-applies the jobs.
+        proxmox_ve_backup_job_hash: >-
+          {{ (item | combine({'storage': proxmox_ve_backup_storage, 'mode': 'snapshot', 'compress': 'zstd'})
+             | to_json | hash('sha1'))[:12] }}
+      loop: "{{ proxmox_ve_backup_jobs }}"
+      loop_control:
+        label: "{{ item.id }}"
+      changed_when: true
+      when: >-
+        proxmox_ve_backup_jobs_existing.get(item.id)
+        != proxmox_ve_backup_comment_prefix ~ ' ' ~ proxmox_ve_backup_job_hash
+
+    - name: Remove backup jobs no longer defined
+      ansible.builtin.command: pvesh delete /cluster/backup/{{ item.key }}
+      loop: "{{ proxmox_ve_backup_jobs_existing | dict2items }}"
+      loop_control:
+        label: "{{ item.key }}"
+      changed_when: true
+      when:
+        - item.value is string
+        - item.value.startswith(proxmox_ve_backup_comment_prefix)
+        - item.key not in proxmox_ve_backup_jobs | map(attribute='id')

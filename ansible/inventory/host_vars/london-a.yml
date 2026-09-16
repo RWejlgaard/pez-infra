@@ -3,3 +3,11 @@ host_role: proxmox-ve
 host_description: "Proxmox VE hypervisor"
 host_location: "London"
 ansible_python_interpreter: /usr/bin/python3
+
+# Nightly backup of the k3s control plane. Karpenter worker VMs are disposable
+# and the template (1000) is rebuilt by Karpenter, so neither is backed up.
+proxmox_ve_backup_jobs:
+  - id: daily
+    schedule: "02:30"
+    vmids: [101]
+    prune_backups: "keep-daily=7,keep-weekly=4"

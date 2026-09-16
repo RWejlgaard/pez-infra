@@ -93,6 +93,26 @@
     state: started
     enabled: true
 
+# ── Proxmox backup share ──
+# london-a and copenhagen-a write vzdump archives to the [pve-backups] share
+# as a dedicated Samba-only user, one directory per Proxmox host.
+
+- name: Create Proxmox backup user
+  ansible.builtin.user:
+    name: "{{ proxmox_ve_backup_smb_user }}"
+    system: true
+    shell: /usr/sbin/nologin
+    create_home: false
+
+- name: Ensure Proxmox backup directories exist
+  ansible.builtin.file:
+    path: "{{ item }}"
+    state: directory
+    owner: "{{ proxmox_ve_backup_smb_user }}"
+    group: "{{ proxmox_ve_backup_smb_user }}"
+    mode: '0750'
+  loop: "{{ ['/hdd/pve/backups'] + groups['proxmox_hosts'] | map('regex_replace', '^', '/hdd/pve/backups/') | list }}"
+
 # ── Configuration files ──
 
 - name: Deploy samba config
@@ -101,7 +121,37 @@
     dest: /etc/samba/smb.conf
     mode: '0644'
     backup: true
+    validate: testparm -s %s
   notify: Restart smbd
+
+# smbd has to be serving [pve-backups] before the login check below means
+# anything, so don't wait for the end-of-play handler.
+- name: Apply samba config before checking the backup login
+  ansible.builtin.meta: flush_handlers
+
+# A failed login against the share (valid users only, so no guest fallback) is
+# the only reliable way to tell whether the Samba password matches SOPS.
+- name: Check Proxmox backup user's Samba login
+  ansible.builtin.command: smbclient //localhost/pve-backups -U {{ proxmox_ve_backup_smb_user }} -c exit
+  environment:
+    PASSWD: "{{ proxmox_ve_backup_smb_password }}"
+  register: media_stack_pve_backup_login
+  changed_when: false
+  failed_when: false
+  check_mode: false
+  no_log: true
+
+- name: Set Proxmox backup user's Samba password
+  ansible.builtin.shell: |
+    set -o pipefail
+    printf '%s\n%s\n' "$SMB_PASSWORD" "$SMB_PASSWORD" | smbpasswd -s -a {{ proxmox_ve_backup_smb_user }}
+  args:
+    executable: /bin/bash
+  environment:
+    SMB_PASSWORD: "{{ proxmox_ve_backup_smb_password }}"
+  changed_when: true
+  when: media_stack_pve_backup_login.rc != 0
+  no_log: true
 
 - name: Deploy transmission settings
   ansible.builtin.copy:

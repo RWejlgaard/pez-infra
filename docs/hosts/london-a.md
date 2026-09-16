@@ -37,6 +37,17 @@ Proxmox is connected to a CIFS share on **london-b** (`100.84.65.101 /pve`) for 
 |---|---|---|
 | `local-lvm` | LVM-Thin | Local boot disk |
 | `hdd` | CIFS | london-b `/pve` share |
+| `london-b-backups` | CIFS | london-b `pve-backups` share, `/london-a` subdir — backups only |
+
+### Backups
+
+vzdump jobs are defined in `proxmox_ve_backup_jobs` in `host_vars/london-a.yml` and applied by the `proxmox_ve` role:
+
+| Job | Schedule | VMs | Retention |
+|---|---|---|---|
+| `daily` | 02:30 | 101 (k8s-control-plane) | 7 daily, 4 weekly |
+
+Karpenter worker VMs and the Karpenter template are not backed up.
 
 ### VMs
 
@@ -54,6 +65,7 @@ The `proxmox_ve` role:
 - Patches `proxmoxlib.js` to suppress the subscription nag dialog
 - Restricts the web UI to the `tailscale0` interface via UFW
 - Mounts the london-b CIFS storage
+- Adds the `london-b-backups` storage and reconciles the vzdump jobs in `proxmox_ve_backup_jobs`
 
 ## Networking
 
