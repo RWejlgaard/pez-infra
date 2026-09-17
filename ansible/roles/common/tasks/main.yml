@@ -20,10 +20,6 @@
     force: true
   when: common_github_cli_source.stat.exists
 
-# Third-party apt repos are declared per host in common_apt_repositories. A
-# release upgrade disables them silently (london-b's lunar -> noble upgrade
-# left tailscale, jellyfin and plex frozen for a year), so they live in code.
-# A URL in signed_by is fetched into /etc/apt/keyrings by deb822_repository.
 - name: Install deb822_repository dependency
   ansible.builtin.apt:
     name: python3-debian
@@ -50,7 +46,6 @@
   loop: "{{ common_apt_cleanup_files }}"
   register: common_apt_cleanup_result
 
-# Refresh straight away when the sources changed, otherwise at most hourly.
 - name: Update apt cache
   ansible.builtin.apt:
     update_cache: true
