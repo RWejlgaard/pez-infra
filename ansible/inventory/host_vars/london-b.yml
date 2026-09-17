@@ -20,6 +20,51 @@ snap_services:
 apt_user_services:
   - syncthing@pez
 
+# Third-party apt repos (deployed by common role). The lunar -> noble upgrade
+# disabled all of them (PESO-160). Plex moved to repo.plex.tv with a new key;
+# the old downloads.plex.tv repo stopped at 1.42.2.
+common_apt_repositories:
+  - name: tailscale
+    uris: https://pkgs.tailscale.com/stable/ubuntu
+    suites: "{{ ansible_facts['distribution_release'] }}"
+    components: main
+    signed_by: "https://pkgs.tailscale.com/stable/ubuntu/{{ ansible_facts['distribution_release'] }}.noarmor.gpg"
+  - name: jellyfin
+    uris: https://repo.jellyfin.org/ubuntu
+    suites: "{{ ansible_facts['distribution_release'] }}"
+    components: main
+    signed_by: https://repo.jellyfin.org/jellyfin_team.gpg.key
+  - name: plexmediaserver
+    uris: https://repo.plex.tv/deb
+    suites: public
+    components: main
+    signed_by: https://downloads.plex.tv/plex-keys/PlexSign.v2.key
+
+# Leftovers from the upgrade. Sonarr v3 (apt.sonarr.tv) and its mono repo are
+# dead ends, nvidia-container-toolkit isn't used by Docker here, and datadog
+# is retired, so those repos go without replacements.
+common_apt_cleanup_files:
+  - /etc/apt/sources.list.d/datadog.list.distUpgrade
+  - /etc/apt/sources.list.d/graphics-drivers-ubuntu-ppa-lunar.list.distUpgrade
+  - /etc/apt/sources.list.d/graphics-drivers-ubuntu-ppa-lunar.sources
+  - /etc/apt/sources.list.d/jcfp-ubuntu-nobetas-lunar.list.distUpgrade
+  - /etc/apt/sources.list.d/jcfp-ubuntu-nobetas-lunar.sources
+  - /etc/apt/sources.list.d/jellyfin.sources.distUpgrade
+  - /etc/apt/sources.list.d/mediaarea.list.distUpgrade
+  - /etc/apt/sources.list.d/mediaarea.sources
+  - /etc/apt/sources.list.d/mono-official-stable.list.distUpgrade
+  - /etc/apt/sources.list.d/nvidia-container-toolkit.list.distUpgrade
+  - /etc/apt/sources.list.d/plexmediaserver.list.distUpgrade
+  - /etc/apt/sources.list.d/sonarr.list.distUpgrade
+  - /etc/apt/sources.list.d/tailscale.list.distUpgrade
+  - /etc/apt/keyrings/jellyfin.gpg
+  - /usr/share/keyrings/plexmediaserver.gpg
+  - /usr/share/keyrings/mono-official-archive-keyring.gpg
+  - /usr/share/keyrings/mono-official-archive-keyring.gpg~
+  - /usr/share/keyrings/sonarr-keyring.gpg
+  - /usr/share/keyrings/sonarr-keyring.gpg~
+  - /usr/share/keyrings/nvidia-container-toolkit-keyring.gpg
+
 zfs_pools:
   - hdd
 

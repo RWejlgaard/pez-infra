@@ -5,3 +5,10 @@ common_ufw_enabled: true
 common_ufw_allowed_ports: []
 #   - {port: 80, proto: tcp, comment: "HTTP"}
 #   - {port: 443, proto: tcp, comment: "HTTPS"}
+
+# Third-party apt repositories, written as deb822 .sources files.
+# Each item needs name, uris, suites, components and signed_by (key URL).
+common_apt_repositories: []
+
+# Leftover apt source and keyring files to delete, e.g. after a release upgrade.
+common_apt_cleanup_files: []
