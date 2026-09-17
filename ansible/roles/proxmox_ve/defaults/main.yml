@@ -1,0 +1,16 @@
+---
+# --- VM backups (vzdump) ---
+# Backups go to london-b's [pve-backups] Samba share over Tailscale, into a
+# subdirectory named after the Proxmox host. Nothing is configured unless the
+# host defines proxmox_ve_backup_jobs.
+proxmox_ve_backup_storage: london-b-backups
+proxmox_ve_backup_server: 100.84.65.101
+proxmox_ve_backup_share: pve-backups
+
+# List of scheduled vzdump jobs, e.g.
+#   - id: daily
+#     schedule: "03:00"            # systemd calendar event, host local time
+#     vmids: [101]
+#     prune_backups: "keep-daily=7,keep-weekly=4"
+# Jobs this role created that are no longer listed are deleted.
+proxmox_ve_backup_jobs: []

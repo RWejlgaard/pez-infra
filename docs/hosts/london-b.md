@@ -116,7 +116,8 @@ Snap: Overseerr (`latest/beta` channel).
 | HDD | /hdd | pez, root (rw) |
 | Movies | /hdd/movies | public (ro) |
 | TV Shows | /hdd/tv | public (ro) |
-| pve | /hdd/pve | london-a Proxmox (rw) — ISO/template/backup storage |
+| pve | /hdd/pve | london-a Proxmox (rw) — ISO/template storage. Not currently defined in smb.conf, see PESO-159 |
+| pve-backups | /hdd/pve/backups | `pvebackup` (rw) — vzdump backups from the Proxmox hosts, one directory per host |
 
 Media is served directly from the ZFS pool. Docker root (`/hdd/docker`) and PVE storage (`/hdd/pve`) live on the pool too.
 

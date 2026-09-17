@@ -7,3 +7,16 @@ ansible_python_interpreter: /usr/bin/python3
 # Don't mount london-b's CIFS share here — it's on the London LAN, not worth
 # the WAN/Tailscale hop for VM storage from Copenhagen.
 proxmox_ve_mount_cifs_storage: false
+
+# Backups cross the WAN to london-b, and every run is a full archive, so only
+# the VMs whose data changes daily (the game servers and the k3s control plane)
+# run nightly. The workspace VMs are backed up weekly.
+proxmox_ve_backup_jobs:
+  - id: daily
+    schedule: "03:00"
+    vmids: [100, 102, 103]
+    prune_backups: "keep-daily=7,keep-weekly=4"
+  - id: weekly
+    schedule: "sun 04:30"
+    vmids: [101, 104]
+    prune_backups: "keep-weekly=4"

@@ -32,12 +32,22 @@ Minisforum MS-A2 mini PC. Small, quiet, and draws minimal power relative to its 
 
 ### Storage
 
-Unlike london-a, this host does **not** mount london-b's CIFS share — it's not worth the WAN/Tailscale hop from Copenhagen for VM storage. Only local storage is configured (`proxmox_ve_mount_cifs_storage: false` in `host_vars/copenhagen-a.yml`).
+Unlike london-a, this host does **not** mount london-b's `/pve` CIFS share — it's not worth the WAN/Tailscale hop from Copenhagen for VM storage. It does use london-b for backups (below). Only local storage is configured (`proxmox_ve_mount_cifs_storage: false` in `host_vars/copenhagen-a.yml`).
 
 | Storage ID | Type | Backing |
 |---|---|---|
 | `local-lvm` | LVM-Thin | Local boot disk |
-| `local` | Directory | ISO/template/backup storage |
+| `local` | Directory | ISO/template storage |
+| `london-b-backups` | CIFS | london-b `pve-backups` share over Tailscale, `/copenhagen-a` subdir — backups only |
+
+### Backups
+
+There's no room for backups locally, so they go to london-b over Tailscale. Every vzdump run is a full archive, so only the VMs that change daily run nightly. Jobs are defined in `proxmox_ve_backup_jobs` in `host_vars/copenhagen-a.yml`:
+
+| Job | Schedule | VMs | Retention |
+|---|---|---|---|
+| `daily` | 03:00 | 100 (k8s-control-plane), 102 (minecraft), 103 (mangos-zero) | 7 daily, 4 weekly |
+| `weekly` | Sun 04:30 | 101 (workspace), 104 (workspace-alpine) | 4 weekly |
 
 ### VMs
 
@@ -50,7 +60,8 @@ Part of the `proxmox_hosts` group alongside london-a, sharing the `proxmox_ve` r
 - Swaps the enterprise apt repo for `pve-no-subscription` so updates work without a paid subscription
 - Patches `proxmoxlib.js` to suppress the subscription nag dialog
 - Restricts the web UI to the `tailscale0` interface via UFW
-- Skips the london-b CIFS mount (`proxmox_ve_mount_cifs_storage: false`) — local storage only
+- Skips the london-b `/pve` CIFS mount (`proxmox_ve_mount_cifs_storage: false`)
+- Adds the `london-b-backups` storage and reconciles the vzdump jobs in `proxmox_ve_backup_jobs`
 
 ## Networking
 
