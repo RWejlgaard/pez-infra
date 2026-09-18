@@ -1,4 +1,6 @@
 ---
+alloy_version: "1.19.2-1"
+
 alloy_collector_id: "{{ inventory_hostname }}"
 
 alloy_fleet_management_url: https://fleet-management-prod-023.grafana.net

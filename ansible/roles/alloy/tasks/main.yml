@@ -21,7 +21,7 @@
 
 - name: Install Alloy
   ansible.builtin.apt:
-    name: alloy
+    name: "alloy={{ alloy_version }}"
     state: present
 
 - name: Deploy Alloy configuration
