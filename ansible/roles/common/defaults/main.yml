@@ -5,3 +5,6 @@ common_ufw_enabled: true
 common_ufw_allowed_ports: []
 #   - {port: 80, proto: tcp, comment: "HTTP"}
 #   - {port: 443, proto: tcp, comment: "HTTPS"}
+
+common_apt_repositories: []
+common_apt_cleanup_files: []

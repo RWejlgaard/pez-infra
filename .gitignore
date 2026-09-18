@@ -13,6 +13,7 @@ override.tf.json
 
 # Ansible
 *.retry
+.ansible/
 
 # Secrets — never commit plaintext secrets
 *.key

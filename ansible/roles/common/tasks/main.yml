@@ -20,10 +20,36 @@
     force: true
   when: common_github_cli_source.stat.exists
 
+- name: Install deb822_repository dependency
+  ansible.builtin.apt:
+    name: python3-debian
+    state: present
+  when: common_apt_repositories | length > 0
+
+- name: Configure third-party apt repositories
+  ansible.builtin.deb822_repository:
+    name: "{{ item.name }}"
+    types: deb
+    uris: "{{ item.uris }}"
+    suites: "{{ item.suites }}"
+    components: "{{ item.components }}"
+    signed_by: "{{ item.signed_by }}"
+  loop: "{{ common_apt_repositories }}"
+  loop_control:
+    label: "{{ item.name }}"
+  register: common_apt_repositories_result
+
+- name: Remove stale apt sources and keyrings
+  ansible.builtin.file:
+    path: "{{ item }}"
+    state: absent
+  loop: "{{ common_apt_cleanup_files }}"
+  register: common_apt_cleanup_result
+
 - name: Update apt cache
   ansible.builtin.apt:
     update_cache: true
-    cache_valid_time: 3600
+    cache_valid_time: "{{ 0 if (common_apt_repositories_result is changed or common_apt_cleanup_result is changed) else 3600 }}"
 
 - name: Install baseline packages
   ansible.builtin.apt:
