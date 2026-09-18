@@ -1,0 +1,35 @@
+// Managed by Ansible (pez-infra) — alloy role.
+
+remotecfg {
+	url            = "{{ alloy_fleet_management_url }}"
+	id             = "{{ alloy_collector_id }}"
+	poll_frequency = "60s"
+	attributes     = encoding.from_json(coalesce(``, `{}`))
+
+	basic_auth {
+		username = "{{ alloy_fleet_management_username }}"
+		password = sys.env("GCLOUD_RW_API_KEY")
+	}
+}
+
+prometheus.remote_write "metrics_service" {
+	endpoint {
+		url = "{{ alloy_prometheus_url }}"
+
+		basic_auth {
+			username = "{{ alloy_prometheus_username }}"
+			password = sys.env("GCLOUD_RW_API_KEY")
+		}
+	}
+}
+
+loki.write "grafana_cloud_loki" {
+	endpoint {
+		url = "{{ alloy_loki_url }}"
+
+		basic_auth {
+			username = "{{ alloy_loki_username }}"
+			password = sys.env("GCLOUD_RW_API_KEY")
+		}
+	}
+}

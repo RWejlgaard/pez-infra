@@ -26,11 +26,11 @@ Everything in `terraform/grafana/` is the source of truth for the Grafana Cloud 
 
 ## Grafana Alloy (per-host collector)
 
-Alloy runs as `alloy.service` on every host in the inventory. Each host is registered as a Grafana Fleet Management collector in `terraform/grafana/fleet_collectors.tf`, tagged with a `location` attribute (`london`, `copenhagen`, `cloud`) so pipelines can target subsets of the fleet.
+Alloy runs as `alloy.service` on every host in the inventory, installed and configured by the `alloy` Ansible role (Grafana apt repo, `/etc/alloy/config.alloy`, and a `0600` systemd drop-in holding the Grafana Cloud API key from SOPS). Each host is registered as a Grafana Fleet Management collector in `terraform/grafana/fleet_collectors.tf`, tagged with a `location` attribute (`london`, `copenhagen`, `cloud`) so pipelines can target subsets of the fleet.
 
 Pipelines (what to scrape, how to relabel, where to ship) live in `terraform/grafana/fleet_pipelines/` and are pushed to Grafana Cloud as a `grafana_fleet_management_pipeline` resource. The Alloy daemons on each host pull their config from Fleet Management.
 
-The `common` role drops a `10-resilience.conf` systemd override onto every host (`StartLimitIntervalSec=0`, `Restart=always`, `RestartSec=30`) so a transient upstream/TLS failure can't trip systemd's start rate-limit and permanently kill the collector — it keeps retrying until Grafana Cloud is reachable again. (Added after copenhagen-c sat unmonitored for ~2.5 weeks following one such blip — PESO-149.)
+The `alloy` role drops a `10-resilience.conf` systemd override onto every host (`StartLimitIntervalSec=0`, `Restart=always`, `RestartSec=30`) so a transient upstream/TLS failure can't trip systemd's start rate-limit and permanently kill the collector — it keeps retrying until Grafana Cloud is reachable again. (Added after copenhagen-c sat unmonitored for ~2.5 weeks following one such blip — PESO-149.)
 
 ### Local exporters scraped by Alloy
 
@@ -46,6 +46,8 @@ The `common` role drops a `10-resilience.conf` systemd override onto every host 
 ### Logs
 
 Alloy ships systemd journal entries from every host to Grafana Cloud Logs. Log-derived alerts (e.g. SSH brute-force, mail server errors) can be configured directly in Grafana Cloud.
+
+The host's config is bootstrap only — what each collector actually scrapes and ships is decided by the Fleet Management pipelines in `terraform/grafana/fleet_pipelines/`.
 
 ## Synthetic Monitoring
 

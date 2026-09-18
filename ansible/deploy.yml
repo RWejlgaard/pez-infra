@@ -22,6 +22,12 @@
     - role: common
     - role: dotfiles
 
+- name: Grafana Alloy
+  hosts: all
+  tags: [common, baseline, alloy]
+  roles:
+    - role: alloy
+
 - name: Docker engine
   hosts: docker_hosts
   tags: [docker]

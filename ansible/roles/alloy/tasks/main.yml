@@ -1,0 +1,82 @@
+---
+- name: Install deb822_repository dependency
+  ansible.builtin.apt:
+    name: python3-debian
+    state: present
+
+- name: Configure Grafana apt repository
+  ansible.builtin.deb822_repository:
+    name: grafana
+    types: deb
+    uris: https://apt.grafana.com
+    suites: stable
+    components: main
+    signed_by: https://apt.grafana.com/gpg.key
+  register: alloy_apt_repository
+
+- name: Update apt cache
+  ansible.builtin.apt:
+    update_cache: true
+    cache_valid_time: "{{ 0 if alloy_apt_repository is changed else 3600 }}"
+
+- name: Install Alloy
+  ansible.builtin.apt:
+    name: alloy
+    state: present
+
+- name: Deploy Alloy configuration
+  ansible.builtin.template:
+    src: config.alloy.j2
+    dest: /etc/alloy/config.alloy
+    owner: root
+    group: root
+    mode: '0644'
+  notify: Restart alloy
+
+- name: Create Alloy systemd drop-in directory
+  ansible.builtin.file:
+    path: /etc/systemd/system/alloy.service.d
+    state: directory
+    owner: root
+    group: root
+    mode: '0755'
+
+# StartLimitIntervalSec=0 keeps Alloy retrying through transient upstream
+# failures instead of tripping systemd's start rate-limit and staying dead
+# (PESO-149).
+- name: Install Alloy systemd resilience drop-in
+  ansible.builtin.copy:
+    dest: /etc/systemd/system/alloy.service.d/10-resilience.conf
+    owner: root
+    group: root
+    mode: '0644'
+    content: |
+      # Managed by Ansible (pez-infra) — alloy role.
+      [Unit]
+      StartLimitIntervalSec=0
+
+      [Service]
+      Restart=always
+      RestartSec=30
+  notify: Restart alloy
+
+- name: Install Alloy credentials drop-in
+  ansible.builtin.copy:
+    dest: /etc/systemd/system/alloy.service.d/env.conf
+    owner: root
+    group: root
+    mode: '0600'
+    content: |
+      # Managed by Ansible (pez-infra) — alloy role.
+      [Service]
+      Environment=GCLOUD_RW_API_KEY={{ alloy_gcloud_rw_api_key }}
+      Environment=GCLOUD_FM_COLLECTOR_ID={{ alloy_collector_id }}
+  no_log: true
+  notify: Restart alloy
+
+- name: Enable and start Alloy
+  ansible.builtin.systemd:
+    name: alloy
+    state: started
+    enabled: true
+    daemon_reload: true

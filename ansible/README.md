@@ -47,8 +47,9 @@ Ad-hoc runs against a single host or playbook go through the manual `deploy.yml`
 The deploy playbook runs in stages, each independently taggable (see `deploy.yml`):
 
 1. **common / baseline** — Baseline packages, SSH hardening, fish shell, dotfiles
-2. **docker** — Docker engine on container hosts (`docker_hosts` group)
-3. **services** — Per-host service deployment:
+2. **alloy** — Grafana Alloy collector on every host
+3. **docker** — Docker engine on container hosts (`docker_hosts` group)
+4. **services** — Per-host service deployment:
    - `helsinki-a`: Caddy + status-page + custom systemd units
    - `docker_hosts`: Docker Compose stacks from `services/`
    - `nuremberg-a`: poste.io mail (Docker)
@@ -56,7 +57,7 @@ The deploy playbook runs in stages, each independently taggable (see `deploy.yml
    - `proxmox_hosts` (`london-a`, `copenhagen-a`): `proxmox_ve` (apt repo, nag patch, CIFS storage on london-a only)
    - `zfs_hosts`: ZFS scrub scheduling
 
-Observability (node_exporter, systemd_exporter, Grafana Alloy) is part of the `common` baseline — every host gets it.
+Observability is part of the baseline — every host gets node_exporter and systemd_exporter from `common`, and the Grafana Alloy collector from `alloy`.
 
 Run a single stage: `ansible-playbook deploy.yml --tags docker`
 
@@ -64,7 +65,8 @@ Run a single stage: `ansible-playbook deploy.yml --tags docker`
 
 | Role | Description |
 |------|-------------|
-| `common` | Base packages, SSH hardening, fish shell, exporters, Alloy |
+| `common` | Base packages, SSH hardening, fish shell, exporters |
+| `alloy` | Grafana Alloy install, Grafana Cloud credentials, Fleet Management enrolment |
 | `dotfiles` | Shell config from `dotfiles/` |
 | `docker` | Docker engine install and setup + monthly log-cleanup cron |
 | `docker_services` | Deploy compose files from `services/` |
