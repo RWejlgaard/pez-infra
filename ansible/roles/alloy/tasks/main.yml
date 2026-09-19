@@ -24,6 +24,26 @@
     name: "alloy={{ alloy_version }}"
     state: present
 
+# Alloy ran as root until 1.19 and its state is still root-owned, so the
+# service user can't write its own WAL or positions.yml and every remotecfg
+# pipeline fails to build.
+- name: Find Alloy state not owned by the service user
+  ansible.builtin.command: find {{ alloy_state_dir }} ! -user {{ alloy_user }} -print -quit
+  register: alloy_foreign_state
+  changed_when: alloy_foreign_state.stdout | length > 0
+  check_mode: false
+  failed_when: false
+
+- name: Fix ownership of Alloy state
+  ansible.builtin.file:
+    path: "{{ alloy_state_dir }}"
+    state: directory
+    owner: "{{ alloy_user }}"
+    group: "{{ alloy_group }}"
+    recurse: true
+  when: alloy_foreign_state.stdout | length > 0
+  notify: Restart alloy
+
 - name: Deploy Alloy configuration
   ansible.builtin.template:
     src: config.alloy.j2
