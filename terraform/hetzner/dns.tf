@@ -15,7 +15,7 @@ resource "hcloud_zone_rrset" "A_helsinki_a" {
     "@", "apps", "auth", "bitwarden", "copenhagen-a", "download", "git", "helsinki-a",
     "jellyfin", "jellyfin-requests", "*.cph", "*.lon", "ldap", "lidarr", "london-a", "music", "naveen",
     "n8n", "plex", "prowlarr", "radarr", "readarr", "request",
-    "sonarr", "soulseek", "status", "ui",
+    "sonarr", "soulseek", "status", "ui", "updog",
   ])
   zone    = hcloud_zone.pezsh.name
   name    = each.value
