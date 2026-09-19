@@ -311,3 +311,12 @@ crabitalontap.com {
 	root * /srv/crabitalontap.com
 	file_server
 }
+
+# Status page
+updog.pez.sh {
+        tracing {
+                span updog
+        }
+        root * /srv/updog
+        file_server
+}
