@@ -1,6 +1,6 @@
 # pez-infra
 
-Infrastructure-as-code monorepo for managing my homelab and cloud server fleet. It contains everything needed to rebuild, configure, and maintain the entire infrastructure from scratch — including server provisioning, service deployment, DNS, monitoring, and secrets management.
+Infrastructure-as-code monorepo for managing my homelab and cloud server fleet. It contains everything needed to rebuild, configure, and maintain the entire infrastructure from scratch — including server provisioning, service deployment, DNS, monitoring, and secrets management
 
 ## What's in this repo
 
