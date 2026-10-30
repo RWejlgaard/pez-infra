@@ -4,10 +4,10 @@ Infrastructure-as-code monorepo for managing my homelab and cloud server fleet. 
 
 ## What's in this repo
 
-- **Ansible** — Playbooks, roles, and inventory for configuring servers, deploying Docker-based services, and managing dotfiles
-- **Terraform** — OpenTofu/Terraform configs for cloud resources (Hetzner Cloud + DNS, Grafana Cloud, PagerDuty)
-- **Services** — Docker Compose definitions and config files for each self-hosted service
-- **Documentation** — Architecture decisions, networking topology, and operational guides
+- **Ansible** - Playbooks, roles, and inventory for configuring servers, deploying Docker-based services, and managing dotfiles
+- **Terraform** - OpenTofu/Terraform configs for cloud resources (Hetzner Cloud + DNS, Grafana Cloud, PagerDuty)
+- **Services** - Docker Compose definitions and config files for each self-hosted service
+- **Documentation** - Architecture decisions, networking topology, and operational guides
 
 ## Architecture Overview
 
@@ -34,7 +34,7 @@ DNS (Hetzner DNS for `pez.sh`, managed via Terraform) points directly at a Caddy
 | london-a | London | Debian 13 / Proxmox VE | Hypervisor (currently runs a Mac VM; platform for future VMs) |
 | london-c | London | Debian 13 (Raspberry Pi) | Octopus Energy exporter, edge utility box |
 | nuremberg-a | Hetzner Cloud (Nuremberg) | Debian 13 | Mail server (poste.io) |
-| copenhagen-a | Copenhagen | Debian 12 (Bookworm) / Proxmox VE | Hypervisor (platform for future VMs) |
+| copenhagen-a | Copenhagen | Debian 13 / Proxmox VE | Hypervisor (platform for future VMs) |
 
 ## Directory Structure
 
