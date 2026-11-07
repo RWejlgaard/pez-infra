@@ -98,6 +98,35 @@
     - {regexp: '^#?X11Forwarding', line: 'X11Forwarding no'}
   notify: Restart sshd
 
+# sshd keeps the first value it reads for each setting, and sshd_config pulls
+# in sshd_config.d/*.conf before its own lines. So a distro drop-in like
+# cloud-init's 50-cloud-init.conf ("PasswordAuthentication yes") silently
+# beats the lines above. That happened on london-b. A 00- drop-in sorts first
+# and wins.
+- name: Ensure sshd drop-in directory exists
+  ansible.builtin.file:
+    path: /etc/ssh/sshd_config.d
+    state: directory
+    mode: '0755'
+
+- name: Enforce SSH hardening ahead of other drop-ins
+  ansible.builtin.copy:
+    dest: /etc/ssh/sshd_config.d/00-pez-hardening.conf
+    content: |
+      # Managed by pez-infra (roles/common). Sorts first so it wins.
+      PermitRootLogin prohibit-password
+      PasswordAuthentication no
+      KbdInteractiveAuthentication no
+      X11Forwarding no
+    owner: root
+    group: root
+    mode: '0644'
+  notify: Restart sshd
+
+- name: Validate sshd config
+  ansible.builtin.command: sshd -t
+  changed_when: false
+
 - name: Enable fail2ban
   ansible.builtin.service:
     name: fail2ban
@@ -134,7 +163,29 @@
     rule: allow
     port: '22'
     proto: tcp
+    from_ip: "{{ common_ufw_ssh_from_ip or omit }}"
     comment: "SSH"
+  when: common_ufw_enabled | bool
+  notify: Reload ufw
+
+- name: Remove world-open SSH rule when SSH is source-restricted
+  community.general.ufw:
+    rule: allow
+    port: '22'
+    proto: tcp
+    delete: true
+  when:
+    - common_ufw_enabled | bool
+    - common_ufw_ssh_from_ip | length > 0
+  notify: Reload ufw
+
+- name: Deny outbound traffic to blocked destinations
+  community.general.ufw:
+    rule: deny
+    direction: out
+    to_ip: "{{ item.ip }}"
+    comment: "{{ item.comment | default(omit) }}"
+  loop: "{{ common_ufw_denied_outbound }}"
   when: common_ufw_enabled | bool
   notify: Reload ufw
 
