@@ -6,5 +6,13 @@ common_ufw_allowed_ports: []
 #   - {port: 80, proto: tcp, comment: "HTTP"}
 #   - {port: 443, proto: tcp, comment: "HTTPS"}
 
+# Source range for the SSH safety-net rule. Empty means from anywhere.
+# Tailscale is always allowed via the tailscale0 rule, whatever this is.
+common_ufw_ssh_from_ip: ""
+
+# Outbound destinations to deny, e.g. known-bad infrastructure.
+#   - {ip: "203.0.113.10", comment: "Why it is blocked"}
+common_ufw_denied_outbound: []
+
 common_apt_repositories: []
 common_apt_cleanup_files: []

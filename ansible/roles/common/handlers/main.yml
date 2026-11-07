@@ -1,7 +1,8 @@
 ---
 - name: Restart sshd
   ansible.builtin.service:
-    name: sshd
+    # The unit is ssh.service on Debian/Ubuntu (no sshd alias on Ubuntu).
+    name: "{{ 'ssh' if ansible_facts['os_family'] == 'Debian' else 'sshd' }}"
     state: restarted
 
 - name: Reload ufw

@@ -67,8 +67,15 @@ docker_daemon_extra:
   data-root: "/hdd/docker"
   storage-driver: "zfs"
 
+# SSH from the London LAN only. Tailscale (and so Ansible/CI) is always
+# allowed via the tailscale0 rule.
+common_ufw_ssh_from_ip: "192.168.1.0/24"
+
 common_ufw_allowed_ports:
-  - { port: 32400, proto: tcp, comment: "Plex Media Server" }
+  # Plex is LAN only. Remote access goes through Caddy (plex.pez.sh), which
+  # reaches it over Tailscale. It was open to the internet until 2026-11,
+  # when something got in as the plex user.
+  - { port: 32400, proto: tcp, from_ip: "192.168.1.0/24", comment: "Plex Media Server (LAN only)" }
   - { port: 6881, proto: tcp, comment: "BitTorrent" }
   - { port: 6881, proto: udp, comment: "BitTorrent" }
   # SMB is reachable over Tailscale via the tailscale0 allow-all rule; this

@@ -124,3 +124,9 @@ Media is served directly from the ZFS pool. Docker root (`/hdd/docker`) and PVE 
 ## Networking
 
 Connected via Cat 5 to the Ubiquiti switch in the utility closet. 1 Gbit LAN connection.
+
+### Firewall
+
+Nothing is open to the public internet except BitTorrent (6881). SSH, Plex (32400) and Samba are LAN only (`192.168.1.0/24`), and everything is reachable over Tailscale. Plex remote access goes through Caddy on helsinki-a (`plex.pez.sh`), which reaches it over Tailscale. If Plex clients can't find the server remotely, set **Settings > Network > Custom server access URLs** to `https://plex.pez.sh:443`.
+
+Plex was open to the internet until November 2026. Someone got in as the `plex` user and ran crypto miners on the box for about two weeks before it was caught and cleaned. That's why it's LAN only now, and why the pools they used are blocked outbound across the fleet (`group_vars/all/firewall.yml`).

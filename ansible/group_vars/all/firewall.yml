@@ -1,0 +1,9 @@
+---
+# Outbound blocks applied to every host (roles/common).
+# Crypto-mining pools and payload hosts used in the 2026-11 london-b incident.
+common_ufw_denied_outbound:
+  - { ip: "80.87.206.91", comment: "Mining pool (2026-11 london-b incident)" }
+  - { ip: "130.94.112.197", comment: "Mining pool (2026-11 london-b incident)" }
+  - { ip: "185.146.232.55", comment: "Mining pool (2026-11 london-b incident)" }
+  - { ip: "89.125.187.222", comment: "Payload host (2026-11 london-b incident)" }
+  - { ip: "130.94.112.118", comment: "Payload host (2026-11 london-b incident)" }
